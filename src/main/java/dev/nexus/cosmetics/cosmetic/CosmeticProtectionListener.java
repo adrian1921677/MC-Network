@@ -83,12 +83,11 @@ public final class CosmeticProtectionListener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        // Aufräumen, falls nach einem Absturz noch alte Cosmetic-Items im Inventar liegen
-        manager.removeCosmeticItems(event.getPlayer());
+        manager.handleJoin(event.getPlayer());
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        manager.unequipAll(event.getPlayer());
+        manager.handleQuit(event.getPlayer());
     }
 }

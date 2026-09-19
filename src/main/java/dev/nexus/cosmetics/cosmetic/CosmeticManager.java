@@ -1,6 +1,7 @@
 package dev.nexus.cosmetics.cosmetic;
 
 import dev.nexus.cosmetics.cape.CapeRenderer;
+import dev.nexus.cosmetics.storage.CosmeticStorage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -29,15 +30,19 @@ public final class CosmeticManager {
 
     public enum EquipResult { EQUIPPED, NO_PERMISSION, HEAD_OCCUPIED }
 
+    private final Plugin plugin;
     private final CosmeticRegistry registry;
     private final CapeRenderer capeRenderer;
+    private final CosmeticStorage storage;
     /** Markierung, an der wir unsere Cosmetic-Items erkennen. */
     private final NamespacedKey cosmeticKey;
     private final Map<UUID, Map<CosmeticSlot, Cosmetic>> equipped = new HashMap<>();
 
-    public CosmeticManager(Plugin plugin, CosmeticRegistry registry, CapeRenderer capeRenderer) {
+    public CosmeticManager(Plugin plugin, CosmeticRegistry registry, CapeRenderer capeRenderer, CosmeticStorage storage) {
+        this.plugin = plugin;
         this.registry = registry;
         this.capeRenderer = capeRenderer;
+        this.storage = storage;
         this.cosmeticKey = new NamespacedKey(plugin, "cosmetic");
     }
 
@@ -50,7 +55,83 @@ public final class CosmeticManager {
         return slots == null ? null : slots.get(slot);
     }
 
+    // ------------------------------------------------------------------ Aktionen des Spielers (werden gespeichert)
+
     public EquipResult equip(Player player, Cosmetic cosmetic) {
+        EquipResult result = apply(player, cosmetic);
+        if (result == EquipResult.EQUIPPED) {
+            save(player);
+        }
+        return result;
+    }
+
+    public void unequip(Player player, CosmeticSlot slot) {
+        remove(player, slot);
+        save(player);
+    }
+
+    public void unequipAll(Player player) {
+        for (CosmeticSlot slot : CosmeticSlot.values()) {
+            remove(player, slot);
+        }
+        save(player);
+    }
+
+    // ------------------------------------------------------------------ Einloggen / Ausloggen
+
+    /** Lädt beim Einloggen die gespeicherten Cosmetics und legt sie wieder an. */
+    public void handleJoin(Player player) {
+        // Aufräumen, falls nach einem Absturz noch alte Cosmetic-Items im Inventar liegen
+        removeCosmeticItems(player);
+
+        storage.load(player.getUniqueId()).thenAccept(saved ->
+                // Zurück auf den Server-Thread: Die Spielwelt darf nur von dort verändert werden
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (!player.isOnline()) {
+                        return;
+                    }
+                    saved.forEach((slot, id) -> {
+                        Cosmetic cosmetic = registry.get(id);
+                        // Gelöschte Cosmetics oder entzogene Rechte werden still übersprungen
+                        if (cosmetic != null && cosmetic.slot() == slot) {
+                            apply(player, cosmetic);
+                        }
+                    });
+                }));
+    }
+
+    /** Beim Ausloggen nur die Anzeige entfernen, die Auswahl bleibt gespeichert. */
+    public void handleQuit(Player player) {
+        for (CosmeticSlot slot : CosmeticSlot.values()) {
+            remove(player, slot);
+        }
+        equipped.remove(player.getUniqueId());
+    }
+
+    /** Beim Server-Stopp: Anzeige bei allen entfernen, ohne die Auswahl zu löschen. */
+    public void shutdown() {
+        for (UUID uuid : List.copyOf(equipped.keySet())) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) {
+                handleQuit(player);
+            }
+        }
+        equipped.clear();
+    }
+
+    /** Setzt den Hut nach einem Respawn erneut auf, falls er verloren ging. */
+    public void restoreHat(Player player) {
+        Cosmetic hat = equipped(player, CosmeticSlot.HEAD);
+        ItemStack helmet = player.getInventory().getHelmet();
+        if (hat != null && (helmet == null || helmet.isEmpty())) {
+            player.getInventory().setHelmet(createItem(hat, List.of()));
+        }
+    }
+
+    // ------------------------------------------------------------------ Intern
+
+    /** Legt ein Cosmetic an, ohne zu speichern. */
+    private EquipResult apply(Player player, Cosmetic cosmetic) {
         if (!player.hasPermission(cosmetic.permission())) {
             return EquipResult.NO_PERMISSION;
         }
@@ -69,7 +150,8 @@ public final class CosmeticManager {
         return EquipResult.EQUIPPED;
     }
 
-    public void unequip(Player player, CosmeticSlot slot) {
+    /** Nimmt ein Cosmetic ab, ohne zu speichern. */
+    private void remove(Player player, CosmeticSlot slot) {
         Map<CosmeticSlot, Cosmetic> slots = equipped.get(player.getUniqueId());
         if (slots != null) {
             slots.remove(slot);
@@ -80,30 +162,13 @@ public final class CosmeticManager {
         }
     }
 
-    public void unequipAll(Player player) {
-        for (CosmeticSlot slot : CosmeticSlot.values()) {
-            unequip(player, slot);
+    private void save(Player player) {
+        Map<CosmeticSlot, String> ids = new EnumMap<>(CosmeticSlot.class);
+        Map<CosmeticSlot, Cosmetic> slots = equipped.get(player.getUniqueId());
+        if (slots != null) {
+            slots.forEach((slot, cosmetic) -> ids.put(slot, cosmetic.id()));
         }
-        equipped.remove(player.getUniqueId());
-    }
-
-    /** Setzt den Hut nach einem Respawn erneut auf, falls er verloren ging. */
-    public void restoreHat(Player player) {
-        Cosmetic hat = equipped(player, CosmeticSlot.HEAD);
-        ItemStack helmet = player.getInventory().getHelmet();
-        if (hat != null && (helmet == null || helmet.isEmpty())) {
-            player.getInventory().setHelmet(createItem(hat, List.of()));
-        }
-    }
-
-    public void unequipEveryone() {
-        for (UUID uuid : List.copyOf(equipped.keySet())) {
-            Player player = Bukkit.getPlayer(uuid);
-            if (player != null) {
-                unequipAll(player);
-            }
-        }
-        equipped.clear();
+        storage.save(player.getUniqueId(), ids);
     }
 
     /** Entfernt alle Cosmetic-Items aus dem Inventar (z. B. nach einem Server-Absturz). */
