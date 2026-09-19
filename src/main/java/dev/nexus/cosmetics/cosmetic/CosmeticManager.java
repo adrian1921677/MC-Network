@@ -2,7 +2,7 @@ package dev.nexus.cosmetics.cosmetic;
 
 import dev.nexus.cosmetics.NexusCosmetics;
 import dev.nexus.cosmetics.render.FakeCosmeticRenderer;
-import dev.nexus.cosmetics.render.cape.CapeCosmetic;
+import dev.nexus.cosmetics.render.cape.BackCosmetic;
 import dev.nexus.cosmetics.render.hat.FloatingHalo;
 import dev.nexus.cosmetics.render.hat.TalkingHat;
 import dev.nexus.cosmetics.render.pet.FakePet;
@@ -211,7 +211,9 @@ public final class CosmeticManager {
                     }
                 }
             }
-            case BACK -> renderer.show(player, CosmeticSlot.BACK, new CapeCosmetic(player, cosmetic));
+            case BACK -> renderer.show(player, CosmeticSlot.BACK, cosmetic.animation() == CosmeticAnimation.WINGS
+                    ? BackCosmetic.wings(player, cosmetic)
+                    : BackCosmetic.cape(player, cosmetic));
             case PET -> renderer.show(player, CosmeticSlot.PET, new FakePet(player, cosmetic));
         }
         equipped.computeIfAbsent(player.getUniqueId(), uuid -> new EnumMap<>(CosmeticSlot.class))

@@ -31,7 +31,7 @@ import java.util.function.Consumer;
  * Item-Display und hängt am Ende des vorherigen. Jedes Segment schwingt mit einer eigenen Feder,
  * dadurch biegt sich die Cape wie Stoff und schwingt nach.
  */
-final class FakeCape {
+final class FakeCape implements BackPiece {
 
     // --- Aufbau (Modell-Einheiten, 1/16 Block vor der Skalierung) ---
     /** Normale Cape: 16 Einheiten lang */
@@ -102,7 +102,8 @@ final class FakeCape {
 
     // ------------------------------------------------------------------ Sichtbarkeit
 
-    void show(Player viewer) {
+    @Override
+    public void show(Player viewer) {
         viewers.add(viewer.getUniqueId());
         Location loc = wearer.getLocation();
         List<Packet<? super ClientGamePacketListener>> packets = new ArrayList<>();
@@ -116,18 +117,21 @@ final class FakeCape {
         Packets.send(viewer, new ClientboundBundlePacket(packets));
     }
 
-    void hide(Player viewer) {
+    @Override
+    public void hide(Player viewer) {
         if (viewers.remove(viewer.getUniqueId())) {
             Packets.send(viewer, removePacket());
         }
     }
 
     /** Entfernt einen Zuschauer, ohne ein Paket zu senden (z. B. weil er offline ist). */
-    void forget(UUID viewer) {
+    @Override
+    public void forget(UUID viewer) {
         viewers.remove(viewer);
     }
 
-    void destroy() {
+    @Override
+    public void destroy() {
         ClientboundRemoveEntitiesPacket packet = removePacket();
         forEachViewer(viewer -> Packets.send(viewer, packet));
         viewers.clear();
@@ -135,7 +139,8 @@ final class FakeCape {
 
     // ------------------------------------------------------------------ Physik
 
-    void tick() {
+    @Override
+    public void tick() {
         age++;
         Location now = wearer.getLocation();
         double dx = now.getX() - lastLocation.getX();
@@ -226,7 +231,8 @@ final class FakeCape {
 
     // ------------------------------------------------------------------ Hilfsmethoden
 
-    int[] entityIds() {
+    @Override
+    public int[] entityIds() {
         int[] ids = new int[segments.length];
         for (int i = 0; i < segments.length; i++) {
             ids[i] = segments[i].getId();

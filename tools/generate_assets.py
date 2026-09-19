@@ -1230,6 +1230,509 @@ def crate():
     write_extra_model("crate_lid", "crate", lid)
 
 
+
+# ---------------------------------------------------------------- Flügel
+# Die Flügelformen werden berechnet (Kurven für Ober- und Unterkante) statt von Hand gepixelt.
+# Danach wird die 16x16-Pixelgrafik zu einem 3D-Modell extrudiert.
+# Flügel A zeigt im Modell nach +x, Flügel B ist gespiegelt. Das Gelenk (Wurzel am Rücken)
+# liegt in der Modellmitte (8, 8, 8), damit die Flügel sich darum drehen.
+import math
+
+WING_ROOT_ROW = 6.5
+
+
+def extrude_pixels(img, depth=1.0, dx=0.0, dy=0.0, mirror=False):
+    """Wie extrude_sprite, aber für fertige Pixel (durchsichtig = Alpha 0), optional gespiegelt."""
+    z0, z1 = 8 - depth / 2, 8 + depth / 2
+    elements = []
+    for y in range(16):
+        x = 0
+        while x < 16:
+            if img[y][x][3] == 0:
+                x += 1
+                continue
+            start = x
+            while x < 16 and img[y][x][3] != 0:
+                x += 1
+            end = x
+            gx0, gx1 = (16 - end, 16 - start) if mirror else (start, end)
+            forward = [start, y, end, y + 1]
+            backward = [end, y, start, y + 1]
+            elements.append({
+                "from": [gx0 + dx, 15 - y + dy, z0], "to": [gx1 + dx, 16 - y + dy, z1],
+                "faces": {
+                    "south": {"uv": backward if mirror else forward, "texture": "#0"},
+                    "north": {"uv": forward if mirror else backward, "texture": "#0"},
+                    "up": {"uv": forward, "texture": "#0"},
+                    "down": {"uv": forward, "texture": "#0"},
+                    "west": {"uv": [start, y, start + 1, y + 1], "texture": "#0"},
+                    "east": {"uv": [end - 1, y, end, y + 1], "texture": "#0"},
+                },
+            })
+    return elements
+
+
+def blend(a, b, t):
+    t = max(0.0, min(1.0, t))
+    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(4))
+
+
+def wing_sprite(style):
+    clear = (0, 0, 0, 0)
+    img = [[clear] * 16 for _ in range(16)]
+
+    def inside(x, y):
+        cx, cy = x + 0.5, y + 0.5
+        if style == "angel":
+            # Hochgewölbte Vorderkante, lange Federn hängen nach unten
+            top = 5.0 - 4.6 * math.sin(math.pi * cx / 17)
+            bottom = 15.6 - 0.42 * cx - 1.3 * abs(math.sin(cx * 0.9))
+            return top <= cy <= bottom
+        if style in ("demon", "dragon"):
+            # Fledermaus-Flügel: gewölbter Knochen oben, Membran-Bögen zwischen den Fingern
+            top = 5.0 - 4.2 * math.sin(math.pi * cx / 17)
+            bottom = 15.2 - 0.38 * cx - 3.2 * math.sin(math.pi * ((cx % 5) / 5.0))
+            return top <= cy <= bottom
+        if style == "pixie":
+            # Fee: zwei lange, schmale Libellenflügel
+            upper = ((cx - 8.5) / 7.8) ** 2 + ((cy - 4.2) / 3.0) ** 2 <= 1
+            lower = ((cx - 6.5) / 6.3) ** 2 + ((cy - 10.2) / 2.6) ** 2 <= 1
+            return upper or lower or (cx < 2 and 3 <= cy <= 12)
+        # Schmetterling: ein großer oberer und ein kleiner unterer Flügellappen
+        upper = ((cx - 8.5) / 7.5) ** 2 + ((cy - 5.0) / 4.6) ** 2 <= 1
+        lower = ((cx - 5.0) / 5.0) ** 2 + ((cy - 11.5) / 3.8) ** 2 <= 1
+        root = cx < 2.5 and 4 <= cy <= 11
+        return upper or lower or root
+
+    mask = [[inside(x, y) for x in range(16)] for y in range(16)]
+
+    def edge(x, y):
+        return any(not (0 <= x + ox < 16 and 0 <= y + oy < 16 and mask[y + oy][x + ox])
+                   for ox, oy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+
+    for y in range(16):
+        for x in range(16):
+            if not mask[y][x]:
+                continue
+            if style == "angel":
+                color = (246, 246, 252, 255)
+                if (x + int(y * 0.7)) % 4 == 0:
+                    color = (214, 222, 240, 255)            # Federlinien
+                if not mask[min(15, y + 2)][x] or not mask[min(15, y + 1)][x]:
+                    color = (255, 236, 170, 255)            # goldene Federspitzen
+                if y + 0.5 < 5.0 - 4.6 * math.sin(math.pi * (x + 0.5) / 17) + 1.2:
+                    color = (255, 255, 255, 255)            # heller Flügelbug
+            elif style in ("demon", "dragon"):
+                membrane_top = (150, 26, 40, 255) if style == "demon" else (70, 160, 80, 255)
+                membrane_bottom = (86, 12, 24, 255) if style == "demon" else (36, 104, 52, 255)
+                bone = (40, 10, 14, 255) if style == "demon" else (24, 66, 34, 255)
+                color = blend(membrane_top, membrane_bottom, y / 14)
+                top_edge = 5.0 - 4.2 * math.sin(math.pi * (x + 0.5) / 17)
+                on_bone = abs(y + 0.5 - top_edge) < 1.0 or (x % 5 == 4) or x == 0
+                if on_bone:
+                    color = bone
+                if style == "dragon" and not on_bone and (x + y) % 5 == 0:
+                    color = (110, 190, 100, 255)            # Schuppen-Glanz
+            elif style == "butterfly":
+                color = blend((70, 160, 255, 255), (30, 70, 200, 255), x / 15)
+                if y >= 9:
+                    color = (255, 150, 40, 255)             # orangefarbener unterer Flügel
+                if edge(x, y):
+                    color = (24, 22, 40, 255)
+            else:  # pixie (Fee): zarte Pastellfarben, halb durchsichtig
+                color = blend((255, 170, 220, 170), (150, 230, 255, 170), x / 15)
+                if edge(x, y):
+                    color = (255, 255, 255, 220)
+            img[y][x] = color
+
+    # Kleine Details
+    if style == "butterfly":
+        for sx, sy in ((11, 3), (13, 5), (9, 6), (4, 12)):
+            if mask[sy][sx] and not edge(sx, sy):
+                img[sy][sx] = (255, 255, 255, 255)
+    if style == "pixie":
+        for sx, sy in ((10, 3), (6, 5), (13, 5), (4, 11), (7, 12)):
+            if mask[sy][sx]:
+                img[sy][sx] = (255, 255, 255, 255)
+    return img
+
+
+def wings(cosmetic_id, style):
+    img = wing_sprite(style)
+    dy = WING_ROOT_ROW - 7.5
+    wing_a = extrude_pixels(img, dx=8, dy=dy)
+    wing_b = extrude_pixels(img, dx=-8, dy=dy, mirror=True)
+    wing_display = {
+        "gui": {"rotation": [0, 180, 0], "scale": [0.45] * 3},
+        "ground": {"translation": [0, 2, 0], "scale": [0.3] * 3},
+        "fixed": {"scale": [0.45] * 3},
+    }
+    write_cosmetic(cosmetic_id, wing_a + wing_b, img, display_settings=wing_display)
+    write_extra_model(f"{cosmetic_id}_wing_a", cosmetic_id, wing_a)
+    write_extra_model(f"{cosmetic_id}_wing_b", cosmetic_id, wing_b)
+
+
+
+# ------------------------------------------------------------ Neue Hüte
+# Einfache Hüte nutzen eine Paletten-Textur: 16 Farbfelder à 4x4 Pixel.
+# uv(i) gibt den Texturbereich von Feld i zurück. Felder können auch Muster enthalten.
+def palette(cells):
+    """cells: Liste von Farben (r, g, b, a) oder Funktionen f(img, x0, y0), die ein 4x4-Feld bemalen."""
+    img = canvas((0, 0, 0, 0))
+    for i, cell in enumerate(cells):
+        x0, y0 = (i % 4) * 4, (i // 4) * 4
+        if callable(cell):
+            cell(img, x0, y0)
+        else:
+            fill(img, x0, y0, x0 + 4, y0 + 4, cell)
+    return img
+
+
+def uv(i):
+    x0, y0 = (i % 4) * 4, (i // 4) * 4
+    return [x0, y0, x0 + 4, y0 + 4]
+
+
+def mirror_x(elements):
+    """Spiegelt Teile an der Kopfmitte (x = 8), z. B. für das rechte Horn."""
+    mirrored = []
+    for element in elements:
+        copy = json.loads(json.dumps(element))
+        x0, x1 = copy["from"][0], copy["to"][0]
+        copy["from"][0], copy["to"][0] = round(16 - x1, 3), round(16 - x0, 3)
+        copy["faces"]["east"], copy["faces"]["west"] = copy["faces"]["west"], copy["faces"]["east"]
+        mirrored.append(copy)
+    return mirrored
+
+
+def stripes(colors):
+    def paint(img, x0, y0):
+        for y in range(4):
+            for x in range(4):
+                img[y0 + y][x0 + x] = colors[(x + y) % len(colors)]
+    return paint
+
+
+def dotted(base, dot):
+    def paint(img, x0, y0):
+        fill(img, x0, y0, x0 + 4, y0 + 4, base)
+        img[y0 + 1][x0 + 1] = img[y0 + 2][x0 + 2] = dot
+    return paint
+
+
+def new_hats():
+    t = HEAD_TOP
+
+    # Wikingerhelm
+    metal, metal_dark, rivet, horn, horn_tip = (164, 170, 180, 255), (118, 124, 136, 255), (220, 224, 230, 255), (238, 228, 204, 255), (196, 184, 156, 255)
+    img = palette([metal, metal_dark, dotted(metal_dark, rivet), horn, horn_tip])
+    horn_left = [cube("Horn", [-1, t - 1, 7], [1.2, t + 1, 9], uv(3)),
+                 cube("Horn Mitte", [-2, t + 1, 7.25], [-0.5, t + 4, 8.75], uv(3)),
+                 cube("Hornspitze", [-1.8, t + 4, 7.5], [-1, t + 6, 8.5], uv(4))]
+    elements = [
+        cube("Helm", [1.2, t - 3, 1.2], [14.8, t + 1, 14.8], uv(0)),
+        cube("Kuppel", [3, t + 1, 3], [13, t + 3, 13], uv(0)),
+        cube("Rand", [1, t - 3.2, 1], [15, t - 2.2, 15], uv(2)),
+        cube("Nasenschutz", [7.3, t - 7, 0.7], [8.7, t - 3, 1.2], uv(1)),
+    ] + horn_left + mirror_x(horn_left)
+    write_cosmetic("viking_helmet", elements, img, center_y=t + 1, gui_scale=0.6)
+
+    # Cowboyhut
+    brown, brown_dark, band = (150, 98, 56, 255), (116, 74, 40, 255), (62, 40, 24, 255)
+    img = palette([brown, brown_dark, band])
+    elements = [
+        cube("Krempe", [-1, t, -1], [17, t + 0.8, 17], uv(0)),
+        cube("Krempe links hoch", [-1.5, t + 0.8, -1], [0.5, t + 1.8, 17], uv(1)),
+        cube("Krempe rechts hoch", [15.5, t + 0.8, -1], [17.5, t + 1.8, 17], uv(1)),
+        cube("Hut", [3, t + 0.8, 3.5], [13, t + 5.5, 12.5], uv(0)),
+        cube("Delle", [3.5, t + 5.5, 5], [12.5, t + 6.3, 11], uv(1)),
+        cube("Hutband", [2.9, t + 0.8, 3.4], [13.1, t + 2, 12.6], uv(2)),
+    ]
+    write_cosmetic("cowboy_hat", elements, img, center_y=t + 3, gui_scale=0.55)
+
+    # Hexenhut
+    black, purple, gold = (40, 34, 52, 255), (124, 62, 178, 255), (240, 196, 70, 255)
+    img = palette([black, purple, gold])
+    elements = [
+        cube("Krempe", [-0.5, t, -0.5], [16.5, t + 0.8, 16.5], uv(0)),
+        cube("Hut 1", [3, t + 0.8, 3], [13, t + 4, 13], uv(0)),
+        cube("Hut 2", [4.5, t + 4, 4.5], [11.5, t + 7, 11.5], uv(0)),
+        cube("Hut 3", [6, t + 7, 6.5], [10, t + 10, 10.5], uv(0)),
+        cube("Hut 4", [7, t + 10, 8], [9.5, t + 12, 10.5], uv(0)),
+        cube("Spitze", [7.5, t + 11.5, 10.5], [9, t + 12.5, 13], uv(0)),
+        cube("Band", [2.9, t + 0.8, 2.9], [13.1, t + 2, 13.1], uv(1)),
+        cube("Schnalle", [7, t + 0.7, 2.6], [9, t + 2.1, 2.9], uv(2)),
+    ]
+    write_cosmetic("witch_hat", elements, img, center_y=t + 6, gui_scale=0.45)
+
+    # Weihnachtsmütze
+    red, red_dark, white = (212, 36, 44, 255), (168, 22, 30, 255), (248, 248, 244, 255)
+    img = palette([red, red_dark, white])
+    elements = [
+        cube("Fellrand", [1, t - 1, 1], [15, t + 1, 15], uv(2)),
+        cube("Mütze 1", [2.5, t + 1, 2.5], [13.5, t + 4, 13.5], uv(0)),
+        cube("Mütze 2", [4, t + 4, 4.5], [12, t + 6.5, 12], uv(0)),
+        cube("Mütze 3", [6, t + 6.5, 7], [11, t + 8, 12], uv(1)),
+        cube("Zipfel", [9, t + 6, 11], [12.5, t + 7.5, 15], uv(1)),
+        cube("Bommel", [11, t + 4.5, 14], [14, t + 7.5, 17], uv(2)),
+    ]
+    write_cosmetic("santa_hat", elements, img, center_y=t + 4, gui_scale=0.55)
+
+    # Partyhut (leicht schräg)
+    img = palette([stripes([(255, 90, 120, 255), (255, 214, 70, 255), (90, 190, 255, 255)]), (255, 214, 70, 255)])
+    elements = [
+        cube("Kegel 1", [5, t, 5], [11, t + 2, 11], uv(0)),
+        cube("Kegel 2", [5.75, t + 2, 5.75], [10.25, t + 4, 10.25], uv(0)),
+        cube("Kegel 3", [6.5, t + 4, 6.5], [9.5, t + 6, 9.5], uv(0)),
+        cube("Kegel 4", [7.25, t + 6, 7.25], [8.75, t + 8, 8.75], uv(0)),
+        cube("Bommel", [7, t + 8, 7], [9, t + 10, 9], uv(1)),
+    ]
+    for element in elements:
+        element["rotation"] = {"angle": 22.5, "axis": "z", "origin": [8, t, 8]}
+    write_cosmetic("party_hat", elements, img, center_y=t + 5, gui_scale=0.6)
+
+    # Katzenohren
+    fur, pink, band_dark = (70, 64, 78, 255), (255, 170, 190, 255), (40, 36, 46, 255)
+    img = palette([fur, pink, band_dark])
+    ear = [faces(cube("Ohr", [2.5, t + 0.5, 6.3], [6, t + 2.5, 8.2], uv(0)), north=uv(1)),
+           faces(cube("Ohr Mitte", [3, t + 2.5, 6.3], [5.5, t + 4, 8.2], uv(0)), north=uv(1)),
+           cube("Ohrspitze", [3.5, t + 4, 6.3], [5, t + 5, 8.2], uv(0))]
+    elements = [cube("Haarreif", [1.4, t - 0.5, 6.5], [14.6, t + 0.5, 8], uv(2))] + ear + mirror_x(ear)
+    write_cosmetic("cat_ears", elements, img, center_y=t + 2, gui_scale=0.7)
+
+    # Hasenohren (eins steht, eins ist umgeknickt)
+    white, pink = (250, 250, 250, 255), (255, 176, 196, 255)
+    img = palette([white, pink])
+    elements = [
+        cube("Haarreif", [1.4, t - 0.5, 7], [14.6, t + 0.5, 8.5], uv(0)),
+        faces(cube("Ohr links", [3.5, t + 0.5, 7], [6.5, t + 9, 8.5], uv(0)), north=uv(1)),
+        faces(cube("Ohr rechts unten", [9.5, t + 0.5, 7], [12.5, t + 5, 8.5], uv(0)), north=uv(1)),
+        faces(cube("Ohr rechts geknickt", [10.5, t + 4, 7], [15, t + 6.5, 8.5], uv(0)), up=uv(1)),
+    ]
+    write_cosmetic("bunny_ears", elements, img, center_y=t + 4, gui_scale=0.55)
+
+    # Kopfhörer
+    dark, pad, accent = (52, 52, 60, 255), (34, 34, 40, 255), (64, 214, 232, 255)
+    img = palette([dark, pad, accent])
+    side = [cube("Bügel", [0.2, t - 5, 7], [1.4, t, 9], uv(0)),
+            cube("Muschel", [-0.8, t - 8.5, 5.5], [1.6, t - 4.5, 10.5], uv(2)),
+            cube("Polster", [1.6, t - 8, 6], [1.8, t - 5, 10], uv(1))]
+    elements = [cube("Band", [1, t - 0.5, 7], [15, t + 1, 9], uv(0)),
+                cube("Polster oben", [4, t + 1, 7.25], [12, t + 1.6, 8.75], uv(1))] + side + mirror_x(side)
+    write_cosmetic("headphones", elements, img, center_y=t - 3, gui_scale=0.6)
+
+    # Blumenkranz
+    leaf = (70, 170, 80, 255)
+    def flower(petal):
+        def paint(img, x0, y0):
+            fill(img, x0, y0, x0 + 4, y0 + 4, petal)
+            fill(img, x0 + 1, y0 + 1, x0 + 3, y0 + 3, (255, 214, 60, 255))
+        return paint
+    img = palette([leaf, flower((255, 150, 190, 255)), flower((255, 255, 255, 255)),
+                   flower((130, 170, 255, 255)), flower((255, 200, 90, 255))])
+    elements = [
+        cube("Kranz vorne", [1.4, t - 1, 1.4], [14.6, t, 2.6], uv(0)),
+        cube("Kranz hinten", [1.4, t - 1, 13.4], [14.6, t, 14.6], uv(0)),
+        cube("Kranz links", [1.4, t - 1, 2.6], [2.6, t, 13.4], uv(0)),
+        cube("Kranz rechts", [13.4, t - 1, 2.6], [14.6, t, 13.4], uv(0)),
+    ]
+    spots = [(3, 1.2), (7, 1.0), (11, 1.2), (13.2, 5), (13.2, 10), (11, 13.2), (6.5, 13.2), (1.2, 10.5), (1.2, 5.5)]
+    for i, (x, z) in enumerate(spots):
+        elements.append(cube("Blume", [x, t - 0.6, z], [x + 1.8, t + 0.8, z + 1.8], uv(1 + i % 4)))
+    write_cosmetic("flower_crown", elements, img, center_y=t, gui_scale=0.7)
+
+    # Teufelshörner
+    red, red_dark = (200, 30, 40, 255), (140, 16, 24, 255)
+    img = palette([red, red_dark])
+    horn = [cube("Horn", [4, t, 6], [6, t + 1.5, 8], uv(0)),
+            cube("Horn Mitte", [4.5, t + 1.5, 6.3], [5.8, t + 3, 7.7], uv(0)),
+            cube("Hornspitze", [5, t + 3, 6.6], [5.8, t + 4, 7.4], uv(1))]
+    write_cosmetic("devil_horns", horn + mirror_x(horn), img, center_y=t + 2, gui_scale=0.8)
+
+
+
+# ------------------------------------------------------- Weitere Haustiere
+# Diese Tiere nutzen die Animationen der vorhandenen Haustiere (gleiche Teile-Namen):
+# Fuchs = Kätzchen, Axolotl = Geist, Panda = Pinguin, Schleim = Pilzchen, Baby-Phönix = Drache.
+def face_region(img, x0, y0, base, eye=(28, 26, 40, 255), eye_w=3, eye_h=4, eye_y=4, gap=5, blush=True, mouth=None):
+    """Malt ein süßes Gesicht in ein 16x16-Feld der Textur."""
+    fill(img, x0, y0, x0 + 16, y0 + 16, base)
+    left = x0 + 8 - gap // 2 - eye_w
+    right = x0 + 8 + (gap + 1) // 2
+    for ex in (left, right):
+        fill(img, ex, y0 + eye_y, ex + eye_w, y0 + eye_y + eye_h, eye)
+        img[y0 + eye_y][ex] = SPARKLE
+    if blush:
+        fill(img, left - 2, y0 + eye_y + eye_h + 1, left, y0 + eye_y + eye_h + 2, BLUSH)
+        fill(img, right + eye_w, y0 + eye_y + eye_h + 1, right + eye_w + 2, y0 + eye_y + eye_h + 2, BLUSH)
+    if mouth:
+        mouth(img, x0, y0)
+
+
+def fox():
+    orange, orange_dark, cream, dark = (236, 124, 44, 255), (200, 96, 30, 255), (252, 244, 232, 255), (58, 40, 34, 255)
+    img = canvas(orange, 32, 32)
+    for x in range(0, 16, 5):
+        fill(img, x, 0, x + 1, 16, orange_dark)
+    # Gesicht wach (uv 8,0 - 16,8): weiße Wangen
+    def muzzle(img, x0, y0):
+        fill(img, x0 + 1, y0 + 9, x0 + 15, y0 + 16, cream)
+    face_region(img, 16, 0, orange, eye_y=4, mouth=muzzle)
+    # Gesicht schlafend (uv 0,8 - 8,16)
+    fill(img, 0, 16, 16, 32, orange)
+    fill(img, 1, 25, 15, 32, cream)
+    for ex in (3, 10):
+        img[22][ex] = img[21][ex + 1] = img[21][ex + 2] = img[22][ex + 3] = dark
+    fill(img, 16, 16, 24, 24, cream)          # Creme (uv 8,8 - 12,12)
+    fill(img, 24, 16, 32, 24, dark)           # Pfoten/Nase (uv 12,8 - 16,12)
+    fill(img, 16, 24, 24, 32, orange)         # Schwanz (uv 8,12 - 12,16)
+    fill(img, 16, 24, 24, 26, orange_dark)
+
+    fur, face, sleep_face, cream_uv, dark_uv, tail_uv = [0, 0, 8, 8], [8, 0, 16, 8], [0, 8, 8, 16], [8, 8, 12, 12], [12, 8, 16, 12], [8, 12, 12, 16]
+    body = [
+        faces(cube("Körper", [5.5, 4, 7], [10.5, 8, 11], fur), north=cream_uv),
+        faces(cube("Kopf", [4.5, 8, 5], [11.5, 12.5, 10.5], fur), north=face),
+        faces(cube("Schnauze", [6.5, 8, 3.5], [9.5, 10, 5], cream_uv), north=cream_uv),
+        cube("Nase", [7.5, 9.25, 3.25], [8.5, 10, 3.5], dark_uv),
+        faces(cube("Ohr links", [4.5, 12.5, 6.5], [6.75, 15, 7.5], fur), north=dark_uv),
+        faces(cube("Ohr rechts", [9.25, 12.5, 6.5], [11.5, 15, 7.5], fur), north=dark_uv),
+        cube("Pfote links", [6, 4, 6], [7.5, 5, 7], dark_uv),
+        cube("Pfote rechts", [8.5, 4, 6], [10, 5, 7], dark_uv),
+    ]
+    tail = [
+        cube("Schwanz", [6.5, 7, 8], [9.5, 10.5, 14], tail_uv),
+        cube("Schwanzspitze", [6.75, 7.25, 14], [9.25, 10.25, 16.5], cream_uv),
+    ]
+    sleep = [
+        cube("Körper", [4.5, 4, 6.5], [11.5, 8, 11.5], fur),
+        faces(cube("Kopf", [5, 4, 2.5], [11, 8.5, 7], fur), north=sleep_face),
+        faces(cube("Ohr links", [5, 8.5, 4], [7, 10.5, 5], fur), north=dark_uv),
+        faces(cube("Ohr rechts", [9, 8.5, 4], [11, 10.5, 5], fur), north=dark_uv),
+        cube("Schwanz", [2.5, 4, 1.5], [5, 7, 11.5], tail_uv),
+        cube("Schwanz vorne", [2.5, 4, 0], [9.5, 6.5, 2.5], tail_uv),
+        cube("Schwanzspitze", [9.5, 4, 0], [11.5, 6.5, 2.5], cream_uv),
+    ]
+    write_cosmetic("fox", body + shift(tail, 0, -3, 3), img, display_settings=PET_DISPLAY)
+    write_extra_model("fox_body", "fox", body)
+    write_extra_model("fox_tail", "fox", tail)
+    write_extra_model("fox_sleep", "fox", sleep)
+
+
+def axolotl():
+    pink, pink_dark, gill, gill_dark = (255, 172, 200, 255), (236, 140, 172, 255), (236, 70, 130, 255), (190, 40, 100, 255)
+    img = canvas(pink, 32, 32)
+    fill(img, 0, 12, 16, 16, pink_dark)                               # Körper (uv 0,0 - 8,8)
+    def smile(img, x0, y0):
+        img[y0 + 11][x0 + 6] = img[y0 + 11][x0 + 9] = (120, 50, 70, 255)
+        fill(img, x0 + 7, y0 + 12, x0 + 9, y0 + 13, (120, 50, 70, 255))
+    face_region(img, 16, 0, pink, eye_w=2, eye_h=3, eye_y=5, gap=8, mouth=smile)   # Gesicht (uv 8,0 - 16,8)
+    fill(img, 0, 16, 16, 32, gill)                                     # Kiemen (uv 0,8 - 8,16)
+    fill(img, 0, 28, 16, 32, gill_dark)
+    fill(img, 16, 16, 24, 24, pink_dark)                               # Beine/Flosse (uv 8,8 - 12,12)
+
+    body_uv, face, gill_uv, fin = [0, 0, 8, 8], [8, 0, 16, 8], [0, 8, 8, 16], [8, 8, 12, 12]
+    elements = [
+        faces(cube("Kopf", [3.5, 6, 2], [12.5, 11, 6.5], body_uv), north=face),
+        cube("Körper", [4.5, 6, 6.5], [11.5, 9.5, 13], body_uv),
+        cube("Schwanzflosse", [7.25, 6.5, 13], [8.75, 10, 17], fin),
+        cube("Bein vorne links", [3.5, 5, 7], [4.5, 6.5, 8.5], fin),
+        cube("Bein vorne rechts", [11.5, 5, 7], [12.5, 6.5, 8.5], fin),
+        cube("Bein hinten links", [3.5, 5, 11], [4.5, 6.5, 12.5], fin),
+        cube("Bein hinten rechts", [11.5, 5, 11], [12.5, 6.5, 12.5], fin),
+    ]
+    for y in (7, 8.75, 10.5):
+        elements.append(cube("Kieme links", [1.5, y, 3.5], [3.5, y + 1, 4.5], gill_uv))
+        elements.append(cube("Kieme rechts", [12.5, y, 3.5], [14.5, y + 1, 4.5], gill_uv))
+    write_cosmetic("axolotl", elements, img, display_settings=PET_DISPLAY)
+
+
+def panda():
+    white, shade, black = (246, 246, 242, 255), (222, 222, 216, 255), (36, 34, 40, 255)
+    img = canvas(white, 32, 32)
+    fill(img, 0, 12, 16, 16, shade)                                    # Körper (uv 0,0 - 8,8)
+    fill(img, 16, 0, 32, 16, white)                                    # Bauch (uv 8,0 - 16,8)
+    # Gesicht (uv 0,8 - 8,16): schwarze Augenflecken mit glänzenden Augen
+    fill(img, 0, 16, 16, 32, white)
+    fill(img, 1, 19, 6, 25, black)
+    fill(img, 10, 19, 15, 25, black)
+    for ex in (3, 11):
+        fill(img, ex, 20, ex + 2, 23, (250, 250, 250, 255))
+        fill(img, ex, 21, ex + 2, 23, (20, 20, 26, 255))
+    fill(img, 7, 25, 9, 26, black)
+    fill(img, 1, 26, 3, 27, BLUSH)
+    fill(img, 13, 26, 15, 27, BLUSH)
+    fill(img, 16, 16, 24, 24, black)                                   # Schwarz (uv 8,8 - 12,12)
+
+    fur, belly, face, dark = [0, 0, 8, 8], [8, 0, 16, 8], [0, 8, 8, 16], [8, 8, 12, 12]
+    body = [
+        faces(cube("Körper", [4.5, 2, 5.5], [11.5, 8, 11.5], fur), north=belly),
+        cube("Schulterband", [4.4, 6.5, 5.4], [11.6, 8, 11.6], dark),
+        faces(cube("Kopf", [4.5, 8, 5.5], [11.5, 13.5, 11.5], fur), north=face),
+        cube("Schnauze", [7, 8.5, 5], [9, 10, 5.5], fur),
+        cube("Ohr links", [4.5, 13.5, 7], [6.5, 15, 8.5], dark),
+        cube("Ohr rechts", [9.5, 13.5, 7], [11.5, 15, 8.5], dark),
+        cube("Fuß links", [5, 1, 5], [7.25, 2, 8], dark),
+        cube("Fuß rechts", [8.75, 1, 5], [11, 2, 8], dark),
+    ]
+    arm_a = [cube("Arm", [8, 3.5, 7], [9.2, 8, 10], dark)]
+    arm_b = [cube("Arm", [6.8, 3.5, 7], [8, 8, 10], dark)]
+    write_cosmetic("panda", body + shift(arm_a, 3.5, 0, 0.5) + shift(arm_b, -3.5, 0, 0.5), img, display_settings=PET_DISPLAY)
+    write_extra_model("panda_body", "panda", body)
+    write_extra_model("panda_flipper_a", "panda", arm_a)
+    write_extra_model("panda_flipper_b", "panda", arm_b)
+
+
+def slime():
+    outer, outer_dark, core = (120, 220, 100, 200), (90, 190, 80, 200), (70, 170, 60, 255)
+    img = canvas(outer, 32, 32)
+    fill(img, 0, 13, 16, 16, outer_dark)                               # Außen (uv 0,0 - 8,8)
+    def smile(img, x0, y0):
+        fill(img, x0 + 6, y0 + 11, x0 + 10, y0 + 12, (40, 90, 40, 255))
+    face_region(img, 16, 0, outer, eye=(30, 70, 30, 255), eye_w=3, eye_h=3, eye_y=5, gap=4, mouth=smile)
+    fill(img, 0, 16, 16, 32, core)                                     # Kern (uv 0,8 - 8,16)
+
+    elements = [
+        faces(cube("Hülle", [3, 1, 3], [13, 11, 13], [0, 0, 8, 8]), north=[8, 0, 16, 8]),
+        cube("Kern", [5.5, 3, 5.5], [10.5, 8, 10.5], [0, 8, 8, 16]),
+    ]
+    write_cosmetic("slime", elements, img, display_settings=PET_DISPLAY)
+
+
+def baby_phoenix():
+    red, orange, yellow, beak = (230, 60, 40, 255), (255, 140, 40, 255), (255, 214, 70, 255), (255, 190, 60, 255)
+    img = canvas(red, 32, 32)
+    for y in range(16):
+        fill(img, 0, y, 16, y + 1, red if y < 6 else orange if y < 12 else yellow)    # Federn (uv 0,0 - 8,8)
+    face_region(img, 16, 0, orange, eye_w=3, eye_h=3, eye_y=5, gap=6)                   # Gesicht (uv 8,0 - 16,8)
+    for y in range(16, 32):                                                             # Flügel (uv 0,8 - 8,16)
+        fill(img, 0, y, 16, y + 1, red if y < 22 else orange if y < 28 else yellow)
+    fill(img, 16, 16, 24, 24, beak)                                                     # Schnabel (uv 8,8 - 12,12)
+    fill(img, 24, 16, 32, 24, yellow)                                                   # Flamme (uv 12,8 - 16,12)
+    fill(img, 24, 16, 32, 19, (255, 250, 200, 255))
+
+    feathers, face, wing_uv, beak_uv, flame = [0, 0, 8, 8], [8, 0, 16, 8], [0, 8, 8, 16], [8, 8, 12, 12], [12, 8, 16, 12]
+    body = [
+        cube("Körper", [5, 5, 6], [11, 10, 11], feathers),
+        faces(cube("Kopf", [5.5, 9, 2.5], [10.5, 13.5, 7], feathers), north=face),
+        cube("Schnabel", [7.25, 10, 1.5], [8.75, 11.5, 2.5], beak_uv),
+        cube("Flammenkrone", [7, 13.5, 4], [9, 15.5, 6], flame),
+        cube("Flammenkrone Spitze", [7.5, 15.5, 4.5], [8.5, 17, 5.5], flame),
+        cube("Schwanzfeder links", [6, 6, 11], [7.5, 7.5, 16], feathers),
+        cube("Schwanzfeder mitte", [7.25, 6.5, 11], [8.75, 8, 17], flame),
+        cube("Schwanzfeder rechts", [8.5, 6, 11], [10, 7.5, 16], feathers),
+        cube("Fuß links", [6, 4, 7], [7.5, 5, 8.5], beak_uv),
+        cube("Fuß rechts", [8.5, 4, 7], [10, 5, 8.5], beak_uv),
+    ]
+    wing_a = [cube("Flügel", [8, 8, 7], [15, 8.75, 12], wing_uv),
+              cube("Flügelspitze", [15, 8, 8], [17, 8.75, 11], flame)]
+    wing_b = [cube("Flügel", [1, 8, 7], [8, 8.75, 12], wing_uv),
+              cube("Flügelspitze", [-1, 8, 8], [1, 8.75, 11], flame)]
+    write_cosmetic("baby_phoenix", body + shift(wing_a, 3, 2, 0.5) + shift(wing_b, -3, 2, 0.5), img, display_settings=PET_DISPLAY)
+    write_extra_model("baby_phoenix_body", "baby_phoenix", body)
+    write_extra_model("baby_phoenix_wing_a", "baby_phoenix", wing_a)
+    write_extra_model("baby_phoenix_wing_b", "baby_phoenix", wing_b)
+
+
 def pack_meta():
     meta = {"pack": {"description": "NexusCosmetics – 3D-Cosmetics", "min_format": 97, "max_format": 100}}
     ROOT.mkdir(parents=True, exist_ok=True)
@@ -1257,4 +1760,15 @@ if __name__ == "__main__":
     owl()
     emojis()
     crate()
+    wings("angel_wings", "angel")
+    wings("demon_wings", "demon")
+    wings("butterfly_wings", "butterfly")
+    wings("dragon_wings", "dragon")
+    wings("fairy_wings", "pixie")
+    new_hats()
+    fox()
+    axolotl()
+    panda()
+    slime()
+    baby_phoenix()
     print("Assets erzeugt in", ROOT)

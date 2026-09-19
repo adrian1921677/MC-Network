@@ -8,7 +8,7 @@
 #   slot: HEAD | BACK | PET     Kopf, Rücken oder Haustier
 #   type: ...                   Besonderes Verhalten:
 #                                 HEAD: NONE (normaler Hut), TALKING (sprechender Hut), HALO (schwebend)
-#                                 BACK: NONE (Cape), ROBE (langer Umhang)
+#                                 BACK: NONE (Cape), ROBE (langer Umhang), WINGS (Flügel)
 #                                 PET:  GHOST, DRAGON, PENGUIN, KITTEN, BEE, MUSHROOM, OWL
 #   glowing: true/false         Leuchtet im Dunkeln (Capes, Haustiere, Heiligenschein)
 #   unlocked-by-default: true   Jeder Spieler darf es benutzen. Sonst braucht man die Permission
@@ -60,6 +60,86 @@ cosmetics:
     glowing: true
     unlocked-by-default: false
     rarity: EPIC
+  viking_helmet:
+    enabled: true
+    name: "<#A4AAB4>Wikingerhelm"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: RARE
+  cowboy_hat:
+    enabled: true
+    name: "<#96623A>Cowboyhut"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: COMMON
+  witch_hat:
+    enabled: true
+    name: "<#7C3EB2>Hexenhut"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: RARE
+  santa_hat:
+    enabled: true
+    name: "<red>Weihnachtsmütze"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: COMMON
+  party_hat:
+    enabled: true
+    name: "<gradient:#FF5A78:#FFD646:#5ABEFF>Partyhut</gradient>"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: COMMON
+  cat_ears:
+    enabled: true
+    name: "<#FFAABE>Katzenohren"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: COMMON
+  bunny_ears:
+    enabled: true
+    name: "<white>Hasenohren"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: COMMON
+  headphones:
+    enabled: true
+    name: "<#40D6E8>Kopfhörer"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: RARE
+  flower_crown:
+    enabled: true
+    name: "<#FF96BE>Blumenkranz"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: RARE
+  devil_horns:
+    enabled: true
+    name: "<#C81E28>Teufelshörner"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: RARE
   royal_cape:
     enabled: true
     name: "<red>Königsumhang"
@@ -106,6 +186,46 @@ cosmetics:
     slot: BACK
     type: ROBE
     glowing: false
+    unlocked-by-default: false
+    rarity: RARE
+  angel_wings:
+    enabled: true
+    name: "<white>Engelsflügel"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+  demon_wings:
+    enabled: true
+    name: "<#961A28>Dämonenflügel"
+    slot: BACK
+    type: WINGS
+    glowing: false
+    unlocked-by-default: false
+    rarity: EPIC
+  butterfly_wings:
+    enabled: true
+    name: "<#46A0FF>Schmetterlingsflügel"
+    slot: BACK
+    type: WINGS
+    glowing: false
+    unlocked-by-default: false
+    rarity: RARE
+  dragon_wings:
+    enabled: true
+    name: "<#46A050>Drachenflügel"
+    slot: BACK
+    type: WINGS
+    glowing: false
+    unlocked-by-default: false
+    rarity: LEGENDARY
+  fairy_wings:
+    enabled: true
+    name: "<gradient:#FFAADC:#96E6FF>Feenflügel</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
     unlocked-by-default: false
     rarity: RARE
   mini_dragon:
@@ -164,3 +284,43 @@ cosmetics:
     glowing: false
     unlocked-by-default: false
     rarity: EPIC
+  fox:
+    enabled: true
+    name: "<#EC7C2C>Fuchs"
+    slot: PET
+    type: KITTEN
+    glowing: false
+    unlocked-by-default: false
+    rarity: EPIC
+  axolotl:
+    enabled: true
+    name: "<#FFACC8>Axolotl"
+    slot: PET
+    type: GHOST
+    glowing: false
+    unlocked-by-default: false
+    rarity: RARE
+  panda:
+    enabled: true
+    name: "<white>Baby-Panda"
+    slot: PET
+    type: PENGUIN
+    glowing: false
+    unlocked-by-default: false
+    rarity: EPIC
+  slime:
+    enabled: true
+    name: "<#78DC64>Schleim"
+    slot: PET
+    type: MUSHROOM
+    glowing: false
+    unlocked-by-default: false
+    rarity: COMMON
+  baby_phoenix:
+    enabled: true
+    name: "<gradient:#E63C28:#FFD646>Baby-Phönix</gradient>"
+    slot: PET
+    type: DRAGON
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY

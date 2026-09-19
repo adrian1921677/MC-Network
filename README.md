@@ -6,11 +6,13 @@
 
 ## Features
 
-- **Hüte** mit echten 3D-Modellen, inklusive **sprechendem Hut** (Sprechblase, Mundbewegung, Team-Zuteilung) und schwebendem **Heiligenschein**
+- **14 Hüte** mit echten 3D-Modellen, inklusive **sprechendem Hut** (Sprechblase, Mundbewegung, Team-Zuteilung) und schwebendem **Heiligenschein**
 - **Capes und Zauberumhänge mit Stoff-Physik**: schwingen beim Laufen, flattern im Fahrtwind, schwingen beim Drehen zur Seite
-- **Haustiere mit eigener Persönlichkeit**: Drache, Geist, Pinguin, Kätzchen, Bienchen, Pilzchen, Eule, jeweils mit besonderen Animationen
+- **Flügel** (Engel, Dämon, Schmetterling, Drache, Fee): schlagen, breiten sich beim Fallen aus, falten sich beim Schleichen
+- **12 Haustiere mit eigener Persönlichkeit**: Drache, Geist, Pinguin, Kätzchen, Bienchen, Pilzchen, Eule, Fuchs, Axolotl, Panda, Schleim, Baby-Phönix
 - **Emotes**: animierte 3D-Emojis über dem Kopf und Körper-Posen (Sitzen, Liegen, Tanzen …)
 - **Automatisches Resource Pack**: eingebauter Download-Server, eigene Modelle werden automatisch eingebaut
+- **Cosmetic-Truhen** mit Öffnungs-Animation, Seltenheiten und Shop-Befehlen
 - **Voll konfigurierbar**: Cosmetics und Emotes an/aus, Namen, freie oder Premium-Inhalte, eigene Cosmetics, Deutsch und Englisch
 - Paket-basierte Cosmetics stören keine anderen Plugins (Teleports, Weltwechsel, Minigames)
 

@@ -62,9 +62,9 @@ public final class CosmeticRegistry {
     private static boolean fits(CosmeticSlot slot, CosmeticAnimation animation) {
         return switch (slot) {
             case HEAD -> List.of(CosmeticAnimation.NONE, CosmeticAnimation.TALKING, CosmeticAnimation.HALO).contains(animation);
-            case BACK -> List.of(CosmeticAnimation.NONE, CosmeticAnimation.ROBE).contains(animation);
-            case PET -> !List.of(CosmeticAnimation.NONE, CosmeticAnimation.ROBE, CosmeticAnimation.TALKING,
-                    CosmeticAnimation.HALO).contains(animation);
+            case BACK -> List.of(CosmeticAnimation.NONE, CosmeticAnimation.ROBE, CosmeticAnimation.WINGS).contains(animation);
+            case PET -> !List.of(CosmeticAnimation.NONE, CosmeticAnimation.ROBE, CosmeticAnimation.WINGS,
+                    CosmeticAnimation.TALKING, CosmeticAnimation.HALO).contains(animation);
         };
     }
 

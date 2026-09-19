@@ -17,6 +17,8 @@ public enum CosmeticAnimation {
     // Capes
     /** Langer Umhang bis zu den Knöcheln, schwerer Stoff */
     ROBE,
+    /** Schlagende Flügel (Modell besteht aus _wing_a und _wing_b) */
+    WINGS,
 
     // Kopf
     /** Hut, der spricht (Sprechblase + Mundbewegung) */
