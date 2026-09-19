@@ -6,6 +6,9 @@
 
 ## Features
 
+**174 Cosmetics** (rund 59 Hüte, 57 Rückenteile, 56 Haustiere) und 13 Emotes, darunter **20 Element-Welten** als Sammel-Sets mit animierten, leuchtenden Texturen und Partikel-Auren.
+
+
 - **14 Hüte** mit echten 3D-Modellen, inklusive **sprechendem Hut** (Sprechblase, Mundbewegung, Team-Zuteilung) und schwebendem **Heiligenschein**
 - **Capes und Zauberumhänge mit Stoff-Physik**: schwingen beim Laufen, flattern im Fahrtwind, schwingen beim Drehen zur Seite
 - **Flügel** (Engel, Dämon, Schmetterling, Drache, Fee): schlagen, breiten sich beim Fallen aus, falten sich beim Schleichen
@@ -53,7 +56,7 @@ Benötigt Java 25.
 ```bash
 ./gradlew build       # Plugin bauen -> build/libs/
 ./gradlew runServer   # Testserver mit Plugin starten
-python tools/generate_assets.py   # 3D-Modelle und Texturen neu erzeugen
+python tools/generate_assets.py   # 3D-Modelle und Texturen neu erzeugen (inkl. tools/themes.py)
 ```
 
 Die Modelle in `src/main/resources/pack/assets/nexus/models/item/` lassen sich in Blockbench öffnen.

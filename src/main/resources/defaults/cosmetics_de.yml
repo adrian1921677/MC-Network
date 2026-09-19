@@ -186,6 +186,406 @@ cosmetics:
     glowing: false
     unlocked-by-default: false
     rarity: RARE
+  inferno_crown:
+    enabled: true
+    name: "<gradient:#FF6A10:#FFE27A:#FFFFFF>Inferno-Krone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: FLAME
+  inferno_horns:
+    enabled: true
+    name: "<gradient:#FF6A10:#FFE27A:#FFFFFF>Inferno-Hörner</gradient>"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: FLAME
+  frost_crown:
+    enabled: true
+    name: "<gradient:#8FD8FF:#E8FAFF:#5AB4FF>Frost-Krone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: SNOWFLAKE
+  frost_orbit:
+    enabled: true
+    name: "<gradient:#8FD8FF:#E8FAFF:#5AB4FF>Frost-Splitterkranz</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.2
+    particle: SNOWFLAKE
+  storm_crown:
+    enabled: true
+    name: "<gradient:#2E3A78:#E8F4FF:#6AD8FF>Sturm-Krone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: ELECTRIC_SPARK
+  storm_horns:
+    enabled: true
+    name: "<gradient:#2E3A78:#E8F4FF:#6AD8FF>Sturm-Hörner</gradient>"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: ELECTRIC_SPARK
+  forest_crown:
+    enabled: true
+    name: "<gradient:#4CA84C:#B6F07A:#FFE066>Wald-Krone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: FIREFLY
+  forest_orbit:
+    enabled: true
+    name: "<gradient:#4CA84C:#B6F07A:#FFE066>Wald-Splitterkranz</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.2
+    particle: FIREFLY
+  shadow_crown:
+    enabled: true
+    name: "<gradient:#3A2458:#9A70D8:#C090FF>Schatten-Krone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: SMOKE
+  shadow_horns:
+    enabled: true
+    name: "<gradient:#3A2458:#9A70D8:#C090FF>Schatten-Hörner</gradient>"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: SMOKE
+  heaven_crown:
+    enabled: true
+    name: "<gradient:#FFF4D0:#FFFFFF:#FFD35A>Himmelskrone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: END_ROD
+  heaven_orbit:
+    enabled: true
+    name: "<gradient:#FFF4D0:#FFFFFF:#FFD35A>Himmelssplitterkranz</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.2
+    particle: END_ROD
+  ocean_crown:
+    enabled: true
+    name: "<gradient:#1E78C8:#9AE8FF:#FFFFFF>Ozean-Krone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: DRIPPING_WATER
+  ocean_horns:
+    enabled: true
+    name: "<gradient:#1E78C8:#9AE8FF:#FFFFFF>Ozean-Hörner</gradient>"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: DRIPPING_WATER
+  crystal_crown:
+    enabled: true
+    name: "<gradient:#9A5AE8:#F0D8FF:#FFFFFF>Kristall-Krone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: WAX_OFF
+  crystal_orbit:
+    enabled: true
+    name: "<gradient:#9A5AE8:#F0D8FF:#FFFFFF>Kristall-Splitterkranz</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.2
+    particle: WAX_OFF
+  neon_crown:
+    enabled: true
+    name: "<gradient:#FF3CCB:#FFFFFF:#2CF0FF>Neon-Krone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: GLOW
+  neon_horns:
+    enabled: true
+    name: "<gradient:#FF3CCB:#FFFFFF:#2CF0FF>Neon-Hörner</gradient>"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: GLOW
+  candy_crown:
+    enabled: true
+    name: "<gradient:#FF9AC8:#FFFFFF:#8AF0C8>Zucker-Krone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: HEART
+  candy_orbit:
+    enabled: true
+    name: "<gradient:#FF9AC8:#FFFFFF:#8AF0C8>Zucker-Splitterkranz</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.2
+    particle: HEART
+  cosmos_crown:
+    enabled: true
+    name: "<gradient:#5A2AA0:#FFFFFF:#2AA8FF><b>Galaxie-Krone</b></gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: ULTRA
+    scale: 1.3
+    particle: END_ROD
+  cosmos_horns:
+    enabled: true
+    name: "<gradient:#5A2AA0:#FFFFFF:#2AA8FF>Galaxie-Hörner</gradient>"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: END_ROD
+  bloodmoon_crown:
+    enabled: true
+    name: "<gradient:#8A0A1A:#FF3A4A:#1A0206>Blutmond-Krone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: DAMAGE_INDICATOR
+  bloodmoon_orbit:
+    enabled: true
+    name: "<gradient:#8A0A1A:#FF3A4A:#1A0206>Blutmond-Splitterkranz</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.2
+    particle: DAMAGE_INDICATOR
+  regal_crown:
+    enabled: true
+    name: "<gradient:#E8B43A:#FFF0A0:#E02A4A>Königskrone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: WAX_ON
+  regal_horns:
+    enabled: true
+    name: "<gradient:#E8B43A:#FFF0A0:#E02A4A>Königshörner</gradient>"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: WAX_ON
+  sakura_crown:
+    enabled: true
+    name: "<gradient:#FFB0D2:#FFF0F6:#FF6AA8>Kirschblüten-Krone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: CHERRY_LEAVES
+  sakura_orbit:
+    enabled: true
+    name: "<gradient:#FFB0D2:#FFF0F6:#FF6AA8>Kirschblüten-Splitterkranz</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.2
+    particle: CHERRY_LEAVES
+  magma_crown:
+    enabled: true
+    name: "<gradient:#FF5A0A:#FFD24A:#FF8A2A>Magma-Krone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: LAVA
+  magma_horns:
+    enabled: true
+    name: "<gradient:#FF5A0A:#FFD24A:#FF8A2A>Magma-Hörner</gradient>"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: LAVA
+  toxic_crown:
+    enabled: true
+    name: "<gradient:#5AD21E:#E6FF7A:#2AFF6A>Gift-Krone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: NOXIOUS_GAS
+  toxic_orbit:
+    enabled: true
+    name: "<gradient:#5AD21E:#E6FF7A:#2AFF6A>Gift-Splitterkranz</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.2
+    particle: NOXIOUS_GAS
+  rainbow_crown:
+    enabled: true
+    name: "<gradient:#FF6AA8:#FFFFFF:#6AE8FF><b>Regenbogen-Krone</b></gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: ULTRA
+    scale: 1.3
+    particle: END_ROD
+  rainbow_horns:
+    enabled: true
+    name: "<gradient:#FF6AA8:#FFFFFF:#6AE8FF>Regenbogen-Hörner</gradient>"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: END_ROD
+  void_crown:
+    enabled: true
+    name: "<gradient:#4A0A8A:#D070FF:#FF3CF0><b>Leere-Krone</b></gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: ULTRA
+    scale: 1.3
+    particle: REVERSE_PORTAL
+  void_orbit:
+    enabled: true
+    name: "<gradient:#4A0A8A:#D070FF:#FF3CF0>Leere-Splitterkranz</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.2
+    particle: REVERSE_PORTAL
+  steampunk_crown:
+    enabled: true
+    name: "<gradient:#B8823A:#F0C878:#6AD8C8>Messing-Krone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: WHITE_SMOKE
+  steampunk_horns:
+    enabled: true
+    name: "<gradient:#B8823A:#F0C878:#6AD8C8>Messing-Hörner</gradient>"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: WHITE_SMOKE
+  spooky_crown:
+    enabled: true
+    name: "<gradient:#4A2A6A:#9AFFB8:#FF8A2A>Spuk-Krone</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.1
+    particle: SCULK_SOUL
+  spooky_orbit:
+    enabled: true
+    name: "<gradient:#4A2A6A:#9AFFB8:#FF8A2A>Spuk-Splitterkranz</gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.2
+    particle: SCULK_SOUL
   royal_cape:
     enabled: true
     name: "<red>Königsumhang"
@@ -336,6 +736,406 @@ cosmetics:
     glowing: false
     unlocked-by-default: false
     rarity: RARE
+  inferno_wings:
+    enabled: true
+    name: "<gradient:#FF6A10:#FFE27A:#FFFFFF>Inferno-Schwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: FLAME
+  inferno_cape:
+    enabled: true
+    name: "<gradient:#FF6A10:#FFE27A:#FFFFFF>Inferno-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: FLAME
+  frost_wings:
+    enabled: true
+    name: "<gradient:#8FD8FF:#E8FAFF:#5AB4FF>Frost-Schwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: SNOWFLAKE
+  frost_cape:
+    enabled: true
+    name: "<gradient:#8FD8FF:#E8FAFF:#5AB4FF>Frost-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: SNOWFLAKE
+  storm_wings:
+    enabled: true
+    name: "<gradient:#2E3A78:#E8F4FF:#6AD8FF>Sturm-Schwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: ELECTRIC_SPARK
+  storm_cape:
+    enabled: true
+    name: "<gradient:#2E3A78:#E8F4FF:#6AD8FF>Sturm-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: ELECTRIC_SPARK
+  forest_wings:
+    enabled: true
+    name: "<gradient:#4CA84C:#B6F07A:#FFE066>Wald-Schwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: FIREFLY
+  forest_cape:
+    enabled: true
+    name: "<gradient:#4CA84C:#B6F07A:#FFE066>Wald-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: FIREFLY
+  shadow_wings:
+    enabled: true
+    name: "<gradient:#3A2458:#9A70D8:#C090FF>Schatten-Schwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: SMOKE
+  shadow_cape:
+    enabled: true
+    name: "<gradient:#3A2458:#9A70D8:#C090FF>Schatten-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: SMOKE
+  heaven_wings:
+    enabled: true
+    name: "<gradient:#FFF4D0:#FFFFFF:#FFD35A>Himmelsschwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: END_ROD
+  heaven_cape:
+    enabled: true
+    name: "<gradient:#FFF4D0:#FFFFFF:#FFD35A>Himmelsumhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: END_ROD
+  ocean_wings:
+    enabled: true
+    name: "<gradient:#1E78C8:#9AE8FF:#FFFFFF>Ozean-Schwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: DRIPPING_WATER
+  ocean_cape:
+    enabled: true
+    name: "<gradient:#1E78C8:#9AE8FF:#FFFFFF>Ozean-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: DRIPPING_WATER
+  crystal_wings:
+    enabled: true
+    name: "<gradient:#9A5AE8:#F0D8FF:#FFFFFF>Kristall-Schwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: WAX_OFF
+  crystal_cape:
+    enabled: true
+    name: "<gradient:#9A5AE8:#F0D8FF:#FFFFFF>Kristall-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: WAX_OFF
+  neon_wings:
+    enabled: true
+    name: "<gradient:#FF3CCB:#FFFFFF:#2CF0FF>Neon-Schwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: GLOW
+  neon_cape:
+    enabled: true
+    name: "<gradient:#FF3CCB:#FFFFFF:#2CF0FF>Neon-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: GLOW
+  candy_wings:
+    enabled: true
+    name: "<gradient:#FF9AC8:#FFFFFF:#8AF0C8>Zucker-Schwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: HEART
+  candy_cape:
+    enabled: true
+    name: "<gradient:#FF9AC8:#FFFFFF:#8AF0C8>Zucker-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: HEART
+  cosmos_wings:
+    enabled: true
+    name: "<gradient:#5A2AA0:#FFFFFF:#2AA8FF><b>Galaxie-Schwingen</b></gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: ULTRA
+    scale: 1.45
+    particle: END_ROD
+  cosmos_cape:
+    enabled: true
+    name: "<gradient:#5A2AA0:#FFFFFF:#2AA8FF>Galaxie-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: END_ROD
+  bloodmoon_wings:
+    enabled: true
+    name: "<gradient:#8A0A1A:#FF3A4A:#1A0206>Blutmond-Schwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: DAMAGE_INDICATOR
+  bloodmoon_cape:
+    enabled: true
+    name: "<gradient:#8A0A1A:#FF3A4A:#1A0206>Blutmond-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: DAMAGE_INDICATOR
+  regal_wings:
+    enabled: true
+    name: "<gradient:#E8B43A:#FFF0A0:#E02A4A>Königsschwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: WAX_ON
+  regal_cape:
+    enabled: true
+    name: "<gradient:#E8B43A:#FFF0A0:#E02A4A>Königsumhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: WAX_ON
+  sakura_wings:
+    enabled: true
+    name: "<gradient:#FFB0D2:#FFF0F6:#FF6AA8>Kirschblüten-Schwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: CHERRY_LEAVES
+  sakura_cape:
+    enabled: true
+    name: "<gradient:#FFB0D2:#FFF0F6:#FF6AA8>Kirschblüten-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: CHERRY_LEAVES
+  magma_wings:
+    enabled: true
+    name: "<gradient:#FF5A0A:#FFD24A:#FF8A2A>Magma-Schwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: LAVA
+  magma_cape:
+    enabled: true
+    name: "<gradient:#FF5A0A:#FFD24A:#FF8A2A>Magma-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: LAVA
+  toxic_wings:
+    enabled: true
+    name: "<gradient:#5AD21E:#E6FF7A:#2AFF6A>Gift-Schwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: NOXIOUS_GAS
+  toxic_cape:
+    enabled: true
+    name: "<gradient:#5AD21E:#E6FF7A:#2AFF6A>Gift-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: NOXIOUS_GAS
+  rainbow_wings:
+    enabled: true
+    name: "<gradient:#FF6AA8:#FFFFFF:#6AE8FF><b>Regenbogen-Schwingen</b></gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: ULTRA
+    scale: 1.45
+    particle: END_ROD
+  rainbow_cape:
+    enabled: true
+    name: "<gradient:#FF6AA8:#FFFFFF:#6AE8FF>Regenbogen-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: END_ROD
+  void_wings:
+    enabled: true
+    name: "<gradient:#4A0A8A:#D070FF:#FF3CF0><b>Leere-Schwingen</b></gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: ULTRA
+    scale: 1.45
+    particle: REVERSE_PORTAL
+  void_cape:
+    enabled: true
+    name: "<gradient:#4A0A8A:#D070FF:#FF3CF0>Leere-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: REVERSE_PORTAL
+  steampunk_wings:
+    enabled: true
+    name: "<gradient:#B8823A:#F0C878:#6AD8C8>Messing-Schwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: WHITE_SMOKE
+  steampunk_cape:
+    enabled: true
+    name: "<gradient:#B8823A:#F0C878:#6AD8C8>Messing-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: WHITE_SMOKE
+  spooky_wings:
+    enabled: true
+    name: "<gradient:#4A2A6A:#9AFFB8:#FF8A2A>Spuk-Schwingen</gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.15
+    particle: SCULK_SOUL
+  spooky_cape:
+    enabled: true
+    name: "<gradient:#4A2A6A:#9AFFB8:#FF8A2A>Spuk-Umhang</gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.05
+    particle: SCULK_SOUL
   mini_dragon:
     enabled: true
     name: "<#E0533A>Mini-Drache"
@@ -478,3 +1278,403 @@ cosmetics:
     rarity: RARE
     scale: 1.0
     particle: WAX_OFF
+  inferno_drake:
+    enabled: true
+    name: "<gradient:#FF6A10:#FFE27A:#FFFFFF>Inferno-Drache</gradient>"
+    slot: PET
+    type: DRAGON
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: FLAME
+  inferno_blob:
+    enabled: true
+    name: "<gradient:#FF6A10:#FFE27A:#FFFFFF>Inferno-Schleim</gradient>"
+    slot: PET
+    type: MUSHROOM
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: FLAME
+  frost_spirit:
+    enabled: true
+    name: "<gradient:#8FD8FF:#E8FAFF:#5AB4FF>Frost-Geist</gradient>"
+    slot: PET
+    type: GHOST
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: SNOWFLAKE
+  frost_wisp:
+    enabled: true
+    name: "<gradient:#8FD8FF:#E8FAFF:#5AB4FF>Frost-Irrlicht</gradient>"
+    slot: PET
+    type: BEE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: SNOWFLAKE
+  storm_critter:
+    enabled: true
+    name: "<gradient:#2E3A78:#E8F4FF:#6AD8FF>Sturm-Fuchs</gradient>"
+    slot: PET
+    type: KITTEN
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: ELECTRIC_SPARK
+  storm_owlet:
+    enabled: true
+    name: "<gradient:#2E3A78:#E8F4FF:#6AD8FF>Sturm-Eule</gradient>"
+    slot: PET
+    type: OWL
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: ELECTRIC_SPARK
+  forest_blob:
+    enabled: true
+    name: "<gradient:#4CA84C:#B6F07A:#FFE066>Wald-Schleim</gradient>"
+    slot: PET
+    type: MUSHROOM
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: FIREFLY
+  forest_drake:
+    enabled: true
+    name: "<gradient:#4CA84C:#B6F07A:#FFE066>Wald-Drache</gradient>"
+    slot: PET
+    type: DRAGON
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: FIREFLY
+  shadow_wisp:
+    enabled: true
+    name: "<gradient:#3A2458:#9A70D8:#C090FF>Schatten-Irrlicht</gradient>"
+    slot: PET
+    type: BEE
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: SMOKE
+  shadow_spirit:
+    enabled: true
+    name: "<gradient:#3A2458:#9A70D8:#C090FF>Schatten-Geist</gradient>"
+    slot: PET
+    type: GHOST
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: SMOKE
+  heaven_owlet:
+    enabled: true
+    name: "<gradient:#FFF4D0:#FFFFFF:#FFD35A>Himmelseule</gradient>"
+    slot: PET
+    type: OWL
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: END_ROD
+  heaven_critter:
+    enabled: true
+    name: "<gradient:#FFF4D0:#FFFFFF:#FFD35A>Himmelsfuchs</gradient>"
+    slot: PET
+    type: KITTEN
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: END_ROD
+  ocean_drake:
+    enabled: true
+    name: "<gradient:#1E78C8:#9AE8FF:#FFFFFF>Ozean-Drache</gradient>"
+    slot: PET
+    type: DRAGON
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: DRIPPING_WATER
+  ocean_blob:
+    enabled: true
+    name: "<gradient:#1E78C8:#9AE8FF:#FFFFFF>Ozean-Schleim</gradient>"
+    slot: PET
+    type: MUSHROOM
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: DRIPPING_WATER
+  crystal_spirit:
+    enabled: true
+    name: "<gradient:#9A5AE8:#F0D8FF:#FFFFFF>Kristall-Geist</gradient>"
+    slot: PET
+    type: GHOST
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: WAX_OFF
+  crystal_wisp:
+    enabled: true
+    name: "<gradient:#9A5AE8:#F0D8FF:#FFFFFF>Kristall-Irrlicht</gradient>"
+    slot: PET
+    type: BEE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: WAX_OFF
+  neon_critter:
+    enabled: true
+    name: "<gradient:#FF3CCB:#FFFFFF:#2CF0FF>Neon-Fuchs</gradient>"
+    slot: PET
+    type: KITTEN
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: GLOW
+  neon_owlet:
+    enabled: true
+    name: "<gradient:#FF3CCB:#FFFFFF:#2CF0FF>Neon-Eule</gradient>"
+    slot: PET
+    type: OWL
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: GLOW
+  candy_blob:
+    enabled: true
+    name: "<gradient:#FF9AC8:#FFFFFF:#8AF0C8>Zucker-Schleim</gradient>"
+    slot: PET
+    type: MUSHROOM
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: HEART
+  candy_drake:
+    enabled: true
+    name: "<gradient:#FF9AC8:#FFFFFF:#8AF0C8>Zucker-Drache</gradient>"
+    slot: PET
+    type: DRAGON
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: HEART
+  cosmos_wisp:
+    enabled: true
+    name: "<gradient:#5A2AA0:#FFFFFF:#2AA8FF><b>Galaxie-Irrlicht</b></gradient>"
+    slot: PET
+    type: BEE
+    glowing: true
+    unlocked-by-default: false
+    rarity: ULTRA
+    scale: 1.6
+    particle: END_ROD
+  cosmos_spirit:
+    enabled: true
+    name: "<gradient:#5A2AA0:#FFFFFF:#2AA8FF>Galaxie-Geist</gradient>"
+    slot: PET
+    type: GHOST
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: END_ROD
+  bloodmoon_owlet:
+    enabled: true
+    name: "<gradient:#8A0A1A:#FF3A4A:#1A0206>Blutmond-Eule</gradient>"
+    slot: PET
+    type: OWL
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: DAMAGE_INDICATOR
+  bloodmoon_critter:
+    enabled: true
+    name: "<gradient:#8A0A1A:#FF3A4A:#1A0206>Blutmond-Fuchs</gradient>"
+    slot: PET
+    type: KITTEN
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: DAMAGE_INDICATOR
+  regal_drake:
+    enabled: true
+    name: "<gradient:#E8B43A:#FFF0A0:#E02A4A>Königsdrache</gradient>"
+    slot: PET
+    type: DRAGON
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: WAX_ON
+  regal_blob:
+    enabled: true
+    name: "<gradient:#E8B43A:#FFF0A0:#E02A4A>Königsschleim</gradient>"
+    slot: PET
+    type: MUSHROOM
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: WAX_ON
+  sakura_spirit:
+    enabled: true
+    name: "<gradient:#FFB0D2:#FFF0F6:#FF6AA8>Kirschblüten-Geist</gradient>"
+    slot: PET
+    type: GHOST
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: CHERRY_LEAVES
+  sakura_wisp:
+    enabled: true
+    name: "<gradient:#FFB0D2:#FFF0F6:#FF6AA8>Kirschblüten-Irrlicht</gradient>"
+    slot: PET
+    type: BEE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: CHERRY_LEAVES
+  magma_critter:
+    enabled: true
+    name: "<gradient:#FF5A0A:#FFD24A:#FF8A2A>Magma-Fuchs</gradient>"
+    slot: PET
+    type: KITTEN
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: LAVA
+  magma_owlet:
+    enabled: true
+    name: "<gradient:#FF5A0A:#FFD24A:#FF8A2A>Magma-Eule</gradient>"
+    slot: PET
+    type: OWL
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: LAVA
+  toxic_blob:
+    enabled: true
+    name: "<gradient:#5AD21E:#E6FF7A:#2AFF6A>Gift-Schleim</gradient>"
+    slot: PET
+    type: MUSHROOM
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: NOXIOUS_GAS
+  toxic_drake:
+    enabled: true
+    name: "<gradient:#5AD21E:#E6FF7A:#2AFF6A>Gift-Drache</gradient>"
+    slot: PET
+    type: DRAGON
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: NOXIOUS_GAS
+  rainbow_wisp:
+    enabled: true
+    name: "<gradient:#FF6AA8:#FFFFFF:#6AE8FF><b>Regenbogen-Irrlicht</b></gradient>"
+    slot: PET
+    type: BEE
+    glowing: true
+    unlocked-by-default: false
+    rarity: ULTRA
+    scale: 1.6
+    particle: END_ROD
+  rainbow_spirit:
+    enabled: true
+    name: "<gradient:#FF6AA8:#FFFFFF:#6AE8FF>Regenbogen-Geist</gradient>"
+    slot: PET
+    type: GHOST
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: END_ROD
+  void_owlet:
+    enabled: true
+    name: "<gradient:#4A0A8A:#D070FF:#FF3CF0><b>Leere-Eule</b></gradient>"
+    slot: PET
+    type: OWL
+    glowing: true
+    unlocked-by-default: false
+    rarity: ULTRA
+    scale: 1.6
+    particle: REVERSE_PORTAL
+  void_critter:
+    enabled: true
+    name: "<gradient:#4A0A8A:#D070FF:#FF3CF0>Leere-Fuchs</gradient>"
+    slot: PET
+    type: KITTEN
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: REVERSE_PORTAL
+  steampunk_drake:
+    enabled: true
+    name: "<gradient:#B8823A:#F0C878:#6AD8C8>Messing-Drache</gradient>"
+    slot: PET
+    type: DRAGON
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: WHITE_SMOKE
+  steampunk_blob:
+    enabled: true
+    name: "<gradient:#B8823A:#F0C878:#6AD8C8>Messing-Schleim</gradient>"
+    slot: PET
+    type: MUSHROOM
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: WHITE_SMOKE
+  spooky_spirit:
+    enabled: true
+    name: "<gradient:#4A2A6A:#9AFFB8:#FF8A2A>Spuk-Geist</gradient>"
+    slot: PET
+    type: GHOST
+    glowing: true
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: SCULK_SOUL
+  spooky_wisp:
+    enabled: true
+    name: "<gradient:#4A2A6A:#9AFFB8:#FF8A2A>Spuk-Irrlicht</gradient>"
+    slot: PET
+    type: BEE
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+    scale: 1.0
+    particle: SCULK_SOUL

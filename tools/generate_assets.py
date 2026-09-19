@@ -2434,4 +2434,11 @@ if __name__ == "__main__":
     baby_trex()
     unicorn()
     glow_fairy()
+    # 20 Element-Welten mit je 6 animierten Cosmetics (siehe tools/themes.py)
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import themes
+    themes.setup(globals())
+    themed = themes.generate_all(Path(__file__).resolve().parent / "themed_cosmetics.json")
+    print(len(themed), "Themen-Cosmetics erzeugt")
     print("Assets erzeugt in", ROOT)

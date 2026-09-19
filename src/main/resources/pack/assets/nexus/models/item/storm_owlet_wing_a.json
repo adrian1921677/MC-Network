@@ -1,0 +1,77 @@
+{
+  "textures": {
+    "0": "nexus:item/storm_owlet",
+    "particle": "nexus:item/storm_owlet"
+  },
+  "elements": [
+    {
+      "name": "Fl\u00fcgel",
+      "from": [
+        8,
+        3,
+        6.5
+      ],
+      "to": [
+        9,
+        8,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            0,
+            8,
+            4
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            4,
+            0,
+            8,
+            4
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            4,
+            0,
+            8,
+            4
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            4,
+            0,
+            8,
+            4
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            4,
+            0,
+            8,
+            4
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            4,
+            0,
+            8,
+            4
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}
