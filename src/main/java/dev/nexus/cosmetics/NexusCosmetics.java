@@ -1,6 +1,10 @@
 package dev.nexus.cosmetics;
 
 import dev.nexus.cosmetics.command.CosmeticsCommand;
+import dev.nexus.cosmetics.command.EmoteCommand;
+import dev.nexus.cosmetics.emote.Emote;
+import dev.nexus.cosmetics.emote.EmoteRegistry;
+import dev.nexus.cosmetics.emote.EmoteService;
 import dev.nexus.cosmetics.cosmetic.CosmeticManager;
 import dev.nexus.cosmetics.cosmetic.CosmeticProtectionListener;
 import dev.nexus.cosmetics.cosmetic.CosmeticRegistry;
@@ -25,6 +29,7 @@ public final class NexusCosmetics extends JavaPlugin {
     private CosmeticManager cosmeticManager;
     private FakeCosmeticRenderer renderer;
     private CosmeticStorage storage;
+    private EmoteService emoteService;
     private ResourcePackService resourcePackService;
 
     @Override
@@ -38,18 +43,25 @@ public final class NexusCosmetics extends JavaPlugin {
         storage = new YamlCosmeticStorage(getDataFolder(), getLogger());
         cosmeticManager = new CosmeticManager(this, registry, renderer, storage);
 
+        EmoteRegistry emotes = new EmoteRegistry();
+        emoteService = new EmoteService(this, emotes, renderer);
+        emoteService.start();
+
         resourcePackService = new ResourcePackService(this, getFile());
         resourcePackService.start();
 
         PluginManager pluginManager = getServer().getPluginManager();
-        registerPermissions(pluginManager, registry);
+        registerPermissions(pluginManager, registry, emotes);
         pluginManager.registerEvents(new CosmeticProtectionListener(this, cosmeticManager), this);
         pluginManager.registerEvents(new CosmeticMenuListener(), this);
         pluginManager.registerEvents(renderer, this);
+        pluginManager.registerEvents(emoteService, this);
         pluginManager.registerEvents(resourcePackService, this);
 
         registerCommand("cosmetics", "Öffnet das Cosmetics-Menü", List.of("cosmetic"),
                 new CosmeticsCommand(cosmeticManager));
+        registerCommand("emote", "Öffnet das Emote-Menü oder spielt ein Emote ab", List.of("emotes"),
+                new EmoteCommand(emoteService));
 
         // Falls das Plugin im laufenden Betrieb neu geladen wird: Cosmetics der Online-Spieler laden
         getServer().getOnlinePlayers().forEach(cosmeticManager::handleJoin);
@@ -57,8 +69,26 @@ public final class NexusCosmetics extends JavaPlugin {
         getLogger().info(registry.all().size() + " Cosmetics geladen.");
     }
 
-    /** Legt für jedes Cosmetic ein eigenes Recht an und hängt es an nexuscosmetics.cosmetic.* */
-    private void registerPermissions(PluginManager pluginManager, CosmeticRegistry registry) {
+    /**
+     * Legt für jedes Cosmetic und Emote ein eigenes Recht an und hängt es an
+     * nexuscosmetics.cosmetic.* bzw. nexuscosmetics.emote.*
+     */
+    private void registerPermissions(PluginManager pluginManager, CosmeticRegistry registry, EmoteRegistry emotes) {
+        Permission allEmotes = pluginManager.getPermission("nexuscosmetics.emote.*");
+        for (Emote emote : emotes.all()) {
+            if (pluginManager.getPermission(emote.permission()) == null) {
+                // Freie Emotes darf jeder benutzen, die anderen nur mit Recht (z. B. für Ränge)
+                pluginManager.addPermission(new Permission(emote.permission(),
+                        emote.free() ? PermissionDefault.TRUE : PermissionDefault.OP));
+            }
+            if (allEmotes != null) {
+                allEmotes.getChildren().put(emote.permission(), true);
+            }
+        }
+        if (allEmotes != null) {
+            allEmotes.recalculatePermissibles();
+        }
+
         Permission all = pluginManager.getPermission("nexuscosmetics.cosmetic.*");
         for (Cosmetic cosmetic : registry.all()) {
             if (pluginManager.getPermission(cosmetic.permission()) == null) {
@@ -75,6 +105,9 @@ public final class NexusCosmetics extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (emoteService != null) {
+            emoteService.stop();
+        }
         if (cosmeticManager != null) {
             cosmeticManager.shutdown();
         }

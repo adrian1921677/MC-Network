@@ -12,3 +12,6 @@ permissions:
     description: Schaltet alle Cosmetics frei
     default: op
     # Die einzelnen Rechte (nexuscosmetics.cosmetic.<id>) legt das Plugin automatisch an.
+  nexuscosmetics.emote.*:
+    description: Schaltet alle Emotes frei
+    default: op

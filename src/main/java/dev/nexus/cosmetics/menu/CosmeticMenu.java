@@ -11,7 +11,6 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
@@ -22,7 +21,7 @@ import java.util.Map;
  * Das Auswahl-Menü. Jedes Cosmetic wird als 3D-Modell im Menü angezeigt.
  * Reihe 2: Hüte, Reihe 3: Capes, Reihe 4: Haustiere.
  */
-public final class CosmeticMenu implements InventoryHolder {
+public final class CosmeticMenu implements ClickableMenu {
 
     private static final int SIZE = 45;
     private static final int UNEQUIP_SLOT = 40;
@@ -78,6 +77,7 @@ public final class CosmeticMenu implements InventoryHolder {
         inventory.setItem(UNEQUIP_SLOT, unequip);
     }
 
+    @Override
     public void handleClick(int slot) {
         if (slot == UNEQUIP_SLOT) {
             manager.unequipAll(player);

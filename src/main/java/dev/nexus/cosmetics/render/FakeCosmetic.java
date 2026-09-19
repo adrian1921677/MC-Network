@@ -25,6 +25,11 @@ public interface FakeCosmetic {
     /** Entfernt das Cosmetic bei allen Zuschauern. */
     void destroy();
 
+    /** true = fertig abgespielt (z. B. ein Emote), der Renderer entfernt es dann automatisch. */
+    default boolean finished() {
+        return false;
+    }
+
     /** Entity-IDs, die für diesen Zuschauer als Passagiere auf dem Träger sitzen sollen. */
     default int[] passengerIds(Player viewer) {
         return new int[0];

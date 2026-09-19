@@ -15,16 +15,16 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
 /**
- * Verwaltet alle Paket-Cosmetics (Capes, Haustiere ...): wer trägt was, wer sieht es,
- * und bewegt alles jeden Tick.
+ * Verwaltet alle Paket-Cosmetics (Capes, Haustiere, Emotes ...): wer trägt was, wer sieht es,
+ * und bewegt alles jeden Tick. Jeder Spieler hat pro "Platz" (z. B. BACK, PET, EMOTE) höchstens eines.
  *
  * Sichtbarkeit: Ein Spieler sieht die Cosmetics eines anderen genau dann, wenn der Server
  * ihm diesen Spieler anzeigt ("tracking"). Der Träger sieht seine eigenen immer.
@@ -35,7 +35,7 @@ public final class FakeCosmeticRenderer implements Listener {
     private static final int PASSENGER_RESEND_TICKS = 40;
 
     private final Plugin plugin;
-    private final Map<UUID, Map<CosmeticSlot, FakeCosmetic>> worn = new HashMap<>();
+    private final Map<UUID, Map<String, FakeCosmetic>> worn = new HashMap<>();
     private BukkitTask task;
     private int tickCounter;
 
@@ -57,20 +57,28 @@ public final class FakeCosmeticRenderer implements Listener {
 
     /** Legt dem Spieler ein Cosmetic an und zeigt es ihm selbst und allen Spielern in der Nähe. */
     public void show(Player wearer, CosmeticSlot slot, FakeCosmetic cosmetic) {
-        hide(wearer, slot);
-        worn.computeIfAbsent(wearer.getUniqueId(), uuid -> new EnumMap<>(CosmeticSlot.class)).put(slot, cosmetic);
+        show(wearer, slot.name(), cosmetic);
+    }
+
+    public void hide(Player wearer, CosmeticSlot slot) {
+        hide(wearer, slot.name());
+    }
+
+    public void show(Player wearer, String place, FakeCosmetic cosmetic) {
+        hide(wearer, place);
+        worn.computeIfAbsent(wearer.getUniqueId(), uuid -> new LinkedHashMap<>()).put(place, cosmetic);
         for (Player viewer : viewersOf(wearer)) {
             cosmetic.show(viewer);
             sendPassengers(wearer, viewer);
         }
     }
 
-    public void hide(Player wearer, CosmeticSlot slot) {
-        Map<CosmeticSlot, FakeCosmetic> slots = worn.get(wearer.getUniqueId());
+    public void hide(Player wearer, String place) {
+        Map<String, FakeCosmetic> slots = worn.get(wearer.getUniqueId());
         if (slots == null) {
             return;
         }
-        FakeCosmetic cosmetic = slots.remove(slot);
+        FakeCosmetic cosmetic = slots.remove(place);
         if (cosmetic != null) {
             cosmetic.destroy();
         }
@@ -82,9 +90,18 @@ public final class FakeCosmeticRenderer implements Listener {
     private void tick() {
         tickCounter++;
         boolean resendPassengers = tickCounter % PASSENGER_RESEND_TICKS == 0;
-        for (Map.Entry<UUID, Map<CosmeticSlot, FakeCosmetic>> entry : List.copyOf(worn.entrySet())) {
-            for (FakeCosmetic cosmetic : List.copyOf(entry.getValue().values())) {
+        for (Map.Entry<UUID, Map<String, FakeCosmetic>> entry : List.copyOf(worn.entrySet())) {
+            for (Map.Entry<String, FakeCosmetic> placed : List.copyOf(entry.getValue().entrySet())) {
+                FakeCosmetic cosmetic = placed.getValue();
                 cosmetic.tick(tickCounter);
+                if (cosmetic.finished()) {
+                    cosmetic.destroy();
+                    entry.getValue().remove(placed.getKey());
+                }
+            }
+            if (entry.getValue().isEmpty()) {
+                worn.remove(entry.getKey());
+                continue;
             }
             if (resendPassengers) {
                 Player wearer = Bukkit.getPlayer(entry.getKey());
@@ -96,7 +113,7 @@ public final class FakeCosmeticRenderer implements Listener {
     }
 
     private List<FakeCosmetic> cosmeticsOf(Player wearer) {
-        Map<CosmeticSlot, FakeCosmetic> slots = worn.get(wearer.getUniqueId());
+        Map<String, FakeCosmetic> slots = worn.get(wearer.getUniqueId());
         return slots == null ? List.of() : List.copyOf(slots.values());
     }
 

@@ -945,6 +945,227 @@ def owl():
     write_extra_model("owl_wing_b", "owl", wing_b)
 
 
+
+# ----------------------------------------------------------------- Emojis
+# Emojis werden als 16x16 Pixel-Art gezeichnet (ein Buchstabe = eine Farbe, "." = durchsichtig)
+# und dann zu einem 3D-Modell "extrudiert": jede zusammenhängende Pixelreihe wird ein kleiner Quader.
+EMOJI_COLORS = {
+    "Y": (255, 204, 50, 255),    # Gesicht gelb
+    "O": (214, 140, 24, 255),    # Umriss
+    "K": (60, 38, 30, 255),      # Augen/Mund
+    "W": (255, 255, 255, 255),
+    "R": (232, 44, 64, 255),     # Rot
+    "D": (176, 24, 44, 255),     # Dunkelrot
+    "P": (255, 140, 160, 255),   # Bäckchen
+    "B": (90, 170, 255, 255),    # Tränen
+    "A": (246, 96, 52, 255),     # Wütend-Gesicht
+    "M": (190, 50, 30, 255),     # Wütend-Umriss
+    "L": (160, 210, 255, 255),   # Zzz hell
+    "N": (80, 130, 220, 255),    # Zzz dunkel / Ärmel
+    "G": (80, 200, 110, 255),
+    "V": (200, 110, 240, 255),
+}
+
+EMOJI_FACE = [
+    "....OOOOOOOO....",
+    "..OOYYYYYYYYOO..",
+    ".OYYYYYYYYYYYYO.",
+    ".OYYYYYYYYYYYYO.",
+    "OYYYYYYYYYYYYYYO",
+    "OYYYYYYYYYYYYYYO",
+    "OYYYYYYYYYYYYYYO",
+    "OYYYYYYYYYYYYYYO",
+    "OYYYYYYYYYYYYYYO",
+    "OYYYYYYYYYYYYYYO",
+    "OYYYYYYYYYYYYYYO",
+    "OYYYYYYYYYYYYYYO",
+    ".OYYYYYYYYYYYYO.",
+    ".OYYYYYYYYYYYYO.",
+    "..OOYYYYYYYYOO..",
+    "....OOOOOOOO....",
+]
+
+
+def overlay(base, top):
+    return ["".join(t if t != "." else b for b, t in zip(brow, trow)) for brow, trow in zip(base, top)]
+
+
+def recolor(rows, mapping):
+    return ["".join(mapping.get(c, c) for c in row) for row in rows]
+
+
+EMOJIS = {
+    "heart": [
+        "................",
+        "................",
+        "..RRRR....RRRR..",
+        ".RRWWRR..RRRRRR.",
+        "RRWWRRRRRRRRRRDR",
+        "RRWRRRRRRRRRRRDR",
+        "RRRRRRRRRRRRRRDR",
+        "RRRRRRRRRRRRRDDR",
+        ".RRRRRRRRRRRRDR.",
+        "..RRRRRRRRRRDR..",
+        "...RRRRRRRRDR...",
+        "....RRRRRRDR....",
+        ".....RRRRDR.....",
+        "......RRDR......",
+        ".......RR.......",
+        "................",
+    ],
+    "laugh": overlay(EMOJI_FACE, [
+        "................",
+        "................",
+        "................",
+        "................",
+        "...KKK....KKK...",
+        "..K...K..K...K..",
+        "................",
+        "BB............BB",
+        "BB.KKKKKKKKKK.BB",
+        ".B.KWWWWWWWWK.B.",
+        "...KKKKKKKKKK...",
+        "...KKKRRRRKKK...",
+        "....KKRRRRKK....",
+        ".....KKKKKK.....",
+        "................",
+        "................",
+    ]),
+    "angry": overlay(recolor(EMOJI_FACE, {"Y": "A", "O": "M"}), [
+        "................",
+        "................",
+        "................",
+        "..KK........KK..",
+        "...KKK....KKK...",
+        "....KK....KK....",
+        "...KKK....KKK...",
+        "...KKK....KKK...",
+        "................",
+        "................",
+        ".....KKKKKK.....",
+        "....K......K....",
+        "...K........K...",
+        "................",
+        "................",
+        "................",
+    ]),
+    "wow": overlay(EMOJI_FACE, [
+        "................",
+        "................",
+        "...KK......KK...",
+        "................",
+        "...KKK....KKK...",
+        "...KWK....KWK...",
+        "...KKK....KKK...",
+        "................",
+        "................",
+        "......KKKK......",
+        ".....KK..KK.....",
+        ".....KK..KK.....",
+        "......KKKK......",
+        "................",
+        "................",
+        "................",
+    ]),
+    "thumbs": [
+        "................",
+        ".......OO.......",
+        "......OYYO......",
+        "......OYYO......",
+        ".....OYYYO......",
+        "....OYYYYOOOOO..",
+        "OOOOOYYYYYYYYYO.",
+        "ONNOYYYYYYYYYYO.",
+        "ONNOYYYYYYYYOOO.",
+        "ONNOYYYYYYYYYYO.",
+        "ONNOYYYYYYYYOOO.",
+        "ONNOYYYYYYYYYYO.",
+        "ONNOYYYYYYYYOOO.",
+        "ONNOOYYYYYYYYO..",
+        "OOOO.OOOOOOOO...",
+        "................",
+    ],
+    "sleepy": [
+        "................",
+        ".......NNNNNNN..",
+        ".......NLLLLLN..",
+        ".........NLLN...",
+        "........NLLN....",
+        ".......NLLLLLN..",
+        "..NNNNNNNNNNNN..",
+        "..NLLLLN........",
+        "....NLN.........",
+        "...NLN..........",
+        "..NLLLLN........",
+        "..NNNNNN..NNNN..",
+        "..........NLLN..",
+        "...........NN...",
+        "..........NLLN..",
+        "..........NNNN..",
+    ],
+    "party": [
+        "..........R..N..",
+        "....G.........Y.",
+        "..........Y.....",
+        ".......N.....R..",
+        "..Y.......OOO...",
+        ".........OYYO..G",
+        "........OYRYO...",
+        ".......OYYYGO...",
+        "......OYNYYO....",
+        ".....OYYYRYO....",
+        "....OYGYYYO.....",
+        "...OYYYNYO......",
+        "..OYYRYYO.......",
+        ".OYYYYOO........",
+        "OOOOOO..........",
+        "................",
+    ],
+}
+
+
+def extrude_sprite(rows, depth=2.0):
+    """Macht aus Pixel-Art ein 3D-Modell: jede zusammenhängende Pixelreihe wird ein Quader."""
+    z0, z1 = 8 - depth / 2, 8 + depth / 2
+    elements = []
+    for y, row in enumerate(rows):
+        x = 0
+        while x < 16:
+            if row[x] == ".":
+                x += 1
+                continue
+            start = x
+            while x < 16 and row[x] != ".":
+                x += 1
+            end = x  # exklusiv
+            top, bottom = 16 - y, 15 - y
+            elements.append({
+                "from": [start, bottom, z0], "to": [end, top, z1],
+                "faces": {
+                    # Vorder- und Rückseite zeigen das Bild (Rückseite gespiegelt, damit es richtig herum ist)
+                    "south": {"uv": [start, y, end, y + 1], "texture": "#0"},
+                    "north": {"uv": [end, y, start, y + 1], "texture": "#0"},
+                    "up": {"uv": [start, y, end, y + 1], "texture": "#0"},
+                    "down": {"uv": [start, y, end, y + 1], "texture": "#0"},
+                    "west": {"uv": [start, y, start + 1, y + 1], "texture": "#0"},
+                    "east": {"uv": [end - 1, y, end, y + 1], "texture": "#0"},
+                },
+            })
+    return elements
+
+
+def emojis():
+    emoji_display = {
+        "gui": {"rotation": [0, 0, 0], "scale": [1, 1, 1]},
+        "ground": {"translation": [0, 2, 0], "scale": [0.5] * 3},
+        "fixed": {"scale": [1, 1, 1]},
+    }
+    for name, rows in EMOJIS.items():
+        assert len(rows) == 16 and all(len(r) == 16 for r in rows), name
+        img = [[EMOJI_COLORS[c] if c != "." else (0, 0, 0, 0) for c in row] for row in rows]
+        write_cosmetic(f"emoji_{name}", extrude_sprite(rows), img, display_settings=emoji_display)
+
+
 def pack_meta():
     meta = {"pack": {"description": "NexusCosmetics – 3D-Cosmetics", "min_format": 97, "max_format": 100}}
     ROOT.mkdir(parents=True, exist_ok=True)
@@ -970,4 +1191,5 @@ if __name__ == "__main__":
     talking_hat()
     halo()
     owl()
+    emojis()
     print("Assets erzeugt in", ROOT)
