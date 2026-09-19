@@ -4,6 +4,7 @@ import dev.nexus.cosmetics.NexusCosmetics;
 import dev.nexus.cosmetics.render.FakeCosmeticRenderer;
 import dev.nexus.cosmetics.render.cape.BackCosmetic;
 import dev.nexus.cosmetics.render.hat.FloatingHalo;
+import dev.nexus.cosmetics.render.hat.HeadAura;
 import dev.nexus.cosmetics.render.hat.TalkingHat;
 import dev.nexus.cosmetics.render.pet.FakePet;
 import dev.nexus.cosmetics.storage.CosmeticStorage;
@@ -206,14 +207,18 @@ public final class CosmeticManager {
                     if (cosmetic.animation() == CosmeticAnimation.TALKING) {
                         renderer.show(player, CosmeticSlot.HEAD,
                                 new TalkingHat(player, cosmetic, this::isCosmeticItem, plugin.messages(), plugin.settings()));
+                    } else if (cosmetic.aura() != null) {
+                        renderer.show(player, CosmeticSlot.HEAD, new HeadAura(player, cosmetic.aura()));
                     } else {
                         renderer.hide(player, CosmeticSlot.HEAD);
                     }
                 }
             }
-            case BACK -> renderer.show(player, CosmeticSlot.BACK, cosmetic.animation() == CosmeticAnimation.WINGS
-                    ? BackCosmetic.wings(player, cosmetic)
-                    : BackCosmetic.cape(player, cosmetic));
+            case BACK -> renderer.show(player, CosmeticSlot.BACK, switch (cosmetic.animation()) {
+                case WINGS -> BackCosmetic.wings(player, cosmetic);
+                case BACKPACK -> BackCosmetic.backItem(player, cosmetic);
+                default -> BackCosmetic.cape(player, cosmetic);
+            });
             case PET -> renderer.show(player, CosmeticSlot.PET, new FakePet(player, cosmetic));
         }
         equipped.computeIfAbsent(player.getUniqueId(), uuid -> new EnumMap<>(CosmeticSlot.class))

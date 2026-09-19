@@ -1,0 +1,77 @@
+{
+  "textures": {
+    "0": "nexus:item/desert_robe",
+    "particle": "nexus:item/desert_robe"
+  },
+  "elements": [
+    {
+      "name": "Segment 2",
+      "from": [
+        2,
+        8,
+        7.5
+      ],
+      "to": [
+        14,
+        16,
+        8.5
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            0,
+            10.182,
+            10,
+            16.0
+          ],
+          "texture": "#0"
+        },
+        "north": {
+          "uv": [
+            10,
+            10.182,
+            15,
+            16.0
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            15,
+            10.182,
+            16,
+            16.0
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            15,
+            10.182,
+            16,
+            16.0
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            15,
+            0,
+            16,
+            1
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            15,
+            0,
+            16,
+            1
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}

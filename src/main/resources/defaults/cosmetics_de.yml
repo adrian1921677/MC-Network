@@ -8,8 +8,8 @@
 #   slot: HEAD | BACK | PET     Kopf, Rücken oder Haustier
 #   type: ...                   Besonderes Verhalten:
 #                                 HEAD: NONE (normaler Hut), TALKING (sprechender Hut), HALO (schwebend)
-#                                 BACK: NONE (Cape), ROBE (langer Umhang), WINGS (Flügel), WINGS (Flügel)
-#                                 PET:  GHOST, DRAGON, PENGUIN, KITTEN, BEE, MUSHROOM, OWL
+#                                 BACK: NONE (Cape), ROBE (langer Umhang), WINGS (Flügel), BACKPACK (Rucksack, Jetpack ...)
+#                                 PET:  GHOST, DRAGON, PENGUIN, KITTEN, BEE, MUSHROOM, OWL, ROLLER
 #   glowing: true/false         Leuchtet im Dunkeln (Capes, Haustiere, Heiligenschein)
 #   unlocked-by-default: true   Jeder Spieler darf es benutzen. Sonst braucht man die Permission
 #                               nexuscosmetics.cosmetic.<id> (z. B. für Ränge oder Shop-Käufe).
@@ -152,6 +152,40 @@ cosmetics:
     rarity: ULTRA
     scale: 1.4
     particle: ELECTRIC_SPARK
+  space_helmet:
+    enabled: true
+    name: "<#AAE1FF>Astronautenhelm"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: EPIC
+  ice_tiara:
+    enabled: true
+    name: "<gradient:#DDF6FF:#78B4FF>Eisdiadem</gradient>"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: SNOWFLAKE
+  pirate_hat:
+    enabled: true
+    name: "<#E2B446>Piratenhut"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: RARE
+  pumpkin_head:
+    enabled: true
+    name: "<#EE841E>Kürbiskopf"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: RARE
   royal_cape:
     enabled: true
     name: "<red>Königsumhang"
@@ -260,6 +294,48 @@ cosmetics:
     rarity: ULTRA
     scale: 1.1
     particle: END_ROD
+  hero_cape:
+    enabled: true
+    name: "<#C81E28>Heldenumhang"
+    slot: BACK
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+    rarity: RARE
+  desert_robe:
+    enabled: true
+    name: "<#C4A87C>Wüstenrobe"
+    slot: BACK
+    type: ROBE
+    glowing: false
+    unlocked-by-default: false
+    rarity: RARE
+  jetpack:
+    enabled: true
+    name: "<gradient:#D2D8E2:#D23C32>Jetpack</gradient>"
+    slot: BACK
+    type: BACKPACK
+    glowing: false
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: FLAME
+  energy_blade:
+    enabled: true
+    name: "<#46C8FF>Energieklinge"
+    slot: BACK
+    type: BACKPACK
+    glowing: true
+    unlocked-by-default: false
+    rarity: EPIC
+  teddy_backpack:
+    enabled: true
+    name: "<#96643C>Teddy-Rucksack"
+    slot: BACK
+    type: BACKPACK
+    glowing: false
+    unlocked-by-default: false
+    rarity: RARE
   mini_dragon:
     enabled: true
     name: "<#E0533A>Mini-Drache"
@@ -366,3 +442,39 @@ cosmetics:
     rarity: ULTRA
     scale: 1.8
     particle: END_ROD
+  droid:
+    enabled: true
+    name: "<#3C78E6>Kugel-Droide"
+    slot: PET
+    type: ROLLER
+    glowing: false
+    unlocked-by-default: false
+    rarity: EPIC
+  baby_trex:
+    enabled: true
+    name: "<#5AB45A>Baby-T-Rex"
+    slot: PET
+    type: PENGUIN
+    glowing: false
+    unlocked-by-default: false
+    rarity: EPIC
+  unicorn:
+    enabled: true
+    name: "<gradient:#FF5A5A:#FFE650:#64DC78:#5AAAFF:#B46EFF>Einhorn</gradient>"
+    slot: PET
+    type: MUSHROOM
+    glowing: false
+    unlocked-by-default: false
+    rarity: LEGENDARY
+    scale: 1.0
+    particle: WAX_OFF
+  glow_fairy:
+    enabled: true
+    name: "<#FF96D2>Glühfee"
+    slot: PET
+    type: BEE
+    glowing: true
+    unlocked-by-default: false
+    rarity: RARE
+    scale: 1.0
+    particle: WAX_OFF

@@ -28,6 +28,11 @@ public final class BackCosmetic implements FakeCosmetic {
         return new BackCosmetic(wearer, new FakeCape(wearer, cosmetic, false), new FakeCape(wearer, cosmetic, true));
     }
 
+    /** Festes Teil auf dem Rücken (Rucksack, Jetpack ...). */
+    public static BackCosmetic backItem(Player wearer, Cosmetic cosmetic) {
+        return new BackCosmetic(wearer, new FakeBackItem(wearer, cosmetic, false), new FakeBackItem(wearer, cosmetic, true));
+    }
+
     /** Schlagende Flügel. */
     public static BackCosmetic wings(Player wearer, Cosmetic cosmetic) {
         return new BackCosmetic(wearer, new FakeWings(wearer, cosmetic, false), new FakeWings(wearer, cosmetic, true));

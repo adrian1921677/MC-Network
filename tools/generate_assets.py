@@ -731,8 +731,10 @@ def mushroom():
 ROBE_SEGMENTS = [7, 7, 8]  # muss zu ROBE_SEGMENTS in FakeCape.java passen
 
 
-def wizard_robe(color_id, lining, lining_dark):
-    black, fold_dark, fold_light = (30, 30, 37, 255), (22, 22, 28, 255), (42, 42, 52, 255)
+def wizard_robe(color_id, lining, lining_dark, outer=(30, 30, 37, 255), robe_id=None):
+    black = outer
+    fold_dark = tuple(int(c * 0.75) for c in outer[:3]) + (255,)
+    fold_light = tuple(min(255, int(c * 1.3) + 8) for c in outer[:3]) + (255,)
 
     img = canvas(black, 32, 32)
     # Außenseite: schwarzer Stoff mit Falten, farbiger Saum an den Kanten
@@ -755,7 +757,7 @@ def wizard_robe(color_id, lining, lining_dark):
     hood["faces"]["north"]["uv"] = [10, 0, 15, 5]
     hood_rim = cube("Kapuzenrand", [4.5, 15, 10], [11.5, 16, 10.5], [15, 0, 16, 2])
 
-    robe_id = f"wizard_robe_{color_id}"
+    robe_id = robe_id or f"wizard_robe_{color_id}"
     # Menü-Symbol: der ganze Umhang in einem Stück
     icon = [{
         "name": "Umhang",
@@ -1979,6 +1981,403 @@ def menu_item():
     write_cosmetic("menu_item", elements, img, display_settings=held)
 
 
+
+# ------------------------------------------------------ Film-Paket
+# Eigene Designs im Stil beliebter Filme (keine geschützten Figuren oder Namen).
+def paint_cell(img, index, painter):
+    """Malt direkt in ein 16x16-Pixel-Feld einer 64x64-Palette (für Gesichter und Details)."""
+    painter(img, (index % 4) * 16, (index // 4) * 16)
+
+
+def big_eyes(img, x0, y0, eye_y=5, left=3, right=9, w=4, h=5, color=(28, 24, 40, 255), blush=True):
+    for ex in (left, right):
+        fill(img, x0 + ex, y0 + eye_y, x0 + ex + w, y0 + eye_y + h, color)
+        fill(img, x0 + ex + 1, y0 + eye_y + 1, x0 + ex + 2, y0 + eye_y + 3, SPARKLE)
+        img[y0 + eye_y + h - 2][x0 + ex + w - 1] = (200, 200, 230, 255)
+    if blush:
+        fill(img, x0 + left - 2, y0 + eye_y + h + 1, x0 + left + 1, y0 + eye_y + h + 2, BLUSH)
+        fill(img, x0 + right + w - 1, y0 + eye_y + h + 1, x0 + right + w + 2, y0 + eye_y + h + 2, BLUSH)
+
+
+def frames_texture(frames):
+    return [row for frame in frames for row in frame]
+
+
+# --- Köpfe ------------------------------------------------------------
+def space_helmet():
+    img = palette([
+        ((170, 225, 255, 80), "gloss"),     # 0 Glas (halb durchsichtig)
+        ((236, 240, 246, 255), "metal"),    # 1 Kragen weiß
+        ((90, 100, 120, 255), "metal"),     # 2 Metall dunkel
+        ((255, 70, 70, 255), "glow"),       # 3 rote Antennen-Kugel
+        ((60, 140, 255, 255), "gloss"),     # 4 blaue Streifen
+    ])
+    def glass_shine(img, x0, y0):
+        for i in range(10):
+            img[y0 + 2 + i][x0 + 3 + i // 2] = (255, 255, 255, 150)
+    paint_cell(img, 0, glass_shine)
+    t = HEAD_TOP
+    elements = [
+        cube("Glaskuppel", [0.8, 1.2, 0.8], [15.2, t + 1.6, 15.2], uv(0)),
+        cube("Kuppel oben", [2.5, t + 1.6, 2.5], [13.5, t + 2.6, 13.5], uv(0)),
+        cube("Kragen", [0.3, 0.2, 0.3], [15.7, 1.8, 15.7], uv(1)),
+        cube("Kragen-Streifen", [0.25, 0.8, 0.25], [15.75, 1.3, 15.75], uv(4)),
+        cube("Antennen-Fuß", [11.5, t + 1.6, 7], [13, t + 2.4, 8.5], uv(2)),
+        cube("Antenne", [12, t + 2.4, 7.5], [12.5, t + 5.5, 8], uv(2)),
+        cube("Antennen-Kugel", [11.6, t + 5.5, 7.1], [12.9, t + 6.8, 8.4], uv(3)),
+    ]
+    write_cosmetic("space_helmet", elements, img, center_y=t - 4, gui_scale=0.55)
+
+
+def ice_tiara():
+    img = palette([
+        ((200, 225, 245, 255), "metal"),    # 0 Silber
+        ((150, 230, 255, 255), "glow"),     # 1 Eiskristall
+        ((230, 250, 255, 255), "glow"),     # 2 heller Kristall
+        ((120, 170, 255, 255), "gloss"),    # 3 Saphir
+    ])
+    t = HEAD_TOP
+    band = [cube("Stirnband", [2, t - 2.6, 1.3], [14, t - 1.6, 2.3], uv(0))]
+    side = [cube("Seitenband", [1.3, t - 2.6, 2.3], [2.3, t - 1.6, 10], uv(0))]
+    spikes = [
+        cube("Hauptkristall", [7, t - 1.6, 1.4], [9, t + 2.6, 2.2], uv(1)),
+        cube("Kristallspitze", [7.5, t + 2.6, 1.5], [8.5, t + 3.8, 2.1], uv(2)),
+        cube("Saphir", [7.3, t - 2.9, 1.0], [8.7, t - 1.3, 1.4], uv(3)),
+    ]
+    small = [
+        cube("Kristall", [4.6, t - 1.6, 1.4], [6, t + 1.2, 2.2], uv(1)),
+        cube("Kristallspitze", [5, t + 1.2, 1.5], [5.6, t + 2, 2.1], uv(2)),
+        cube("Kristall klein", [2.6, t - 1.6, 1.5], [3.6, t, 2.2], uv(2)),
+    ]
+    elements = band + side + mirror_x(side) + spikes + small + mirror_x(small)
+    write_cosmetic("ice_tiara", elements, img, center_y=t, gui_scale=0.75)
+
+
+def pirate_hat():
+    img = palette([
+        ((34, 30, 36, 255), "felt"),        # 0 schwarzer Filz
+        ((226, 180, 70, 255), "metal"),     # 1 Goldborte
+        ((34, 30, 36, 255), "felt"),        # 2 Totenkopf-Feld
+        ((150, 40, 40, 255), "felt"),       # 3 rote Feder
+    ])
+    def skull(img, x0, y0):
+        bone = (240, 236, 222, 255)
+        fill(img, x0 + 5, y0 + 3, x0 + 11, y0 + 9, bone)
+        fill(img, x0 + 6, y0 + 9, x0 + 10, y0 + 11, bone)
+        fill(img, x0 + 6, y0 + 5, x0 + 8, y0 + 7, (34, 30, 36, 255))
+        fill(img, x0 + 9, y0 + 5, x0 + 11, y0 + 7, (34, 30, 36, 255))
+        for i in range(4):
+            img[y0 + 11 + i // 2][x0 + 3 + i * 3] = bone
+            img[y0 + 11 + i // 2][x0 + 12 - i * 3] = bone
+    paint_cell(img, 2, skull)
+    t = HEAD_TOP
+    elements = [
+        cube("Krempe", [0.5, t, 0.5], [15.5, t + 0.8, 15.5], uv(0)),
+        faces(cube("Hut", [3, t + 0.8, 3], [13, t + 4, 13], uv(0)), north=uv(2)),
+        cube("Krempe links hoch", [0.5, t + 0.8, 2], [1.5, t + 3.8, 14], uv(0)),
+        cube("Krempe rechts hoch", [14.5, t + 0.8, 2], [15.5, t + 3.8, 14], uv(0)),
+        cube("Krempe hinten hoch", [2, t + 0.8, 14.5], [14, t + 3.8, 15.5], uv(0)),
+        cube("Borte links", [0.4, t + 3.8, 2], [1.6, t + 4.3, 14], uv(1)),
+        cube("Borte rechts", [14.4, t + 3.8, 2], [15.6, t + 4.3, 14], uv(1)),
+        cube("Borte hinten", [2, t + 3.8, 14.4], [14, t + 4.3, 15.6], uv(1)),
+        cube("Feder", [12.5, t + 3, 11], [13.5, t + 7, 12.5], uv(3)),
+        cube("Feder Spitze", [12.8, t + 7, 12], [13.3, t + 8.5, 14], uv(3)),
+    ]
+    write_cosmetic("pirate_hat", elements, img, center_y=t + 3, gui_scale=0.55)
+
+
+def pumpkin_head():
+    img = palette([
+        ((238, 132, 30, 255), "gloss"),     # 0 Kürbis
+        ((238, 132, 30, 255), "gloss"),     # 1 Gesicht
+        ((90, 130, 50, 255), "wood"),       # 2 Stiel
+        ((110, 170, 60, 255), "gloss"),     # 3 Blatt
+    ])
+    def ribs(img, x0, y0):
+        for x in (3, 8, 12):
+            for y in range(16):
+                img[y0 + y][x0 + x] = tuple(int(c * 0.82) for c in img[y0 + y][x0 + x][:3]) + (255,)
+    paint_cell(img, 0, ribs)
+    def carved(img, x0, y0):
+        glow, dark = (255, 220, 90, 255), (80, 30, 10, 255)
+        for i in range(4):                                      # Dreiecks-Augen
+            fill(img, x0 + 3 + i // 2, y0 + 3 + i, x0 + 7 - i // 2, y0 + 4 + i, glow)
+            fill(img, x0 + 9 + i // 2, y0 + 3 + i, x0 + 13 - i // 2, y0 + 4 + i, glow)
+        fill(img, x0 + 2, y0 + 10, x0 + 14, y0 + 13, glow)      # Grinsen mit Zähnen
+        for x in (4, 7, 10):
+            fill(img, x0 + x, y0 + 10, x0 + x + 1, y0 + 11, dark)
+        fill(img, x0 + 5, y0 + 12, x0 + 6, y0 + 13, dark)
+        fill(img, x0 + 9, y0 + 12, x0 + 10, y0 + 13, dark)
+    paint_cell(img, 1, carved)
+    t = HEAD_TOP
+    elements = [
+        faces(cube("Kürbis", [0.4, 0.6, 0.4], [15.6, t + 0.6, 15.6], uv(0)), north=uv(1)),
+        cube("Deckel", [2, t + 0.6, 2], [14, t + 1.4, 14], uv(0)),
+        cube("Stiel", [7, t + 1.4, 7], [9, t + 3.6, 9], uv(2)),
+        cube("Stiel gebogen", [8.5, t + 3, 7], [10, t + 3.8, 9], uv(2)),
+        cube("Blatt", [9, t + 1.4, 8.5], [12.5, t + 1.9, 11], uv(3)),
+    ]
+    write_cosmetic("pumpkin_head", elements, img, center_y=8, gui_scale=0.62)
+
+
+# --- Rücken -----------------------------------------------------------
+BACK_ITEM_DISPLAY = {
+    "gui": {"rotation": [20, 200, 0], "scale": [0.8] * 3},
+    "ground": {"translation": [0, 2, 0], "scale": [0.5] * 3},
+    "fixed": {"scale": [0.8] * 3},
+}
+
+
+def jetpack():
+    img = palette([
+        ((210, 216, 226, 255), "metal"),    # 0 Tank silber
+        ((210, 60, 50, 255), "gloss"),      # 1 roter Streifen
+        ((60, 64, 74, 255), "metal"),       # 2 dunkles Metall
+        ((255, 150, 40, 255), "glow"),      # 3 Düsen-Glut
+        ((80, 200, 255, 255), "glow"),      # 4 Anzeige
+    ])
+    tank = [cube("Tank", [3, 4, 9], [7, 14, 13], uv(0)),
+            cube("Tank-Kappe", [3.5, 14, 9.5], [6.5, 15, 12.5], uv(2)),
+            cube("Streifen", [2.9, 9, 8.9], [7.1, 10.5, 13.1], uv(1)),
+            cube("Düse", [3.5, 2.4, 9.5], [6.5, 4, 12.5], uv(2)),
+            cube("Düsen-Glut", [4, 2.2, 10], [6, 2.5, 12], uv(3))]
+    elements = tank + mirror_x(tank) + [
+        cube("Rückenplatte", [6.5, 5, 8], [9.5, 13, 10], uv(2)),
+        cube("Anzeige", [7, 10, 9.9], [9, 12, 10.2], uv(4)),
+        cube("Gurt links", [5.2, 12, 7.6], [6.2, 14.5, 8.2], uv(2)),
+        cube("Gurt rechts", [9.8, 12, 7.6], [10.8, 14.5, 8.2], uv(2)),
+    ]
+    write_cosmetic("jetpack", elements, img, display_settings=BACK_ITEM_DISPLAY)
+
+
+def energy_blade():
+    frames = []
+    for f in range(8):
+        pulse = 0.5 + 0.5 * math.sin(f / 8 * math.tau)
+        frame = palette([
+            (blend((70, 200, 255, 255), (170, 245, 255, 255), pulse), "glow"),   # 0 Klinge
+            ((245, 255, 255, 255), "glow"),                                     # 1 Kern
+            ((70, 74, 86, 255), "metal"),                                       # 2 Griff
+            ((200, 205, 215, 255), "metal"),                                    # 3 Chrom
+            ((40, 40, 48, 255), "felt"),                                        # 4 Griffband
+        ])
+        frames.append(frame)
+    blade = [
+        cube("Klinge", [7.3, 9.5, 10.1], [8.7, 26, 11.3], uv(0)),
+        cube("Klingen-Kern", [7.7, 9.5, 10.5], [8.3, 25.5, 10.9], uv(1)),
+        cube("Parierstange", [6.2, 8.6, 9.9], [9.8, 9.5, 11.5], uv(3)),
+        cube("Griff", [7.1, 3, 10], [8.9, 8.6, 11.4], uv(2)),
+        cube("Griffband", [7, 4.5, 9.9], [9, 7, 11.5], uv(4)),
+        cube("Knauf", [7.3, 2, 10.1], [8.7, 3, 11.3], uv(3)),
+        cube("Halter oben", [5, 13, 8.2], [11, 14, 10], uv(2)),
+        cube("Halter unten", [5, 5, 8.2], [11, 6, 10], uv(2)),
+    ]
+    for element in blade:
+        element["rotation"] = {"angle": -45, "axis": "z", "origin": [8, 8, 8]}
+    write_cosmetic("energy_blade", blade, frames_texture(frames), display_settings=BACK_ITEM_DISPLAY,
+                   animation={"frametime": 2, "interpolate": True})
+
+
+def teddy_backpack():
+    img = palette([
+        ((150, 100, 60, 255), "fur"),       # 0 Fell
+        ((150, 100, 60, 255), "fur"),       # 1 Gesicht (hinten = außen)
+        ((220, 180, 140, 255), "fur"),      # 2 Schnauze/Ohren innen
+        ((60, 40, 30, 255), "gloss"),       # 3 Nase
+        ((90, 60, 40, 255), "felt"),        # 4 Riemen
+    ])
+    def face(img, x0, y0):
+        big_eyes(img, x0, y0, eye_y=4, left=3, right=9, w=3, h=4)
+    paint_cell(img, 1, face)
+    elements = [
+        faces(cube("Bär", [4, 3, 8.5], [12, 12, 12.5], uv(0)), south=uv(1)),
+        cube("Schnauze", [6.5, 4.5, 12.5], [9.5, 7, 13.6], uv(2)),
+        cube("Nase", [7.3, 6, 13.6], [8.7, 7, 13.9], uv(3)),
+        cube("Ohr links", [3.8, 11.5, 9.5], [6, 13.8, 11.5], uv(0)),
+        cube("Ohr rechts", [10, 11.5, 9.5], [12.2, 13.8, 11.5], uv(0)),
+        cube("Arm links", [2.8, 5, 9], [4, 10, 11.5], uv(0)),
+        cube("Arm rechts", [12, 5, 9], [13.2, 10, 11.5], uv(0)),
+        cube("Riemen links", [5, 11, 7.6], [6, 14, 8.5], uv(4)),
+        cube("Riemen rechts", [10, 11, 7.6], [11, 14, 8.5], uv(4)),
+    ]
+    write_cosmetic("teddy_backpack", elements, img, display_settings=BACK_ITEM_DISPLAY)
+
+
+def hero_cape():
+    W = 64
+    red, red_dark, red_light = (200, 30, 40, 255), (150, 18, 28, 255), (230, 60, 66, 255)
+    gold, gold_dark = (250, 200, 60, 255), (200, 150, 30, 255)
+    img = canvas(red, W, W)
+    for x in range(40):                                   # Falten
+        shade = red_dark if x % 10 in (0, 1) else red_light if x % 10 in (5, 6) else red
+        fill(img, x, 0, x + 1, W, shade)
+    for y in range(W):                                    # Verlauf nach unten dunkler
+        for x in range(40):
+            img[y][x] = blend(img[y][x], (90, 10, 18, 255), y / W * 0.45)
+    fill(img, 0, 0, 40, 3, gold)                          # Goldborte
+    fill(img, 0, 0, 2, W, gold)
+    fill(img, 38, 0, 40, W, gold_dark)
+    fill(img, 0, 61, 40, 64, gold_dark)
+    # Stern-Emblem
+    cx, cy, outer, inner = 20, 18, 9, 4
+    for y in range(W):
+        for x in range(40):
+            dx, dy = x + 0.5 - cx, y + 0.5 - cy
+            angle = math.atan2(dy, dx) + math.pi / 2
+            radius = math.hypot(dx, dy)
+            k = (angle % (2 * math.pi / 5)) / (2 * math.pi / 5)
+            limit = inner + (outer - inner) * abs(1 - 2 * k)
+            if radius <= limit:
+                img[y][x] = gold if radius < limit - 1 else gold_dark
+    fill(img, 40, 0, 60, W, (110, 14, 22, 255))           # Innenfutter
+    fill(img, 60, 0, 64, W, gold)                         # Kanten
+    write_cosmetic("hero_cape", cape_element(), img, display_settings=CAPE_DISPLAY)
+    write_cape_segments("hero_cape")
+
+
+# --- Haustiere --------------------------------------------------------
+def droid():
+    img = palette([
+        ((238, 240, 245, 255), "gloss"),    # 0 Körper weiß
+        ((60, 120, 230, 255), "gloss"),     # 1 blau
+        ((150, 156, 168, 255), "metal"),    # 2 Metall
+        ((238, 240, 245, 255), "gloss"),    # 3 Kopf
+        ((20, 22, 30, 255), "gloss"),       # 4 Linse
+    ])
+    def rings(img, x0, y0):
+        for y in range(16):
+            for x in range(16):
+                r = math.hypot(x - 7.5, y - 7.5)
+                if 4.2 < r < 6.2:
+                    img[y0 + y][x0 + x] = (60, 120, 230, 255)
+                elif r < 2.2:
+                    img[y0 + y][x0 + x] = (150, 156, 168, 255)
+    paint_cell(img, 0, rings)
+    def head_band(img, x0, y0):
+        fill(img, x0, y0 + 9, x0 + 16, y0 + 12, (60, 120, 230, 255))
+    paint_cell(img, 3, head_band)
+    def lens(img, x0, y0):
+        img[y0 + 4][x0 + 5] = img[y0 + 5][x0 + 5] = img[y0 + 4][x0 + 6] = SPARKLE
+    paint_cell(img, 4, lens)
+    body = [
+        cube("Kern", [4, 1, 4], [12, 9, 12], uv(0)),
+        cube("Seite links", [3, 2, 5], [4, 8, 11], uv(0)),
+        cube("Seite rechts", [12, 2, 5], [13, 8, 11], uv(0)),
+        cube("Vorne", [5, 2, 3], [11, 8, 4], uv(0)),
+        cube("Hinten", [5, 2, 12], [11, 8, 13], uv(0)),
+        cube("Oben", [5, 9, 5], [11, 9.5, 11], uv(2)),
+        cube("Unten", [5, 0.5, 5], [11, 1, 11], uv(2)),
+    ]
+    head = [
+        cube("Kopf", [5.5, 8, 5.5], [10.5, 10.5, 10.5], uv(3)),
+        cube("Kopf oben", [6.3, 10.5, 6.3], [9.7, 11.2, 9.7], uv(3)),
+        cube("Linse", [7, 8.6, 5.2], [9, 10.2, 5.5], uv(4)),
+        cube("Linse klein", [9.5, 8.8, 5.3], [10.2, 9.5, 5.5], uv(4)),
+        cube("Antenne", [8.5, 11.2, 8.5], [8.8, 13, 8.8], uv(2)),
+    ]
+    write_cosmetic("droid", body + shift(head, 0, 1, 0), img, display_settings=PET_DISPLAY)
+    write_extra_model("droid_body", "droid", body)
+    write_extra_model("droid_head", "droid", head)
+
+
+def baby_trex():
+    img = palette([
+        ((90, 180, 90, 255), "gloss"),      # 0 Haut
+        ((200, 230, 150, 255), "gloss"),    # 1 Bauch
+        ((90, 180, 90, 255), "gloss"),      # 2 Gesicht
+        ((255, 150, 60, 255), "gloss"),     # 3 Stacheln
+        ((60, 130, 60, 255), "gloss"),      # 4 dunkle Haut
+    ])
+    def face(img, x0, y0):
+        big_eyes(img, x0, y0, eye_y=3, left=2, right=10, w=4, h=4)
+        fill(img, x0 + 3, y0 + 11, x0 + 13, y0 + 12, (40, 80, 40, 255))
+        for x in (4, 7, 10):
+            fill(img, x0 + x, y0 + 12, x0 + x + 1, y0 + 13, (255, 255, 255, 255))
+    paint_cell(img, 2, face)
+    skin, belly, face_uv, spike, dark = uv(0), uv(1), uv(2), uv(3), uv(4)
+    body = [
+        faces(cube("Körper", [4.5, 2, 6], [11.5, 8, 12], skin), north=belly),
+        faces(cube("Kopf", [4, 7, 1.5], [12, 12.5, 7.5], skin), north=face_uv),
+        cube("Unterkiefer", [4.5, 6.2, 1.8], [11.5, 7, 6], dark),
+        cube("Schwanz", [6.5, 3, 12], [9.5, 6, 16], skin),
+        cube("Schwanzspitze", [7.25, 3.5, 16], [8.75, 5, 18.5], skin),
+        cube("Bein links", [4.8, 1, 7], [7.2, 3.5, 10], dark),
+        cube("Bein rechts", [8.8, 1, 7], [11.2, 3.5, 10], dark),
+        cube("Stachel 1", [7.5, 12.5, 4], [8.5, 13.5, 5.5], spike),
+        cube("Stachel 2", [7.5, 8, 8], [8.5, 9, 9.5], spike),
+        cube("Stachel 3", [7.5, 7, 11], [8.5, 8, 12.5], spike),
+    ]
+    arm_a = [cube("Ärmchen", [8, 5.5, 5], [9.2, 7.5, 6.5], dark)]
+    arm_b = [cube("Ärmchen", [6.8, 5.5, 5], [8, 7.5, 6.5], dark)]
+    write_cosmetic("baby_trex", body + shift(arm_a, 3.5, 0, 0.5) + shift(arm_b, -3.5, 0, 0.5), img, display_settings=PET_DISPLAY)
+    write_extra_model("baby_trex_body", "baby_trex", body)
+    write_extra_model("baby_trex_flipper_a", "baby_trex", arm_a)
+    write_extra_model("baby_trex_flipper_b", "baby_trex", arm_b)
+
+
+def unicorn():
+    rainbow = [(255, 90, 90, 255), (255, 170, 60, 255), (255, 230, 80, 255), (100, 220, 120, 255), (90, 170, 255, 255), (180, 110, 255, 255)]
+    img = palette([
+        ((250, 250, 255, 255), "gloss"),    # 0 Fell
+        ((250, 250, 255, 255), "gloss"),    # 1 Gesicht
+        ((255, 214, 90, 255), "metal"),     # 2 Horn/Hufe gold
+        ((255, 255, 255, 255), "matte"),    # 3 Regenbogen
+        ((255, 190, 220, 255), "gloss"),    # 4 Schnauze rosa
+    ])
+    def face(img, x0, y0):
+        big_eyes(img, x0, y0, eye_y=4, left=2, right=10, w=4, h=5, color=(90, 60, 140, 255))
+    paint_cell(img, 1, face)
+    def stripes(img, x0, y0):
+        for y in range(16):
+            fill(img, x0, y0 + y, x0 + 16, y0 + y + 1, rainbow[y * len(rainbow) // 16])
+    paint_cell(img, 3, stripes)
+    fur, face_uv, gold, mane, snout = uv(0), uv(1), uv(2), uv(3), uv(4)
+    elements = [
+        cube("Körper", [4.5, 3, 6], [11.5, 8, 12], fur),
+        faces(cube("Kopf", [5, 7, 2], [11, 12, 7], fur), north=face_uv),
+        cube("Schnauze", [6, 7, 1], [10, 9, 2], snout),
+        cube("Horn", [7.25, 12, 3.5], [8.75, 14, 5], gold),
+        cube("Horn Spitze", [7.6, 14, 3.9], [8.4, 15.8, 4.6], gold),
+        cube("Ohr links", [5.3, 12, 5], [6.5, 13.3, 6], fur),
+        cube("Ohr rechts", [9.5, 12, 5], [10.7, 13.3, 6], fur),
+        cube("Mähne", [7, 8, 6.5], [9, 13, 9.5], mane),
+        cube("Mähne Rücken", [7.2, 7.5, 9.5], [8.8, 8.5, 12], mane),
+        cube("Schweif", [7, 4.5, 12], [9, 7.5, 15.5], mane),
+    ]
+    for x, z in ((5, 6.5), (9.5, 6.5), (5, 10), (9.5, 10)):
+        elements.append(cube("Bein", [x, 1.6, z], [x + 1.5, 3, z + 1.5], fur))
+        elements.append(cube("Huf", [x, 1, z], [x + 1.5, 1.6, z + 1.5], gold))
+    write_cosmetic("unicorn", elements, img, display_settings=PET_DISPLAY)
+
+
+def glow_fairy():
+    img = palette([
+        ((255, 150, 210, 255), "gloss"),    # 0 Kleid
+        ((255, 222, 200, 255), "gloss"),    # 1 Gesicht
+        ((255, 222, 110, 255), "fur"),      # 2 Haare
+        ((200, 240, 255, 150), "glow"),     # 3 Flügel durchscheinend
+        ((255, 222, 200, 255), "gloss"),    # 4 Haut
+    ])
+    def face(img, x0, y0):
+        big_eyes(img, x0, y0, eye_y=6, left=3, right=9, w=4, h=4, color=(60, 110, 200, 255))
+    paint_cell(img, 1, face)
+    body = [
+        cube("Kleid unten", [6, 3.5, 6], [10, 5.5, 10], uv(0)),
+        cube("Kleid", [6.5, 5.5, 6.5], [9.5, 8, 9.5], uv(0)),
+        faces(cube("Kopf", [6.3, 8, 6.3], [9.7, 11.2, 9.7], uv(4)), north=uv(1)),
+        cube("Haare", [6.1, 10.2, 6.8], [9.9, 11.8, 10], uv(2)),
+        cube("Zopf", [7.3, 8.5, 9.7], [8.7, 11, 10.8], uv(2)),
+        cube("Zauberstab", [9.6, 6, 6.8], [10, 9, 7.2], uv(2)),
+    ]
+    wing_a = [cube("Flügel", [8, 8, 7], [13.5, 8.3, 10.5], uv(3)),
+              cube("Flügel unten", [8, 7.6, 8.5], [11.5, 7.9, 11.5], uv(3))]
+    wing_b = mirror_x(wing_a)
+    write_cosmetic("glow_fairy", body + shift(wing_a, 2, 2, 0.5) + shift(wing_b, -2, 2, 0.5), img, display_settings=PET_DISPLAY)
+    write_extra_model("glow_fairy_body", "glow_fairy", body)
+    write_extra_model("glow_fairy_wing_a", "glow_fairy", wing_a)
+    write_extra_model("glow_fairy_wing_b", "glow_fairy", wing_b)
+
+
 def pack_meta():
     meta = {"pack": {"description": "NexusCosmetics – 3D-Cosmetics", "min_format": 97, "max_format": 100}}
     ROOT.mkdir(parents=True, exist_ok=True)
@@ -2022,4 +2421,17 @@ if __name__ == "__main__":
     star_crown()
     aurora_cape()
     menu_item()
+    space_helmet()
+    ice_tiara()
+    pirate_hat()
+    pumpkin_head()
+    jetpack()
+    energy_blade()
+    teddy_backpack()
+    hero_cape()
+    wizard_robe("desert", (120, 84, 50, 255), (92, 62, 36, 255), outer=(196, 168, 124, 255), robe_id="desert_robe")
+    droid()
+    baby_trex()
+    unicorn()
+    glow_fairy()
     print("Assets erzeugt in", ROOT)
