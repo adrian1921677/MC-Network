@@ -1,51 +1,70 @@
 package dev.nexus.cosmetics.cosmetic;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
- * Liste aller verfügbaren Cosmetics. Neue Cosmetics werden hier eingetragen.
+ * Liste aller verfügbaren Cosmetics, gelesen aus cosmetics.yml.
  */
 public final class CosmeticRegistry {
 
-    /** Namespace im Resource Pack (Ordner assets/nexus/...). */
+    /** Namespace des mitgelieferten Resource Packs (Ordner assets/nexus/...). */
     public static final String NAMESPACE = "nexus";
 
     private final Map<String, Cosmetic> cosmetics = new LinkedHashMap<>();
 
-    public CosmeticRegistry() {
-        // Hüte
-        register("top_hat", Component.text("Zylinder", NamedTextColor.GRAY), CosmeticSlot.HEAD, false, CosmeticAnimation.NONE);
-        register("crown", Component.text("Krone", NamedTextColor.GOLD), CosmeticSlot.HEAD, false, CosmeticAnimation.NONE);
-        register("talking_hat", Component.text("Sprechender Hut", TextColor.color(0xB08050)), CosmeticSlot.HEAD, false, CosmeticAnimation.TALKING);
-        register("halo", Component.text("Heiligenschein", TextColor.color(0xFFE27A)), CosmeticSlot.HEAD, true, CosmeticAnimation.HALO);
-
-        // Capes
-        register("royal_cape", Component.text("Königsumhang", NamedTextColor.RED), CosmeticSlot.BACK, false, CosmeticAnimation.NONE);
-        register("galaxy_cape", Component.text("Galaxie-Cape", TextColor.color(0xA070FF)), CosmeticSlot.BACK, true, CosmeticAnimation.NONE);
-        register("wizard_robe_red", Component.text("Zauberumhang (Rot)", TextColor.color(0xD8413A)), CosmeticSlot.BACK, false, CosmeticAnimation.ROBE);
-        register("wizard_robe_green", Component.text("Zauberumhang (Grün)", TextColor.color(0x3FAF5A)), CosmeticSlot.BACK, false, CosmeticAnimation.ROBE);
-        register("wizard_robe_blue", Component.text("Zauberumhang (Blau)", TextColor.color(0x4C7FE0)), CosmeticSlot.BACK, false, CosmeticAnimation.ROBE);
-        register("wizard_robe_yellow", Component.text("Zauberumhang (Gelb)", TextColor.color(0xF0C23A)), CosmeticSlot.BACK, false, CosmeticAnimation.ROBE);
-
-        // Haustiere
-        register("mini_dragon", Component.text("Mini-Drache", TextColor.color(0xE0533A)), CosmeticSlot.PET, false, CosmeticAnimation.DRAGON);
-        register("ghost", Component.text("Geist", NamedTextColor.WHITE), CosmeticSlot.PET, true, CosmeticAnimation.GHOST);
-        register("penguin", Component.text("Pinguin", TextColor.color(0x9FC7FF)), CosmeticSlot.PET, false, CosmeticAnimation.PENGUIN);
-        register("kitten", Component.text("Kätzchen", TextColor.color(0xFFA64D)), CosmeticSlot.PET, false, CosmeticAnimation.KITTEN);
-        register("bee", Component.text("Bienchen", TextColor.color(0xFFD43B)), CosmeticSlot.PET, false, CosmeticAnimation.BEE);
-        register("mushroom", Component.text("Pilzchen", TextColor.color(0xFF6B6B)), CosmeticSlot.PET, false, CosmeticAnimation.MUSHROOM);
-        register("owl", Component.text("Eule", TextColor.color(0xC8A070)), CosmeticSlot.PET, false, CosmeticAnimation.OWL);
+    /** Liest alle Cosmetics neu ein. Fehlerhafte Einträge werden mit Warnung übersprungen. */
+    public void load(YamlConfiguration config, Logger logger) {
+        cosmetics.clear();
+        ConfigurationSection section = config.getConfigurationSection("cosmetics");
+        if (section == null) {
+            logger.warning("cosmetics.yml enthält keinen Abschnitt 'cosmetics:'.");
+            return;
+        }
+        for (String id : section.getKeys(false)) {
+            ConfigurationSection entry = section.getConfigurationSection(id);
+            if (entry == null || !entry.getBoolean("enabled", true)) {
+                continue;
+            }
+            try {
+                CosmeticSlot slot = CosmeticSlot.valueOf(entry.getString("slot", "HEAD").toUpperCase(Locale.ROOT));
+                CosmeticAnimation animation = CosmeticAnimation.valueOf(entry.getString("type", "NONE").toUpperCase(Locale.ROOT));
+                NamespacedKey model = NamespacedKey.fromString(entry.getString("model", NAMESPACE + ":" + id));
+                if (model == null) {
+                    throw new IllegalArgumentException("ungültiges Modell '" + entry.getString("model") + "'");
+                }
+                if (!fits(slot, animation)) {
+                    logger.warning("Cosmetic '" + id + "': Typ " + animation + " passt nicht zu Slot " + slot + ".");
+                }
+                cosmetics.put(id, new Cosmetic(id,
+                        MiniMessage.miniMessage().deserialize(entry.getString("name", id)),
+                        slot, model,
+                        entry.getBoolean("glowing", false),
+                        animation,
+                        entry.getBoolean("unlocked-by-default", false)));
+            } catch (IllegalArgumentException exception) {
+                logger.warning("Cosmetic '" + id + "' wird übersprungen: " + exception.getMessage());
+            }
+        }
     }
 
-    private void register(String id, Component name, CosmeticSlot slot, boolean glowing, CosmeticAnimation animation) {
-        cosmetics.put(id, new Cosmetic(id, name, slot, new NamespacedKey(NAMESPACE, id), glowing, animation));
+    /** Prüft, ob Typ und Slot zusammenpassen (z. B. kein Pinguin als Hut). */
+    private static boolean fits(CosmeticSlot slot, CosmeticAnimation animation) {
+        return switch (slot) {
+            case HEAD -> List.of(CosmeticAnimation.NONE, CosmeticAnimation.TALKING, CosmeticAnimation.HALO).contains(animation);
+            case BACK -> List.of(CosmeticAnimation.NONE, CosmeticAnimation.ROBE).contains(animation);
+            case PET -> !List.of(CosmeticAnimation.NONE, CosmeticAnimation.ROBE, CosmeticAnimation.TALKING,
+                    CosmeticAnimation.HALO).contains(animation);
+        };
     }
 
     public Cosmetic get(String id) {
@@ -54,5 +73,9 @@ public final class CosmeticRegistry {
 
     public Collection<Cosmetic> all() {
         return cosmetics.values();
+    }
+
+    public List<Cosmetic> inSlot(CosmeticSlot slot) {
+        return cosmetics.values().stream().filter(cosmetic -> cosmetic.slot() == slot).toList();
     }
 }

@@ -1,0 +1,76 @@
+# ===========================================
+#  NexusCosmetics - Emotes
+# ===========================================
+#   enabled: true/false     Emote an- oder ausschalten
+#   name: "<red>Herz"       Anzeigename
+#   type: ...               Emojis: HEART, LAUGH, ANGRY, WOW, THUMBS, SLEEPY, PARTY
+#                           Posen:  SIT, LIE, SPIN, WAVE, CLAP, DANCE
+#   free: true              Jeder darf es benutzen. Sonst braucht man nexuscosmetics.emote.<id>
+#   model: "nexus:emoji_heart"   Optional (nur Emojis): eigenes Emoji-Modell. Die Animation kommt vom Typ.
+
+emotes:
+  heart:
+    enabled: true
+    name: "<red>Herz"
+    type: HEART
+    free: true
+  laugh:
+    enabled: true
+    name: "<yellow>Lachen"
+    type: LAUGH
+    free: true
+  angry:
+    enabled: true
+    name: "<#FF5533>Wütend"
+    type: ANGRY
+    free: true
+  wow:
+    enabled: true
+    name: "<yellow>Staunen"
+    type: WOW
+    free: true
+  thumbs:
+    enabled: true
+    name: "<yellow>Daumen hoch"
+    type: THUMBS
+    free: true
+  sleepy:
+    enabled: true
+    name: "<aqua>Müde"
+    type: SLEEPY
+    free: true
+  party:
+    enabled: true
+    name: "<light_purple>Party"
+    type: PARTY
+    free: false
+  sit:
+    enabled: true
+    name: "<gold>Hinsetzen"
+    type: SIT
+    free: true
+  lie:
+    enabled: true
+    name: "<gold>Hinlegen"
+    type: LIE
+    free: true
+  wave:
+    enabled: true
+    name: "<gold>Winken"
+    type: WAVE
+    free: true
+  clap:
+    enabled: true
+    name: "<gold>Klatschen"
+    type: CLAP
+    free: false
+  spin:
+    enabled: true
+    name: "<aqua>Wirbel"
+    type: SPIN
+    free: false
+  dance:
+    enabled: true
+    name: "<light_purple>Tanzen"
+    type: DANCE
+    free: false

@@ -1,12 +1,15 @@
 package dev.nexus.cosmetics.render.hat;
 
+import dev.nexus.cosmetics.config.Messages;
+import dev.nexus.cosmetics.config.Settings;
 import dev.nexus.cosmetics.cosmetic.Cosmetic;
 import dev.nexus.cosmetics.render.FakeCosmetic;
 import dev.nexus.cosmetics.render.Packets;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -50,39 +53,15 @@ public final class TalkingHat implements FakeCosmetic {
     private static final int TICKS_PER_LETTER = 1;
     private static final int HOLD_TICKS = 70;
     private static final int PAUSE_BETWEEN_LINES = 12;
-    private static final int MIN_SILENCE = 600;   // 30 Sekunden
-    private static final int MAX_SILENCE = 1400;  // 70 Sekunden
     private static final float BUBBLE_HEIGHT = 0.95f;
     private static final float BUBBLE_SCALE = 0.7f;
-
-    private static final List<String> LINES = List.of(
-            "Hmm... ich sehe Mut. Und Hunger. Vor allem Hunger.",
-            "Ich war nicht immer ein Hut, weißt du? Früher war ich... ein anderer Hut.",
-            "Lass mich raten: Du suchst Diamanten. Alle suchen Diamanten.",
-            "Psst. Ich glaube, der Zombie da hinten mag dich.",
-            "Mein Rat: Niemals im Nether schlafen gehen.",
-            "Ich bin ein Hut. Ich weiß Dinge.",
-            "Achtung! Gleich passiert etwas... oder auch nicht.",
-            "Du hast einen hervorragenden Hutgeschmack.",
-            "Wer hat schon wieder einen Creeper eingeladen?",
-            "Ich spüre große Magie... ach nein, das war nur ein Glühstein.",
-            "Hast du heute schon deinen Hut gelobt?",
-            "Links, rechts, links... wohin gehen wir eigentlich?"
-    );
 
     /** Hier merkt sich der Hut dauerhaft das Team des Spielers (in den Spielerdaten). */
     private static final NamespacedKey TEAM_KEY = new NamespacedKey("nexuscosmetics", "hat_team");
 
-    private record Team(String name, TextColor color) {
-    }
-
-    private static final List<Team> TEAMS = List.of(
-            new Team("TEAM PHÖNIX", TextColor.color(0xE8443A)),
-            new Team("TEAM DRACHE", TextColor.color(0x3FB950)),
-            new Team("TEAM EULE", TextColor.color(0x4C8DFF)),
-            new Team("TEAM DACHS", TextColor.color(0xF2C12E)));
-
     private final Player wearer;
+    private final Messages messages;
+    private final Settings settings;
     private final NamespacedKey closedModel;
     private final NamespacedKey talkingModel;
     private final Predicate<ItemStack> isHatItem;
@@ -98,10 +77,13 @@ public final class TalkingHat implements FakeCosmetic {
     private int holdTicks;
     private int silenceTicks;
     private boolean mouthOpen;
-    private Team announcedTeam;
+    /** Das Team, das gerade verkündet wird (für das Feuerwerk), sonst null. */
+    private Component announcedTeam;
 
-    public TalkingHat(Player wearer, Cosmetic cosmetic, Predicate<ItemStack> isHatItem) {
+    public TalkingHat(Player wearer, Cosmetic cosmetic, Predicate<ItemStack> isHatItem, Messages messages, Settings settings) {
         this.wearer = wearer;
+        this.messages = messages;
+        this.settings = settings;
         this.closedModel = cosmetic.model();
         this.talkingModel = cosmetic.model("talk");
         this.isHatItem = isHatItem;
@@ -116,19 +98,19 @@ public final class TalkingHat implements FakeCosmetic {
         setBubbleVisible(false);
 
         // Beim ersten Aufsetzen: feierliche Team-Zuteilung. Danach erinnert sich der Hut.
+        List<String> teams = messages.keys("talking-hat.teams");
         String savedTeam = wearer.getPersistentDataContainer().get(TEAM_KEY, PersistentDataType.STRING);
-        Team team = TEAMS.stream().filter(t -> t.name().equals(savedTeam)).findFirst().orElse(null);
-        if (team == null) {
-            announcedTeam = TEAMS.get(random.nextInt(TEAMS.size()));
-            wearer.getPersistentDataContainer().set(TEAM_KEY, PersistentDataType.STRING, announcedTeam.name());
-            queue.add(Component.text("Hmm... wen haben wir denn da?", NamedTextColor.WHITE));
-            queue.add(Component.text("Schwierig... ich sehe Mut, Köpfchen und viel Hunger...", NamedTextColor.WHITE));
-            queue.add(Component.text("Ich hab's! Du gehörst zu... ", NamedTextColor.WHITE)
-                    .append(Component.text(announcedTeam.name() + "!", announcedTeam.color(), TextDecoration.BOLD)));
+        if (savedTeam == null || !teams.contains(savedTeam)) {
+            if (!teams.isEmpty()) {
+                String team = teams.get(random.nextInt(teams.size()));
+                wearer.getPersistentDataContainer().set(TEAM_KEY, PersistentDataType.STRING, team);
+                announcedTeam = messages.get("talking-hat.teams." + team);
+                messages.rawList("talking-hat.sorting").forEach(line -> queue.add(speech(line)));
+                queue.add(speech(messages.raw("talking-hat.sorting-result"), Placeholder.component("team", announcedTeam)));
+            }
         } else {
-            queue.add(Component.text("Ah, da bist du ja wieder! Stolzes Mitglied von ", NamedTextColor.WHITE)
-                    .append(Component.text(team.name(), team.color(), TextDecoration.BOLD))
-                    .append(Component.text("!", NamedTextColor.WHITE)));
+            queue.add(speech(messages.raw("talking-hat.welcome-back"),
+                    Placeholder.component("team", messages.get("talking-hat.teams." + savedTeam))));
         }
         silenceTicks = 30;
     }
@@ -179,7 +161,7 @@ public final class TalkingHat implements FakeCosmetic {
             if (silenceTicks > 0) {
                 silenceTicks--;
             } else {
-                startLine(queue.isEmpty() ? Component.text(LINES.get(random.nextInt(LINES.size())), NamedTextColor.WHITE) : queue.poll());
+                startLine(queue.isEmpty() ? randomLine() : queue.poll());
             }
         } else if (revealed < currentText.length()) {
             revealLetter(serverTick);
@@ -241,18 +223,45 @@ public final class TalkingHat implements FakeCosmetic {
         currentLine = null;
         setBubbleVisible(false);
         setMouth(false);
-        silenceTicks = queue.isEmpty() ? MIN_SILENCE + random.nextInt(MAX_SILENCE - MIN_SILENCE) : PAUSE_BETWEEN_LINES;
+        silenceTicks = queue.isEmpty()
+                ? settings.hatMinSilenceTicks() + random.nextInt(settings.hatMaxSilenceTicks() - settings.hatMinSilenceTicks())
+                : PAUSE_BETWEEN_LINES;
     }
 
     /** Team verkündet: Feuerwerk aus Partikeln und ein Fanfaren-Sound. */
     private void celebrate() {
         Location location = wearer.getLocation().add(0, wearer.getHeight() + 0.3, 0);
-        Color color = Color.fromRGB(announcedTeam.color().value());
+        TextColor teamColor = firstColor(announcedTeam);
+        Color color = Color.fromRGB(teamColor == null ? 0xFFD43B : teamColor.value());
         wearer.getWorld().spawnParticle(Particle.DUST, location, 40, 0.5, 0.4, 0.5,
                 new Particle.DustOptions(color, 1.4f));
         wearer.getWorld().spawnParticle(Particle.TOTEM_OF_UNDYING, location, 30, 0.3, 0.3, 0.3, 0.3);
         wearer.getWorld().playSound(wearer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.8f, 1.2f);
         announcedTeam = null;
+    }
+
+    private Component randomLine() {
+        List<String> lines = messages.rawList("talking-hat.lines");
+        return lines.isEmpty() ? Component.text("...") : speech(lines.get(random.nextInt(lines.size())));
+    }
+
+    /** Ein Spruch in Weiß, Platzhalter wie <team> werden ersetzt. */
+    private Component speech(String text, TagResolver... placeholders) {
+        return Component.text().color(NamedTextColor.WHITE).append(messages.parse(text, placeholders)).build();
+    }
+
+    /** Sucht die erste Farbe in einem Text (für das Team-Feuerwerk). */
+    private static TextColor firstColor(Component component) {
+        if (component.color() != null) {
+            return component.color();
+        }
+        for (Component child : component.children()) {
+            TextColor color = firstColor(child);
+            if (color != null) {
+                return color;
+            }
+        }
+        return null;
     }
 
     private void setBubbleVisible(boolean visible) {

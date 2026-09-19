@@ -1,0 +1,80 @@
+# ===========================================
+#  NexusCosmetics - Messages (English)
+# ===========================================
+# All messages use the MiniMessage format for colors: https://docs.advntr.dev/minimessage/format
+# Examples: <red>red</red>, <#FF8800>custom color</#FF8800>, <b>bold</b>, <gradient:gold:yellow>gradient</gradient>
+# Placeholders like <name> or <count> are filled in by the plugin.
+
+prefix: "<light_purple>Cosmetics » </light_purple>"
+only-players: "<red>Only players can use this."
+no-permission: "<red>You don't have permission to do that."
+reloaded: "<green>Configuration reloaded: <white><cosmetics></white> cosmetics and <white><emotes></white> emotes."
+
+cosmetics:
+  equipped: "<gray>You are now wearing: <name>"
+  unequipped-all: "<gray>All cosmetics removed."
+  locked: "<red>You haven't unlocked this cosmetic yet."
+  head-occupied: "<red>Take off your helmet first."
+  remove-hat-first: "<red>Take off your hat first (/cosmetics)."
+
+menu:
+  main-title: "<dark_gray>Cosmetics"
+  category-title: "<dark_gray><category> <gray>(<page>/<pages>)"
+  categories:
+    HEAD: "<gold>Hats"
+    BACK: "<red>Capes"
+    PET: "<green>Pets"
+  category-lore: "<gray><count> cosmetics"
+  open-category: "<yellow>Click to open"
+  emotes-button: "<light_purple>Emotes"
+  emotes-button-lore: "<gray>Tip: Sneak + F opens them anywhere"
+  equipped: "<green>✔ Equipped"
+  click-unequip: "<gray>Click to remove"
+  click-equip: "<yellow>Click to wear"
+  locked: "<red>🔒 Locked"
+  unequip-all: "<red>Remove all"
+  unequip-category: "<red>Remove"
+  back: "<gray>« Back"
+  previous-page: "<yellow>« Previous page"
+  next-page: "<yellow>Next page »"
+
+emotes:
+  menu-title: "<dark_gray>Emotes"
+  click-play: "<yellow>Click to play"
+  locked: "<red>You haven't unlocked this emote yet."
+  locked-lore: "<red>🔒 Locked"
+  unknown: "<red>Unknown emote: <name>"
+  sit-ground-only: "<red>You can only sit down on the ground."
+  lie-no-space: "<red>There isn't enough room to lie down here."
+  tip-title: "<aqua>Tip"
+  tip-lines:
+    - "<gray>Sneak + F opens this menu"
+    - "<gray>Moving ends poses, sneaking stands up"
+
+talking-hat:
+  # The first time the hat is put on, it sorts the player into a team
+  sorting:
+    - "Hmm... who do we have here?"
+    - "Tricky... I see courage, brains and a lot of hunger..."
+  sorting-result: "I've got it! You belong to... <team>!"
+  welcome-back: "Ah, there you are again! Proud member of <team>!"
+  # Teams: the color of the name is also used for the particle fireworks
+  teams:
+    phoenix: "<#E8443A><b>TEAM PHOENIX"
+    dragon: "<#3FB950><b>TEAM DRAGON"
+    owl: "<#4C8DFF><b>TEAM OWL"
+    badger: "<#F2C12E><b>TEAM BADGER"
+  # Random lines in between
+  lines:
+    - "Hmm... I see courage. And hunger. Mostly hunger."
+    - "I wasn't always a hat, you know? I used to be... a different hat."
+    - "Let me guess: you're looking for diamonds. Everyone is looking for diamonds."
+    - "Psst. I think that zombie over there likes you."
+    - "My advice: never go to sleep in the Nether."
+    - "I am a hat. I know things."
+    - "Attention! Something is about to happen... or not."
+    - "You have excellent taste in hats."
+    - "Who invited a creeper again?"
+    - "I sense great magic... oh no, that was just glowstone."
+    - "Have you complimented your hat today?"
+    - "Left, right, left... where are we actually going?"

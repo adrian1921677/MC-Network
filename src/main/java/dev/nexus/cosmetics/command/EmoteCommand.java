@@ -1,13 +1,12 @@
 package dev.nexus.cosmetics.command;
 
-import dev.nexus.cosmetics.cosmetic.CosmeticManager;
+import dev.nexus.cosmetics.config.Messages;
 import dev.nexus.cosmetics.emote.Emote;
 import dev.nexus.cosmetics.emote.EmoteMenu;
 import dev.nexus.cosmetics.emote.EmoteService;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.entity.Player;
 
 import java.util.Collection;
@@ -20,25 +19,26 @@ import java.util.List;
 public final class EmoteCommand implements BasicCommand {
 
     private final EmoteService service;
+    private final Messages messages;
 
-    public EmoteCommand(EmoteService service) {
+    public EmoteCommand(EmoteService service, Messages messages) {
         this.service = service;
+        this.messages = messages;
     }
 
     @Override
     public void execute(CommandSourceStack source, String[] args) {
         if (!(source.getExecutor() instanceof Player player)) {
-            source.getSender().sendMessage(Component.text("Nur Spieler können Emotes benutzen.", NamedTextColor.RED));
+            source.getSender().sendMessage(messages.prefixed("only-players"));
             return;
         }
         if (args.length == 0) {
-            new EmoteMenu(service, player).open();
+            new EmoteMenu(service, messages, player).open();
             return;
         }
         Emote emote = service.registry().get(args[0].toLowerCase());
         if (emote == null) {
-            player.sendMessage(CosmeticManager.prefix().append(
-                    Component.text("Unbekanntes Emote: " + args[0], NamedTextColor.RED)));
+            player.sendMessage(messages.prefixed("emotes.unknown", Placeholder.unparsed("name", args[0])));
             return;
         }
         service.play(player, emote);

@@ -1,5 +1,6 @@
 package dev.nexus.cosmetics.cosmetic;
 
+import dev.nexus.cosmetics.NexusCosmetics;
 import dev.nexus.cosmetics.render.FakeCosmeticRenderer;
 import dev.nexus.cosmetics.render.cape.CapeCosmetic;
 import dev.nexus.cosmetics.render.hat.FloatingHalo;
@@ -7,7 +8,6 @@ import dev.nexus.cosmetics.render.hat.TalkingHat;
 import dev.nexus.cosmetics.render.pet.FakePet;
 import dev.nexus.cosmetics.storage.CosmeticStorage;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -16,7 +16,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.Plugin;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -34,7 +33,7 @@ public final class CosmeticManager {
 
     public enum EquipResult { EQUIPPED, NO_PERMISSION, HEAD_OCCUPIED }
 
-    private final Plugin plugin;
+    private final NexusCosmetics plugin;
     private final CosmeticRegistry registry;
     private final FakeCosmeticRenderer renderer;
     private final CosmeticStorage storage;
@@ -42,7 +41,7 @@ public final class CosmeticManager {
     private final NamespacedKey cosmeticKey;
     private final Map<UUID, Map<CosmeticSlot, Cosmetic>> equipped = new HashMap<>();
 
-    public CosmeticManager(Plugin plugin, CosmeticRegistry registry, FakeCosmeticRenderer renderer, CosmeticStorage storage) {
+    public CosmeticManager(NexusCosmetics plugin, CosmeticRegistry registry, FakeCosmeticRenderer renderer, CosmeticStorage storage) {
         this.plugin = plugin;
         this.registry = registry;
         this.renderer = renderer;
@@ -152,7 +151,7 @@ public final class CosmeticManager {
                     }
                     player.getInventory().setHelmet(createItem(cosmetic, List.of()));
                     if (cosmetic.animation() == CosmeticAnimation.TALKING) {
-                        renderer.show(player, CosmeticSlot.HEAD, new TalkingHat(player, cosmetic, this::isCosmeticItem));
+                        renderer.show(player, CosmeticSlot.HEAD, new TalkingHat(player, cosmetic, this::isCosmeticItem, plugin.messages(), plugin.settings()));
                     } else {
                         renderer.hide(player, CosmeticSlot.HEAD);
                     }
@@ -218,9 +217,5 @@ public final class CosmeticManager {
             meta.getPersistentDataContainer().set(cosmeticKey, PersistentDataType.STRING, cosmetic.id());
         });
         return item;
-    }
-
-    public static Component prefix() {
-        return Component.text("Cosmetics » ", NamedTextColor.LIGHT_PURPLE);
     }
 }

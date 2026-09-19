@@ -1,0 +1,80 @@
+# ===========================================
+#  NexusCosmetics - Texte (Deutsch)
+# ===========================================
+# Alle Texte nutzen das MiniMessage-Format für Farben: https://docs.advntr.dev/minimessage/format
+# Beispiele: <red>rot</red>, <#FF8800>eigene Farbe</#FF8800>, <b>fett</b>, <gradient:gold:yellow>Verlauf</gradient>
+# Platzhalter wie <name> oder <count> werden vom Plugin ersetzt.
+
+prefix: "<light_purple>Cosmetics » </light_purple>"
+only-players: "<red>Nur Spieler können das benutzen."
+no-permission: "<red>Dafür hast du keine Rechte."
+reloaded: "<green>Konfiguration neu geladen: <white><cosmetics></white> Cosmetics und <white><emotes></white> Emotes."
+
+cosmetics:
+  equipped: "<gray>Du trägst jetzt: <name>"
+  unequipped-all: "<gray>Alle Cosmetics abgelegt."
+  locked: "<red>Dieses Cosmetic hast du noch nicht freigeschaltet."
+  head-occupied: "<red>Nimm zuerst deinen Helm ab."
+  remove-hat-first: "<red>Leg zuerst deinen Hut ab (/cosmetics)."
+
+menu:
+  main-title: "<dark_gray>Cosmetics"
+  category-title: "<dark_gray><category> <gray>(<page>/<pages>)"
+  categories:
+    HEAD: "<gold>Hüte"
+    BACK: "<red>Umhänge"
+    PET: "<green>Haustiere"
+  category-lore: "<gray><count> Cosmetics"
+  open-category: "<yellow>Klicken zum Öffnen"
+  emotes-button: "<light_purple>Emotes"
+  emotes-button-lore: "<gray>Tipp: Schleichen + F öffnet sie überall"
+  equipped: "<green>✔ Ausgerüstet"
+  click-unequip: "<gray>Klicken zum Ablegen"
+  click-equip: "<yellow>Klicken zum Tragen"
+  locked: "<red>🔒 Nicht freigeschaltet"
+  unequip-all: "<red>Alles ablegen"
+  unequip-category: "<red>Ablegen"
+  back: "<gray>« Zurück"
+  previous-page: "<yellow>« Vorherige Seite"
+  next-page: "<yellow>Nächste Seite »"
+
+emotes:
+  menu-title: "<dark_gray>Emotes"
+  click-play: "<yellow>Klicken zum Abspielen"
+  locked: "<red>Dieses Emote hast du noch nicht freigeschaltet."
+  locked-lore: "<red>🔒 Nicht freigeschaltet"
+  unknown: "<red>Unbekanntes Emote: <name>"
+  sit-ground-only: "<red>Du kannst dich nur auf den Boden setzen."
+  lie-no-space: "<red>Hier ist nicht genug Platz zum Hinlegen."
+  tip-title: "<aqua>Tipp"
+  tip-lines:
+    - "<gray>Schleichen + F öffnet dieses Menü"
+    - "<gray>Bewegen beendet Posen, Schleichen steht auf"
+
+talking-hat:
+  # Beim ersten Aufsetzen teilt der Hut den Spieler einem Team zu
+  sorting:
+    - "Hmm... wen haben wir denn da?"
+    - "Schwierig... ich sehe Mut, Köpfchen und viel Hunger..."
+  sorting-result: "Ich hab's! Du gehörst zu... <team>!"
+  welcome-back: "Ah, da bist du ja wieder! Stolzes Mitglied von <team>!"
+  # Teams: Die Farbe des Namens wird auch für das Partikel-Feuerwerk benutzt
+  teams:
+    phoenix: "<#E8443A><b>TEAM PHÖNIX"
+    dragon: "<#3FB950><b>TEAM DRACHE"
+    owl: "<#4C8DFF><b>TEAM EULE"
+    badger: "<#F2C12E><b>TEAM DACHS"
+  # Zufällige Sprüche zwischendurch
+  lines:
+    - "Hmm... ich sehe Mut. Und Hunger. Vor allem Hunger."
+    - "Ich war nicht immer ein Hut, weißt du? Früher war ich... ein anderer Hut."
+    - "Lass mich raten: Du suchst Diamanten. Alle suchen Diamanten."
+    - "Psst. Ich glaube, der Zombie da hinten mag dich."
+    - "Mein Rat: Niemals im Nether schlafen gehen."
+    - "Ich bin ein Hut. Ich weiß Dinge."
+    - "Achtung! Gleich passiert etwas... oder auch nicht."
+    - "Du hast einen hervorragenden Hutgeschmack."
+    - "Wer hat schon wieder einen Creeper eingeladen?"
+    - "Ich spüre große Magie... ach nein, das war nur ein Glühstein."
+    - "Hast du heute schon deinen Hut gelobt?"
+    - "Links, rechts, links... wohin gehen wir eigentlich?"

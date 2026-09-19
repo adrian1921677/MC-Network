@@ -1,6 +1,17 @@
 # ===========================================
-#  NexusCosmetics - Konfiguration
+#  NexusCosmetics - Konfiguration / Configuration
 # ===========================================
+# Nach Änderungen: /cosmetics reload   (After changes: /cosmetics reload)
+#
+# Weitere Dateien in diesem Ordner / More files in this folder:
+#   cosmetics.yml        Alle Cosmetics (an/aus, Namen, eigene Cosmetics) / all cosmetics
+#   emotes.yml           Alle Emotes / all emotes
+#   lang/messages_*.yml  Alle Texte / all messages
+#   pack/                Eigene Modelle für das Resource Pack / your own models for the resource pack
+
+# Sprache: "de" (Deutsch) oder "en" (English)
+# Bestimmt die Texte und beim ersten Start die Namen in cosmetics.yml/emotes.yml.
+language: de
 
 resource-pack:
   # Das Plugin liefert sein Resource Pack (die 3D-Modelle) selbst an die Spieler aus.
@@ -22,3 +33,19 @@ resource-pack:
 
   # Nachricht im Download-Dialog (MiniMessage-Format für Farben)
   prompt: "<gold>Dieses Pack wird für die 3D-Cosmetics benötigt."
+
+storage:
+  # Wo gespeichert wird, was Spieler tragen. Aktuell: "yaml" (eine Datei pro Spieler).
+  # MySQL für Netzwerke folgt in einem späteren Update.
+  type: yaml
+
+emotes:
+  # Wartezeit zwischen zwei Emotes in Sekunden
+  cooldown-seconds: 1.5
+  # Schleichen + F (Hand wechseln) öffnet das Emote-Menü
+  sneak-swap-shortcut: true
+
+talking-hat:
+  # Wie lange der sprechende Hut zwischen zwei Sprüchen schweigt (Sekunden)
+  min-silence-seconds: 30
+  max-silence-seconds: 70

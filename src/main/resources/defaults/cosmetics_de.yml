@@ -1,0 +1,148 @@
+# ===========================================
+#  NexusCosmetics - Cosmetics
+# ===========================================
+# Jedes Cosmetic hat eine eindeutige ID (z. B. "crown"). Mögliche Einstellungen:
+#
+#   enabled: true/false         Cosmetic an- oder ausschalten
+#   name: "<gold>Krone"         Anzeigename (MiniMessage-Farben)
+#   slot: HEAD | BACK | PET     Kopf, Rücken oder Haustier
+#   type: ...                   Besonderes Verhalten:
+#                                 HEAD: NONE (normaler Hut), TALKING (sprechender Hut), HALO (schwebend)
+#                                 BACK: NONE (Cape), ROBE (langer Umhang)
+#                                 PET:  GHOST, DRAGON, PENGUIN, KITTEN, BEE, MUSHROOM, OWL
+#   glowing: true/false         Leuchtet im Dunkeln (Capes, Haustiere, Heiligenschein)
+#   unlocked-by-default: true   Jeder Spieler darf es benutzen. Sonst braucht man die Permission
+#                               nexuscosmetics.cosmetic.<id> (z. B. für Ränge oder Shop-Käufe).
+#   model: "nexus:crown"        Optional: eigenes Modell aus dem Resource Pack
+#
+# EIGENE COSMETICS: Lege dein Modell in plugins/NexusCosmetics/pack/ ab (gleiche Ordnerstruktur wie
+# ein Resource Pack, z. B. pack/assets/meinserver/items/cooler_hut.json) und trage es hier ein:
+#
+#   cooler_hut:
+#     name: "<aqua>Cooler Hut"
+#     slot: HEAD
+#     model: "meinserver:cooler_hut"
+#
+# Capes brauchen drei Teil-Modelle mit Endung _0, _1, _2 (oben, Mitte, unten).
+# Haustiere brauchen die Teil-Modelle ihres Typs (siehe Beispiele im eingebauten Pack).
+
+cosmetics:
+  top_hat:
+    enabled: true
+    name: "<gray>Zylinder"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+  crown:
+    enabled: true
+    name: "<gold>Krone"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+  talking_hat:
+    enabled: true
+    name: "<#B08050>Sprechender Hut"
+    slot: HEAD
+    type: TALKING
+    glowing: false
+    unlocked-by-default: false
+  halo:
+    enabled: true
+    name: "<#FFE27A>Heiligenschein"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+  royal_cape:
+    enabled: true
+    name: "<red>Königsumhang"
+    slot: BACK
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+  galaxy_cape:
+    enabled: true
+    name: "<#A070FF>Galaxie-Cape"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+  wizard_robe_red:
+    enabled: true
+    name: "<#D8413A>Zauberumhang (Rot)"
+    slot: BACK
+    type: ROBE
+    glowing: false
+    unlocked-by-default: false
+  wizard_robe_green:
+    enabled: true
+    name: "<#3FAF5A>Zauberumhang (Grün)"
+    slot: BACK
+    type: ROBE
+    glowing: false
+    unlocked-by-default: false
+  wizard_robe_blue:
+    enabled: true
+    name: "<#4C7FE0>Zauberumhang (Blau)"
+    slot: BACK
+    type: ROBE
+    glowing: false
+    unlocked-by-default: false
+  wizard_robe_yellow:
+    enabled: true
+    name: "<#F0C23A>Zauberumhang (Gelb)"
+    slot: BACK
+    type: ROBE
+    glowing: false
+    unlocked-by-default: false
+  mini_dragon:
+    enabled: true
+    name: "<#E0533A>Mini-Drache"
+    slot: PET
+    type: DRAGON
+    glowing: false
+    unlocked-by-default: false
+  ghost:
+    enabled: true
+    name: "<white>Geist"
+    slot: PET
+    type: GHOST
+    glowing: true
+    unlocked-by-default: false
+  penguin:
+    enabled: true
+    name: "<#9FC7FF>Pinguin"
+    slot: PET
+    type: PENGUIN
+    glowing: false
+    unlocked-by-default: false
+  kitten:
+    enabled: true
+    name: "<#FFA64D>Kätzchen"
+    slot: PET
+    type: KITTEN
+    glowing: false
+    unlocked-by-default: false
+  bee:
+    enabled: true
+    name: "<#FFD43B>Bienchen"
+    slot: PET
+    type: BEE
+    glowing: false
+    unlocked-by-default: false
+  mushroom:
+    enabled: true
+    name: "<#FF6B6B>Pilzchen"
+    slot: PET
+    type: MUSHROOM
+    glowing: false
+    unlocked-by-default: false
+  owl:
+    enabled: true
+    name: "<#C8A070>Eule"
+    slot: PET
+    type: OWL
+    glowing: false
+    unlocked-by-default: false

@@ -1,9 +1,7 @@
 package dev.nexus.cosmetics.emote;
 
+import dev.nexus.cosmetics.config.Messages;
 import dev.nexus.cosmetics.menu.ClickableMenu;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -26,14 +24,16 @@ public final class EmoteMenu implements ClickableMenu {
     private static final int POSE_ROW = 19;
 
     private final EmoteService service;
+    private final Messages messages;
     private final Player player;
     private final Inventory inventory;
     private final Map<Integer, Emote> slots = new HashMap<>();
 
-    public EmoteMenu(EmoteService service, Player player) {
+    public EmoteMenu(EmoteService service, Messages messages, Player player) {
         this.service = service;
+        this.messages = messages;
         this.player = player;
-        this.inventory = Bukkit.createInventory(this, SIZE, Component.text("Emotes"));
+        this.inventory = Bukkit.createInventory(this, SIZE, messages.get("emotes.menu-title"));
         render();
     }
 
@@ -57,10 +57,8 @@ public final class EmoteMenu implements ClickableMenu {
 
         ItemStack hint = ItemStack.of(Material.BOOK);
         hint.editMeta(meta -> {
-            meta.itemName(Component.text("Tipp", NamedTextColor.AQUA));
-            meta.lore(List.of(
-                    line("Schleichen + F öffnet dieses Menü", NamedTextColor.GRAY),
-                    line("Bewegen beendet Posen, Schleichen steht auf", NamedTextColor.GRAY)));
+            meta.itemName(messages.item("emotes.tip-title"));
+            meta.lore(messages.itemList("emotes.tip-lines"));
         });
         inventory.setItem(31, hint);
     }
@@ -73,16 +71,10 @@ public final class EmoteMenu implements ClickableMenu {
                 meta.setItemModel(emote.model());
             }
             meta.itemName(emote.displayName());
-            meta.lore(List.of(unlocked
-                    ? line("Klicken zum Abspielen", NamedTextColor.YELLOW)
-                    : line("🔒 Nicht freigeschaltet", NamedTextColor.RED)));
+            meta.lore(List.of(messages.item(unlocked ? "emotes.click-play" : "emotes.locked-lore")));
             meta.addItemFlags(ItemFlag.values());
         });
         return item;
-    }
-
-    private static Component line(String text, NamedTextColor color) {
-        return Component.text(text, color).decoration(TextDecoration.ITALIC, false);
     }
 
     @Override

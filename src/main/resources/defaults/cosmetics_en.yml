@@ -1,0 +1,148 @@
+# ===========================================
+#  NexusCosmetics - Cosmetics
+# ===========================================
+# Every cosmetic has a unique ID (e.g. "crown"). Possible settings:
+#
+#   enabled: true/false         Turn the cosmetic on or off
+#   name: "<gold>Crown"         Display name (MiniMessage colors)
+#   slot: HEAD | BACK | PET     Head, back or pet
+#   type: ...                   Special behaviour:
+#                                 HEAD: NONE (normal hat), TALKING (talking hat), HALO (floating)
+#                                 BACK: NONE (cape), ROBE (long robe)
+#                                 PET:  GHOST, DRAGON, PENGUIN, KITTEN, BEE, MUSHROOM, OWL
+#   glowing: true/false         Glows in the dark (capes, pets, halo)
+#   unlocked-by-default: true   Every player may use it. Otherwise the permission
+#                               nexuscosmetics.cosmetic.<id> is required (e.g. for ranks or store purchases).
+#   model: "nexus:crown"        Optional: custom model from the resource pack
+#
+# CUSTOM COSMETICS: Put your model into plugins/NexusCosmetics/pack/ (same folder structure as a
+# resource pack, e.g. pack/assets/myserver/items/cool_hat.json) and add it here:
+#
+#   cool_hat:
+#     name: "<aqua>Cool Hat"
+#     slot: HEAD
+#     model: "myserver:cool_hat"
+#
+# Capes need three part models ending in _0, _1, _2 (top, middle, bottom).
+# Pets need the part models of their type (see the examples in the built-in pack).
+
+cosmetics:
+  top_hat:
+    enabled: true
+    name: "<gray>Top Hat"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+  crown:
+    enabled: true
+    name: "<gold>Crown"
+    slot: HEAD
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+  talking_hat:
+    enabled: true
+    name: "<#B08050>Talking Hat"
+    slot: HEAD
+    type: TALKING
+    glowing: false
+    unlocked-by-default: false
+  halo:
+    enabled: true
+    name: "<#FFE27A>Halo"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+  royal_cape:
+    enabled: true
+    name: "<red>Royal Cape"
+    slot: BACK
+    type: NONE
+    glowing: false
+    unlocked-by-default: false
+  galaxy_cape:
+    enabled: true
+    name: "<#A070FF>Galaxy Cape"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+  wizard_robe_red:
+    enabled: true
+    name: "<#D8413A>Wizard Robe (Red)"
+    slot: BACK
+    type: ROBE
+    glowing: false
+    unlocked-by-default: false
+  wizard_robe_green:
+    enabled: true
+    name: "<#3FAF5A>Wizard Robe (Green)"
+    slot: BACK
+    type: ROBE
+    glowing: false
+    unlocked-by-default: false
+  wizard_robe_blue:
+    enabled: true
+    name: "<#4C7FE0>Wizard Robe (Blue)"
+    slot: BACK
+    type: ROBE
+    glowing: false
+    unlocked-by-default: false
+  wizard_robe_yellow:
+    enabled: true
+    name: "<#F0C23A>Wizard Robe (Yellow)"
+    slot: BACK
+    type: ROBE
+    glowing: false
+    unlocked-by-default: false
+  mini_dragon:
+    enabled: true
+    name: "<#E0533A>Mini Dragon"
+    slot: PET
+    type: DRAGON
+    glowing: false
+    unlocked-by-default: false
+  ghost:
+    enabled: true
+    name: "<white>Ghost"
+    slot: PET
+    type: GHOST
+    glowing: true
+    unlocked-by-default: false
+  penguin:
+    enabled: true
+    name: "<#9FC7FF>Penguin"
+    slot: PET
+    type: PENGUIN
+    glowing: false
+    unlocked-by-default: false
+  kitten:
+    enabled: true
+    name: "<#FFA64D>Kitten"
+    slot: PET
+    type: KITTEN
+    glowing: false
+    unlocked-by-default: false
+  bee:
+    enabled: true
+    name: "<#FFD43B>Bee"
+    slot: PET
+    type: BEE
+    glowing: false
+    unlocked-by-default: false
+  mushroom:
+    enabled: true
+    name: "<#FF6B6B>Mushroom Buddy"
+    slot: PET
+    type: MUSHROOM
+    glowing: false
+    unlocked-by-default: false
+  owl:
+    enabled: true
+    name: "<#C8A070>Owl"
+    slot: PET
+    type: OWL
+    glowing: false
+    unlocked-by-default: false

@@ -1,22 +1,17 @@
 package dev.nexus.cosmetics.emote;
 
-import dev.nexus.cosmetics.cosmetic.CosmeticRegistry;
 import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 
 /**
- * Ein Emote.
+ * Ein Emote (aus emotes.yml).
  *
- * @param free true = jeder Spieler darf es benutzen, false = nur mit Permission (z. B. für Ränge)
+ * @param free  true = jeder Spieler darf es benutzen, false = nur mit Permission (z. B. für Ränge)
+ * @param model 3D-Modell des Emojis im Resource Pack (nur für Emoji-Emotes)
  */
-public record Emote(String id, Component displayName, EmoteType type, boolean free) {
+public record Emote(String id, Component displayName, EmoteType type, boolean free, NamespacedKey model) {
 
     public String permission() {
         return "nexuscosmetics.emote." + id;
-    }
-
-    /** 3D-Modell des Emojis im Resource Pack (nur für Emoji-Emotes). */
-    public NamespacedKey model() {
-        return new NamespacedKey(CosmeticRegistry.NAMESPACE, "emoji_" + id);
     }
 }

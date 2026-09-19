@@ -1,9 +1,7 @@
 package dev.nexus.cosmetics.emote;
 
-import dev.nexus.cosmetics.cosmetic.CosmeticManager;
+import dev.nexus.cosmetics.NexusCosmetics;
 import dev.nexus.cosmetics.render.FakeCosmeticRenderer;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -21,7 +19,6 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.HashMap;
@@ -40,7 +37,6 @@ import java.util.UUID;
 public final class EmoteService implements Listener {
 
     private static final String EMOTE_PLACE = "EMOTE";
-    private static final long COOLDOWN_MILLIS = 1500;
     private static final double CANCEL_DISTANCE = 0.3;
 
     // Eine kleine Tanz-Melodie: {Tick, Tonhöhe}
@@ -48,7 +44,7 @@ public final class EmoteService implements Listener {
             {0, 1.0f}, {5, 1.26f}, {10, 1.5f}, {15, 1.26f}, {20, 1.0f}, {25, 1.26f}, {30, 1.5f}, {35, 2.0f},
             {40, 1.78f}, {45, 1.5f}, {50, 1.26f}, {55, 1.5f}, {60, 1.0f}, {65, 1.26f}, {70, 1.5f}, {75, 2.0f}};
 
-    private final Plugin plugin;
+    private final NexusCosmetics plugin;
     private final EmoteRegistry registry;
     private final FakeCosmeticRenderer renderer;
     private final Map<UUID, ActivePose> poses = new HashMap<>();
@@ -69,10 +65,21 @@ public final class EmoteService implements Listener {
         }
     }
 
-    public EmoteService(Plugin plugin, EmoteRegistry registry, FakeCosmeticRenderer renderer) {
+    public EmoteService(NexusCosmetics plugin, EmoteRegistry registry, FakeCosmeticRenderer renderer) {
         this.plugin = plugin;
         this.registry = registry;
         this.renderer = renderer;
+    }
+
+    /** Beendet bei allen Spielern laufende Posen (z. B. vor einem Reload). */
+    public void stopAllPoses() {
+        for (UUID uuid : List.copyOf(poses.keySet())) {
+            Player player = plugin.getServer().getPlayer(uuid);
+            if (player != null) {
+                stopPose(player);
+            }
+        }
+        poses.clear();
     }
 
     public EmoteRegistry registry() {
@@ -102,13 +109,12 @@ public final class EmoteService implements Listener {
     /** Spielt ein Emote ab. */
     public void play(Player player, Emote emote) {
         if (!canUse(player, emote)) {
-            player.sendMessage(CosmeticManager.prefix().append(
-                    Component.text("Dieses Emote hast du noch nicht freigeschaltet.", NamedTextColor.RED)));
+            player.sendMessage(plugin.messages().prefixed("emotes.locked"));
             return;
         }
         long now = System.currentTimeMillis();
         Long last = lastUse.get(player.getUniqueId());
-        if (last != null && now - last < COOLDOWN_MILLIS) {
+        if (last != null && now - last < plugin.settings().emoteCooldownMillis()) {
             return;
         }
         lastUse.put(player.getUniqueId(), now);
@@ -123,8 +129,7 @@ public final class EmoteService implements Listener {
         switch (emote.type()) {
             case SIT -> {
                 if (!onGround(player)) {
-                    player.sendMessage(CosmeticManager.prefix().append(
-                            Component.text("Du kannst dich nur auf den Boden setzen.", NamedTextColor.RED)));
+                    player.sendMessage(plugin.messages().prefixed("emotes.sit-ground-only"));
                     return;
                 }
                 // Unsichtbarer Sitz: Wer auf einem Entity reitet, sitzt automatisch
@@ -136,8 +141,7 @@ public final class EmoteService implements Listener {
                 // Trick: Ein unsichtbarer Block über dem Kopf (nur für diesen Spieler) lässt ihn kriechen
                 Block above = player.getLocation().getBlock().getRelative(0, 1, 0);
                 if (!above.getType().isAir()) {
-                    player.sendMessage(CosmeticManager.prefix().append(
-                            Component.text("Hier ist nicht genug Platz zum Hinlegen.", NamedTextColor.RED)));
+                    player.sendMessage(plugin.messages().prefixed("emotes.lie-no-space"));
                     return;
                 }
                 pose.crawlBlock = above;
@@ -302,9 +306,9 @@ public final class EmoteService implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onSwapHands(PlayerSwapHandItemsEvent event) {
         Player player = event.getPlayer();
-        if (player.isSneaking() && player.hasPermission("nexuscosmetics.use")) {
+        if (plugin.settings().sneakSwapShortcut() && player.isSneaking() && player.hasPermission("nexuscosmetics.use")) {
             event.setCancelled(true);
-            new EmoteMenu(this, player).open();
+            new EmoteMenu(this, plugin.messages(), player).open();
         }
     }
 }

@@ -15,3 +15,6 @@ permissions:
   nexuscosmetics.emote.*:
     description: Schaltet alle Emotes frei
     default: op
+  nexuscosmetics.admin:
+    description: Erlaubt /cosmetics reload
+    default: op

@@ -20,14 +20,18 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Enumeration;
 import java.util.HexFormat;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
+import java.util.stream.Stream;
 
 /**
  * Baut beim Start das Resource Pack aus dem Plugin-Jar (Ordner "pack/") und stellt es über einen
@@ -45,6 +49,7 @@ public final class ResourcePackService implements Listener {
 
     private HttpServer httpServer;
     private ResourcePackRequest request;
+    private String currentHash;
 
     public ResourcePackService(JavaPlugin plugin, File pluginJar) {
         this.plugin = plugin;
@@ -59,8 +64,10 @@ public final class ResourcePackService implements Listener {
         }
 
         try {
+            createCustomPackFolder();
             byte[] pack = buildPack();
             String sha1 = sha1(pack);
+            currentHash = sha1;
             Files.write(new File(plugin.getDataFolder(), "resource-pack.zip").toPath(), pack);
 
             String url = config.getString("public-url", "");
@@ -100,27 +107,88 @@ public final class ResourcePackService implements Listener {
         }
     }
 
-    /** Kopiert alle Dateien aus "pack/" im Plugin-Jar in eine neue Zip-Datei. */
+    /**
+     * Baut das Pack: zuerst alle Dateien aus "pack/" im Plugin-Jar, dann die eigenen Dateien
+     * des Server-Owners aus plugins/NexusCosmetics/pack/ (die gleichnamige Dateien ersetzen).
+     */
     private byte[] buildPack() throws IOException {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        try (ZipFile jar = new ZipFile(pluginJar); ZipOutputStream zip = new ZipOutputStream(bytes)) {
+        Map<String, byte[]> files = new TreeMap<>(); // sortiert: gleicher Inhalt ergibt gleichen Hash
+        try (ZipFile jar = new ZipFile(pluginJar)) {
             Enumeration<? extends ZipEntry> entries = jar.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
-                if (entry.isDirectory() || !entry.getName().startsWith(PACK_FOLDER)) {
-                    continue;
+                if (!entry.isDirectory() && entry.getName().startsWith(PACK_FOLDER)) {
+                    try (InputStream in = jar.getInputStream(entry)) {
+                        files.put(entry.getName().substring(PACK_FOLDER.length()), in.readAllBytes());
+                    }
                 }
-                ZipEntry packEntry = new ZipEntry(entry.getName().substring(PACK_FOLDER.length()));
+            }
+        }
+
+        Path customFolder = customPackFolder().toPath();
+        if (Files.isDirectory(customFolder)) {
+            try (Stream<Path> walk = Files.walk(customFolder)) {
+                for (Path file : walk.filter(Files::isRegularFile).toList()) {
+                    String name = customFolder.relativize(file).toString().replace('\\', '/');
+                    if (!name.equalsIgnoreCase("LIESMICH.txt") && !name.equalsIgnoreCase("README.txt")) {
+                        files.put(name, Files.readAllBytes(file));
+                    }
+                }
+            }
+        }
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
+            for (Map.Entry<String, byte[]> file : files.entrySet()) {
+                ZipEntry entry = new ZipEntry(file.getKey());
                 // Feste Zeitangabe: Gleicher Inhalt ergibt gleichen Hash, Spieler laden das Pack nur bei Änderungen neu
-                packEntry.setTime(FIXED_ENTRY_TIME);
-                zip.putNextEntry(packEntry);
-                try (InputStream in = jar.getInputStream(entry)) {
-                    in.transferTo(zip);
-                }
+                entry.setTime(FIXED_ENTRY_TIME);
+                zip.putNextEntry(entry);
+                zip.write(file.getValue());
                 zip.closeEntry();
             }
         }
         return bytes.toByteArray();
+    }
+
+    private File customPackFolder() {
+        return new File(plugin.getDataFolder(), "pack");
+    }
+
+    /** Legt den Ordner für eigene Modelle mit einer kurzen Anleitung an. */
+    private void createCustomPackFolder() {
+        File folder = customPackFolder();
+        if (folder.exists()) {
+            return;
+        }
+        folder.mkdirs();
+        try {
+            Files.writeString(new File(folder, "README.txt").toPath(), """
+                    DE: Lege hier eigene Resource-Pack-Dateien ab (gleiche Struktur wie ein Resource Pack,
+                        z. B. assets/meinserver/items/cooler_hut.json). Sie werden automatisch ins Pack
+                        eingebaut. Danach /cosmetics reload und das Cosmetic in cosmetics.yml eintragen.
+
+                    EN: Put your own resource pack files here (same structure as a resource pack,
+                        e.g. assets/myserver/items/cool_hat.json). They are merged into the pack
+                        automatically. Then run /cosmetics reload and add the cosmetic to cosmetics.yml.
+                    """);
+        } catch (IOException ignored) {
+            // Die Anleitung ist nur ein Hinweis, ohne sie funktioniert alles genauso
+        }
+    }
+
+    /**
+     * Baut das Pack nach einem Reload neu. Hat es sich geändert, bekommen alle Online-Spieler
+     * sofort die neue Version.
+     */
+    public void reload() {
+        String oldHash = currentHash;
+        stop();
+        request = null;
+        start();
+        if (request != null && !request.packs().isEmpty() && !request.packs().getFirst().hash().equals(oldHash)) {
+            plugin.getServer().getOnlinePlayers().forEach(player -> player.sendResourcePacks(request));
+        }
     }
 
     private void startHttpServer(int port, byte[] pack) throws IOException {

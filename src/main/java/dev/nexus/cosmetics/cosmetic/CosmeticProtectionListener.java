@@ -1,7 +1,6 @@
 package dev.nexus.cosmetics.cosmetic;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import dev.nexus.cosmetics.config.Messages;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -25,10 +24,12 @@ public final class CosmeticProtectionListener implements Listener {
 
     private final Plugin plugin;
     private final CosmeticManager manager;
+    private final Messages messages;
 
-    public CosmeticProtectionListener(Plugin plugin, CosmeticManager manager) {
+    public CosmeticProtectionListener(Plugin plugin, CosmeticManager manager, Messages messages) {
         this.plugin = plugin;
         this.manager = manager;
+        this.messages = messages;
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -64,8 +65,7 @@ public final class CosmeticProtectionListener implements Listener {
         if (item != null && item.getType().getEquipmentSlot() == EquipmentSlot.HEAD
                 && manager.isCosmeticItem(player.getInventory().getHelmet())) {
             event.setCancelled(true);
-            player.sendMessage(CosmeticManager.prefix().append(
-                    Component.text("Leg zuerst deinen Hut ab (/cosmetics).", NamedTextColor.RED)));
+            player.sendMessage(messages.prefixed("cosmetics.remove-hat-first"));
         }
     }
 
