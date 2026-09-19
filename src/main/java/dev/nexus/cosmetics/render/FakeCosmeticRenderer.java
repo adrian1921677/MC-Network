@@ -73,6 +73,12 @@ public final class FakeCosmeticRenderer implements Listener {
         }
     }
 
+    /** Läuft an diesem Platz gerade etwas (z. B. eine Truhen-Animation)? */
+    public boolean isShowing(Player wearer, String place) {
+        Map<String, FakeCosmetic> slots = worn.get(wearer.getUniqueId());
+        return slots != null && slots.containsKey(place);
+    }
+
     public void hide(Player wearer, String place) {
         Map<String, FakeCosmetic> slots = worn.get(wearer.getUniqueId());
         if (slots == null) {

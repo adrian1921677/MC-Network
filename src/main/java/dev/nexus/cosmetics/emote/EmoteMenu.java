@@ -71,7 +71,8 @@ public final class EmoteMenu implements ClickableMenu {
                 meta.setItemModel(emote.model());
             }
             meta.itemName(emote.displayName());
-            meta.lore(List.of(messages.item(unlocked ? "emotes.click-play" : "emotes.locked-lore")));
+            meta.lore(List.of(messages.item("rarities." + emote.rarity().name()),
+                    messages.item(unlocked ? "emotes.click-play" : "emotes.locked-lore")));
             meta.addItemFlags(ItemFlag.values());
         });
         return item;

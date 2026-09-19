@@ -48,7 +48,7 @@ public final class Messages {
 
     /** Ein Text als Component, z. B. get("cosmetics.locked"). */
     public Component get(String key, TagResolver... placeholders) {
-        return miniMessage.deserialize(messages.getString(key, key), placeholders);
+        return miniMessage.deserialize(raw(key), placeholders);
     }
 
     /** Ein Text mit dem Plugin-Präfix davor (für Chat-Nachrichten). */
@@ -72,7 +72,9 @@ public final class Messages {
     }
 
     public String raw(String key) {
-        return messages.getString(key, key);
+        // Ohne zweites Argument berücksichtigt Bukkit auch die mitgelieferten Standardtexte
+        String text = messages.getString(key);
+        return text != null ? text : key;
     }
 
     /** Alle Unter-Einträge eines Abschnitts, z. B. die Team-IDs unter talking-hat.teams. */

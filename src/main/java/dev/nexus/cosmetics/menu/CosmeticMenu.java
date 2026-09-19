@@ -1,21 +1,26 @@
 package dev.nexus.cosmetics.menu;
 
+import dev.nexus.cosmetics.NexusCosmetics;
 import dev.nexus.cosmetics.config.Messages;
 import dev.nexus.cosmetics.cosmetic.Cosmetic;
 import dev.nexus.cosmetics.cosmetic.CosmeticManager;
+import dev.nexus.cosmetics.cosmetic.CosmeticRegistry;
 import dev.nexus.cosmetics.cosmetic.CosmeticSlot;
+import dev.nexus.cosmetics.crate.CrateMenu;
 import dev.nexus.cosmetics.emote.EmoteMenu;
 import dev.nexus.cosmetics.emote.EmoteService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +28,7 @@ import java.util.Map;
 /**
  * Das Cosmetics-Menü.
  *
- * - Hauptmenü: Kategorien (Hüte, Umhänge, Haustiere), Emotes und "Alles ablegen".
+ * - Hauptmenü: Kategorien (Hüte, Umhänge, Haustiere), Emotes, Truhen und "Alles ablegen".
  * - Kategorie-Seite: bis zu 28 Cosmetics pro Seite (als 3D-Modell), mit Blättern und Zurück.
  */
 public final class CosmeticMenu implements ClickableMenu {
@@ -32,9 +37,10 @@ public final class CosmeticMenu implements ClickableMenu {
     private static final int MAIN_SIZE = 27;
     private static final Map<CosmeticSlot, Integer> CATEGORY_SLOTS = Map.of(
             CosmeticSlot.HEAD, 10,
-            CosmeticSlot.BACK, 12,
-            CosmeticSlot.PET, 14);
-    private static final int EMOTES_SLOT = 16;
+            CosmeticSlot.BACK, 11,
+            CosmeticSlot.PET, 12);
+    private static final int EMOTES_SLOT = 14;
+    private static final int CRATES_SLOT = 16;
     private static final int UNEQUIP_ALL_SLOT = 22;
 
     // Kategorie-Seite
@@ -49,6 +55,7 @@ public final class CosmeticMenu implements ClickableMenu {
     private static final int UNEQUIP_CATEGORY_SLOT = 49;
     private static final int NEXT_SLOT = 50;
 
+    private final NexusCosmetics plugin;
     private final CosmeticManager manager;
     private final EmoteService emotes;
     private final Messages messages;
@@ -59,15 +66,15 @@ public final class CosmeticMenu implements ClickableMenu {
     private final Inventory inventory;
     private final Map<Integer, Cosmetic> cosmeticSlots = new HashMap<>();
 
-    public CosmeticMenu(CosmeticManager manager, EmoteService emotes, Messages messages, Player player) {
-        this(manager, emotes, messages, player, null, 0);
+    public CosmeticMenu(NexusCosmetics plugin, Player player) {
+        this(plugin, player, null, 0);
     }
 
-    private CosmeticMenu(CosmeticManager manager, EmoteService emotes, Messages messages, Player player,
-                         CosmeticSlot category, int page) {
-        this.manager = manager;
-        this.emotes = emotes;
-        this.messages = messages;
+    private CosmeticMenu(NexusCosmetics plugin, Player player, CosmeticSlot category, int page) {
+        this.plugin = plugin;
+        this.manager = plugin.cosmetics();
+        this.emotes = plugin.emotes();
+        this.messages = plugin.messages();
         this.player = player;
         this.category = category;
         this.page = page;
@@ -126,6 +133,11 @@ public final class CosmeticMenu implements ClickableMenu {
         });
 
         inventory.setItem(EMOTES_SLOT, button(Material.NOTE_BLOCK, "menu.emotes-button", messages.item("menu.emotes-button-lore")));
+        int keys = manager.profile(player).allKeys().values().stream().mapToInt(Integer::intValue).sum();
+        ItemStack crates = button(Material.PAPER, "crates.button", messages.item("crates.button-lore"),
+                messages.item("crates.keys", Placeholder.unparsed("count", String.valueOf(keys))));
+        crates.editMeta(meta -> meta.setItemModel(new NamespacedKey(CosmeticRegistry.NAMESPACE, "crate")));
+        inventory.setItem(CRATES_SLOT, crates);
         inventory.setItem(UNEQUIP_ALL_SLOT, button(Material.BARRIER, "menu.unequip-all"));
     }
 
@@ -135,13 +147,15 @@ public final class CosmeticMenu implements ClickableMenu {
         int first = page * ITEM_SLOTS.length;
         for (int i = 0; i < ITEM_SLOTS.length && first + i < cosmetics.size(); i++) {
             Cosmetic cosmetic = cosmetics.get(first + i);
-            List<Component> lore;
+            List<Component> lore = new ArrayList<>();
+            lore.add(messages.item("rarities." + cosmetic.rarity().name()));
             if (cosmetic.equals(equipped)) {
-                lore = List.of(messages.item("menu.equipped"), messages.item("menu.click-unequip"));
-            } else if (player.hasPermission(cosmetic.permission())) {
-                lore = List.of(messages.item("menu.click-equip"));
+                lore.add(messages.item("menu.equipped"));
+                lore.add(messages.item("menu.click-unequip"));
+            } else if (manager.canUse(player, cosmetic)) {
+                lore.add(messages.item("menu.click-equip"));
             } else {
-                lore = List.of(messages.item("menu.locked"));
+                lore.add(messages.item("menu.locked"));
             }
             inventory.setItem(ITEM_SLOTS[i], manager.createItem(cosmetic, lore));
             cosmeticSlots.put(ITEM_SLOTS[i], cosmetic);
@@ -189,6 +203,9 @@ public final class CosmeticMenu implements ClickableMenu {
         if (slot == EMOTES_SLOT) {
             click();
             new EmoteMenu(emotes, messages, player).open();
+        } else if (slot == CRATES_SLOT) {
+            click();
+            new CrateMenu(plugin.crates(), manager, messages, player).open();
         } else if (slot == UNEQUIP_ALL_SLOT) {
             manager.unequipAll(player);
             player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_LEATHER, 1f, 0.8f);
@@ -200,7 +217,7 @@ public final class CosmeticMenu implements ClickableMenu {
         switch (slot) {
             case BACK_SLOT -> {
                 click();
-                new CosmeticMenu(manager, emotes, messages, player).open();
+                new CosmeticMenu(plugin, player).open();
                 return;
             }
             case PREVIOUS_SLOT -> {
@@ -258,7 +275,7 @@ public final class CosmeticMenu implements ClickableMenu {
     }
 
     private void openPage(CosmeticSlot slot, int newPage) {
-        new CosmeticMenu(manager, emotes, messages, player, slot, newPage).open();
+        new CosmeticMenu(plugin, player, slot, newPage).open();
     }
 
     private void click() {

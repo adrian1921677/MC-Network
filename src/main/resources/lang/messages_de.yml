@@ -51,6 +51,34 @@ emotes:
     - "<gray>Schleichen + F öffnet dieses Menü"
     - "<gray>Bewegen beendet Posen, Schleichen steht auf"
 
+rarities:
+  COMMON: "<gray>Gewöhnlich"
+  RARE: "<#4C8DFF>Selten"
+  EPIC: "<#B06AFF>Episch"
+  LEGENDARY: "<gold><b>Legendär</b>"
+
+crates:
+  menu-title: "<dark_gray>Truhen"
+  button: "<gold>Cosmetic-Truhen"
+  button-lore: "<gray>Öffne Truhen und gewinne Cosmetics!"
+  keys: "<gray>Schlüssel: <white><count>"
+  chance-line: "<rarity><gray>: <white><percent>%"
+  click-open: "<yellow>Klicken zum Öffnen"
+  no-keys-lore: "<red>Keine Schlüssel"
+  no-keys: "<red>Du hast keinen Schlüssel für diese Truhe."
+  all-owned: "<green>Du hast schon alles aus dieser Truhe!"
+  already-opening: "<red>Warte, bis deine Truhe fertig geöffnet ist."
+  won: "<gray>Du hast gewonnen: <rarity> <gray>» <name>"
+  broadcast: "<gold><player> <gray>hat <rarity> <name> <gray>aus einer Truhe gezogen!"
+  key-given: "<green><player> hat <amount>x <crate> <green>erhalten."
+  key-received: "<green>Du hast <amount>x <crate> <green>erhalten! Öffne sie mit /cosmetics."
+  unlock-given: "<green><player> hat <name> <green>freigeschaltet bekommen."
+  unknown-crate: "<red>Unbekannte Truhe: <name>"
+  unknown-reward: "<red>Unbekanntes Cosmetic oder Emote: <name> <gray>(Emotes mit emote:<id>)"
+  unknown-player: "<red>Spieler <name> war noch nie auf dem Server."
+  usage-givekey: "<red>Benutzung: /cosmetics givekey <spieler> <truhe> [anzahl]"
+  usage-give: "<red>Benutzung: /cosmetics give <spieler> <cosmetic|emote:id>"
+
 talking-hat:
   # Beim ersten Aufsetzen teilt der Hut den Spieler einem Team zu
   sorting:

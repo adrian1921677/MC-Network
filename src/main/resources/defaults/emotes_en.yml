@@ -8,69 +8,84 @@
 #   free: true              Everyone may use it. Otherwise nexuscosmetics.emote.<id> is required
 #   model: "nexus:emoji_heart"   Optional (emojis only): custom emoji model. The animation comes from the type.
 
+#   rarity: COMMON          Rarity: COMMON, RARE, EPIC, LEGENDARY (for crates)
+
 emotes:
   heart:
     enabled: true
     name: "<red>Heart"
     type: HEART
     free: true
+    rarity: COMMON
   laugh:
     enabled: true
     name: "<yellow>Laugh"
     type: LAUGH
     free: true
+    rarity: COMMON
   angry:
     enabled: true
     name: "<#FF5533>Angry"
     type: ANGRY
     free: true
+    rarity: COMMON
   wow:
     enabled: true
     name: "<yellow>Wow"
     type: WOW
     free: true
+    rarity: COMMON
   thumbs:
     enabled: true
     name: "<yellow>Thumbs Up"
     type: THUMBS
     free: true
+    rarity: COMMON
   sleepy:
     enabled: true
     name: "<aqua>Sleepy"
     type: SLEEPY
     free: true
+    rarity: COMMON
   party:
     enabled: true
     name: "<light_purple>Party"
     type: PARTY
     free: false
+    rarity: RARE
   sit:
     enabled: true
     name: "<gold>Sit"
     type: SIT
     free: true
+    rarity: COMMON
   lie:
     enabled: true
     name: "<gold>Lie Down"
     type: LIE
     free: true
+    rarity: COMMON
   wave:
     enabled: true
     name: "<gold>Wave"
     type: WAVE
     free: true
+    rarity: COMMON
   clap:
     enabled: true
     name: "<gold>Clap"
     type: CLAP
     free: false
+    rarity: COMMON
   spin:
     enabled: true
     name: "<aqua>Spin"
     type: SPIN
     free: false
+    rarity: RARE
   dance:
     enabled: true
     name: "<light_purple>Dance"
     type: DANCE
     free: false
+    rarity: EPIC

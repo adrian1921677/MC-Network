@@ -1166,6 +1166,70 @@ def emojis():
         write_cosmetic(f"emoji_{name}", extrude_sprite(rows), img, display_settings=emoji_display)
 
 
+
+# ------------------------------------------------------------------ Truhe
+def crate():
+    wood, wood_dark, wood_light = (104, 60, 160, 255), (78, 42, 124, 255), (128, 82, 186, 255)
+    gold, gold_dark, gold_light = (236, 186, 56, 255), (186, 136, 30, 255), (255, 226, 120, 255)
+    gem, gem_light = (70, 220, 255, 255), (200, 250, 255, 255)
+    star = (255, 240, 170, 255)
+
+    img = canvas(wood, 32, 32)
+    # Seiten (uv 0,0 - 8,8): Bretter mit Goldrahmen
+    for y in range(0, 16, 4):
+        fill(img, 0, y, 16, y + 1, wood_dark)
+    fill(img, 2, 1, 14, 2, wood_light)
+    fill(img, 0, 0, 16, 1, gold)
+    fill(img, 0, 15, 16, 16, gold_dark)
+    fill(img, 0, 0, 1, 16, gold)
+    fill(img, 15, 0, 16, 16, gold_dark)
+    # Deckel oben (uv 8,0 - 16,8): Goldkreuz und kleine Sterne
+    fill(img, 16, 0, 32, 16, wood)
+    fill(img, 23, 0, 25, 16, gold)
+    fill(img, 16, 7, 32, 9, gold)
+    for sx, sy in ((18, 2), (29, 3), (19, 12), (28, 13)):
+        img[sy][sx] = star
+        img[sy - 1][sx] = img[sy + 1][sx] = img[sy][sx - 1] = img[sy][sx + 1] = gold_light
+    fill(img, 16, 0, 32, 1, gold)
+    fill(img, 16, 15, 32, 16, gold_dark)
+    # Gold (uv 0,8 - 8,16)
+    fill(img, 0, 16, 16, 32, gold)
+    fill(img, 0, 16, 16, 18, gold_light)
+    fill(img, 0, 29, 16, 32, gold_dark)
+    # Edelstein (uv 8,8 - 12,12)
+    fill(img, 16, 16, 24, 24, gem)
+    fill(img, 17, 17, 20, 20, gem_light)
+
+    side, top, metal, jewel = [0, 0, 8, 8], [8, 0, 16, 8], [0, 8, 8, 16], [8, 8, 12, 12]
+
+    body = [
+        faces(cube("Truhe", [2, 0, 3], [14, 8, 13], side), up=top, down=top),
+        cube("Ecke vorne links", [1.75, 0, 2.75], [3, 8, 4], metal),
+        cube("Ecke vorne rechts", [13, 0, 2.75], [14.25, 8, 4], metal),
+        cube("Ecke hinten links", [1.75, 0, 12], [3, 8, 13.25], metal),
+        cube("Ecke hinten rechts", [13, 0, 12], [14.25, 8, 13.25], metal),
+        cube("Schloss", [6.5, 3.5, 2.5], [9.5, 7, 3], metal),
+        cube("Schloss-Stein", [7.25, 4.25, 2.25], [8.75, 5.75, 2.5], jewel),
+    ]
+    # Deckel: Scharnier liegt in der Modellmitte (8, 8, 8) = hinten oben an der Truhe
+    lid = [
+        faces(cube("Deckel", [2, 8, -2], [14, 11, 8], side), up=top, down=top),
+        faces(cube("Deckel Wölbung", [3, 11, -1], [13, 12, 7], side), up=top),
+        cube("Deckel-Lasche", [7, 7.5, -2.5], [9, 9.5, -2], metal),
+        cube("Edelstein oben", [7, 12, 2], [9, 13.25, 4], jewel),
+        cube("Band links", [4.5, 8, -2.25], [5.5, 11.25, 8.25], metal),
+        cube("Band rechts", [10.5, 8, -2.25], [11.5, 11.25, 8.25], metal),
+    ]
+    crate_display = {
+        "gui": {"rotation": [30, 225, 0], "translation": [0, -1.5, 0], "scale": [0.6] * 3},
+        "ground": {"translation": [0, 3, 0], "scale": [0.4] * 3},
+        "fixed": {"rotation": [0, 180, 0], "scale": [0.6] * 3},
+    }
+    write_cosmetic("crate", body + shift(lid, 0, 0, 5), img, display_settings=crate_display)
+    write_extra_model("crate_body", "crate", body)
+    write_extra_model("crate_lid", "crate", lid)
+
+
 def pack_meta():
     meta = {"pack": {"description": "NexusCosmetics – 3D-Cosmetics", "min_format": 97, "max_format": 100}}
     ROOT.mkdir(parents=True, exist_ok=True)
@@ -1192,4 +1256,5 @@ if __name__ == "__main__":
     halo()
     owl()
     emojis()
+    crate()
     print("Assets erzeugt in", ROOT)

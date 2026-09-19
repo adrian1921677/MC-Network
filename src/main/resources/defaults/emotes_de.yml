@@ -8,69 +8,84 @@
 #   free: true              Jeder darf es benutzen. Sonst braucht man nexuscosmetics.emote.<id>
 #   model: "nexus:emoji_heart"   Optional (nur Emojis): eigenes Emoji-Modell. Die Animation kommt vom Typ.
 
+#   rarity: COMMON          Seltenheit: COMMON, RARE, EPIC, LEGENDARY (für Truhen)
+
 emotes:
   heart:
     enabled: true
     name: "<red>Herz"
     type: HEART
     free: true
+    rarity: COMMON
   laugh:
     enabled: true
     name: "<yellow>Lachen"
     type: LAUGH
     free: true
+    rarity: COMMON
   angry:
     enabled: true
     name: "<#FF5533>Wütend"
     type: ANGRY
     free: true
+    rarity: COMMON
   wow:
     enabled: true
     name: "<yellow>Staunen"
     type: WOW
     free: true
+    rarity: COMMON
   thumbs:
     enabled: true
     name: "<yellow>Daumen hoch"
     type: THUMBS
     free: true
+    rarity: COMMON
   sleepy:
     enabled: true
     name: "<aqua>Müde"
     type: SLEEPY
     free: true
+    rarity: COMMON
   party:
     enabled: true
     name: "<light_purple>Party"
     type: PARTY
     free: false
+    rarity: RARE
   sit:
     enabled: true
     name: "<gold>Hinsetzen"
     type: SIT
     free: true
+    rarity: COMMON
   lie:
     enabled: true
     name: "<gold>Hinlegen"
     type: LIE
     free: true
+    rarity: COMMON
   wave:
     enabled: true
     name: "<gold>Winken"
     type: WAVE
     free: true
+    rarity: COMMON
   clap:
     enabled: true
     name: "<gold>Klatschen"
     type: CLAP
     free: false
+    rarity: COMMON
   spin:
     enabled: true
     name: "<aqua>Wirbel"
     type: SPIN
     free: false
+    rarity: RARE
   dance:
     enabled: true
     name: "<light_purple>Tanzen"
     type: DANCE
     free: false
+    rarity: EPIC

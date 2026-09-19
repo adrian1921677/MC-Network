@@ -9,6 +9,8 @@ import dev.nexus.cosmetics.cosmetic.Cosmetic;
 import dev.nexus.cosmetics.cosmetic.CosmeticManager;
 import dev.nexus.cosmetics.cosmetic.CosmeticProtectionListener;
 import dev.nexus.cosmetics.cosmetic.CosmeticRegistry;
+import dev.nexus.cosmetics.crate.CrateRegistry;
+import dev.nexus.cosmetics.crate.CrateService;
 import dev.nexus.cosmetics.emote.Emote;
 import dev.nexus.cosmetics.emote.EmoteRegistry;
 import dev.nexus.cosmetics.emote.EmoteService;
@@ -33,12 +35,14 @@ public final class NexusCosmetics extends JavaPlugin {
     private final Messages messages = new Messages(this);
     private final CosmeticRegistry cosmeticRegistry = new CosmeticRegistry();
     private final EmoteRegistry emoteRegistry = new EmoteRegistry();
+    private final CrateRegistry crateRegistry = new CrateRegistry();
     private Settings settings;
 
     private CosmeticManager cosmeticManager;
     private FakeCosmeticRenderer renderer;
     private CosmeticStorage storage;
     private EmoteService emoteService;
+    private CrateService crateService;
     private ResourcePackService resourcePackService;
 
     @Override
@@ -51,6 +55,7 @@ public final class NexusCosmetics extends JavaPlugin {
         cosmeticManager = new CosmeticManager(this, cosmeticRegistry, renderer, storage);
         emoteService = new EmoteService(this, emoteRegistry, renderer);
         emoteService.start();
+        crateService = new CrateService(this, crateRegistry, renderer);
 
         resourcePackService = new ResourcePackService(this, getFile());
         resourcePackService.start();
@@ -80,6 +85,8 @@ public final class NexusCosmetics extends JavaPlugin {
         messages.load(settings.language());
         cosmeticRegistry.load(ConfigFiles.loadWithLanguageDefault(this, "cosmetics", settings.language()), getLogger());
         emoteRegistry.load(ConfigFiles.loadWithLanguageDefault(this, "emotes", settings.language()), getLogger());
+        crateRegistry.load(ConfigFiles.loadWithLanguageDefault(this, "crates", settings.language()),
+                cosmeticRegistry, emoteRegistry, getLogger());
         registerPermissions();
     }
 
@@ -148,6 +155,10 @@ public final class NexusCosmetics extends JavaPlugin {
 
     public EmoteService emotes() {
         return emoteService;
+    }
+
+    public CrateService crates() {
+        return crateService;
     }
 
     @Override

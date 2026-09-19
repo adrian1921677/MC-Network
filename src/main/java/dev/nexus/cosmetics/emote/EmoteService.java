@@ -103,7 +103,7 @@ public final class EmoteService implements Listener {
     }
 
     public boolean canUse(Player player, Emote emote) {
-        return player.hasPermission(emote.permission());
+        return player.hasPermission(emote.permission()) || plugin.cosmetics().owns(player, emote.ownershipKey());
     }
 
     /** Spielt ein Emote ab. */

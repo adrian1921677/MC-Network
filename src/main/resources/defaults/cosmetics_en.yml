@@ -13,6 +13,7 @@
 #   glowing: true/false         Glows in the dark (capes, pets, halo)
 #   unlocked-by-default: true   Every player may use it. Otherwise the permission
 #                               nexuscosmetics.cosmetic.<id> is required (e.g. for ranks or store purchases).
+#   rarity: COMMON          Rarity: COMMON, RARE, EPIC, LEGENDARY (for crates)
 #   model: "nexus:crown"        Optional: custom model from the resource pack
 #
 # CUSTOM COSMETICS: Put your model into plugins/NexusCosmetics/pack/ (same folder structure as a
@@ -34,6 +35,7 @@ cosmetics:
     type: NONE
     glowing: false
     unlocked-by-default: false
+    rarity: COMMON
   crown:
     enabled: true
     name: "<gold>Crown"
@@ -41,6 +43,7 @@ cosmetics:
     type: NONE
     glowing: false
     unlocked-by-default: false
+    rarity: RARE
   talking_hat:
     enabled: true
     name: "<#B08050>Talking Hat"
@@ -48,6 +51,7 @@ cosmetics:
     type: TALKING
     glowing: false
     unlocked-by-default: false
+    rarity: LEGENDARY
   halo:
     enabled: true
     name: "<#FFE27A>Halo"
@@ -55,6 +59,7 @@ cosmetics:
     type: HALO
     glowing: true
     unlocked-by-default: false
+    rarity: EPIC
   royal_cape:
     enabled: true
     name: "<red>Royal Cape"
@@ -62,6 +67,7 @@ cosmetics:
     type: NONE
     glowing: false
     unlocked-by-default: false
+    rarity: RARE
   galaxy_cape:
     enabled: true
     name: "<#A070FF>Galaxy Cape"
@@ -69,6 +75,7 @@ cosmetics:
     type: NONE
     glowing: true
     unlocked-by-default: false
+    rarity: EPIC
   wizard_robe_red:
     enabled: true
     name: "<#D8413A>Wizard Robe (Red)"
@@ -76,6 +83,7 @@ cosmetics:
     type: ROBE
     glowing: false
     unlocked-by-default: false
+    rarity: RARE
   wizard_robe_green:
     enabled: true
     name: "<#3FAF5A>Wizard Robe (Green)"
@@ -83,6 +91,7 @@ cosmetics:
     type: ROBE
     glowing: false
     unlocked-by-default: false
+    rarity: RARE
   wizard_robe_blue:
     enabled: true
     name: "<#4C7FE0>Wizard Robe (Blue)"
@@ -90,6 +99,7 @@ cosmetics:
     type: ROBE
     glowing: false
     unlocked-by-default: false
+    rarity: RARE
   wizard_robe_yellow:
     enabled: true
     name: "<#F0C23A>Wizard Robe (Yellow)"
@@ -97,6 +107,7 @@ cosmetics:
     type: ROBE
     glowing: false
     unlocked-by-default: false
+    rarity: RARE
   mini_dragon:
     enabled: true
     name: "<#E0533A>Mini Dragon"
@@ -104,6 +115,7 @@ cosmetics:
     type: DRAGON
     glowing: false
     unlocked-by-default: false
+    rarity: LEGENDARY
   ghost:
     enabled: true
     name: "<white>Ghost"
@@ -111,6 +123,7 @@ cosmetics:
     type: GHOST
     glowing: true
     unlocked-by-default: false
+    rarity: EPIC
   penguin:
     enabled: true
     name: "<#9FC7FF>Penguin"
@@ -118,6 +131,7 @@ cosmetics:
     type: PENGUIN
     glowing: false
     unlocked-by-default: false
+    rarity: RARE
   kitten:
     enabled: true
     name: "<#FFA64D>Kitten"
@@ -125,6 +139,7 @@ cosmetics:
     type: KITTEN
     glowing: false
     unlocked-by-default: false
+    rarity: EPIC
   bee:
     enabled: true
     name: "<#FFD43B>Bee"
@@ -132,6 +147,7 @@ cosmetics:
     type: BEE
     glowing: false
     unlocked-by-default: false
+    rarity: RARE
   mushroom:
     enabled: true
     name: "<#FF6B6B>Mushroom Buddy"
@@ -139,6 +155,7 @@ cosmetics:
     type: MUSHROOM
     glowing: false
     unlocked-by-default: false
+    rarity: COMMON
   owl:
     enabled: true
     name: "<#C8A070>Owl"
@@ -146,3 +163,4 @@ cosmetics:
     type: OWL
     glowing: false
     unlocked-by-default: false
+    rarity: EPIC

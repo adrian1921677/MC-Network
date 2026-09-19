@@ -50,7 +50,8 @@ public final class CosmeticRegistry {
                         slot, model,
                         entry.getBoolean("glowing", false),
                         animation,
-                        entry.getBoolean("unlocked-by-default", false)));
+                        entry.getBoolean("unlocked-by-default", false),
+                        Rarity.valueOf(entry.getString("rarity", "COMMON").toUpperCase(Locale.ROOT))));
             } catch (IllegalArgumentException exception) {
                 logger.warning("Cosmetic '" + id + "' wird übersprungen: " + exception.getMessage());
             }

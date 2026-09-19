@@ -12,14 +12,20 @@ import org.bukkit.NamespacedKey;
  * @param model             das 3D-Modell im Resource Pack, z. B. nexus:top_hat
  * @param glowing           leuchtet auch im Dunkeln (Capes, Haustiere, Heiligenschein)
  * @param animation         besonderes Verhalten (Haustier-Art, Umhang, sprechender Hut ...)
- * @param unlockedByDefault true = jeder darf es benutzen, sonst nur mit Permission
+ * @param unlockedByDefault true = jeder darf es benutzen, sonst nur mit Permission oder Besitz
+ * @param rarity            Seltenheit (für Truhen)
  */
 public record Cosmetic(String id, Component displayName, CosmeticSlot slot, NamespacedKey model,
-                       boolean glowing, CosmeticAnimation animation, boolean unlockedByDefault) {
+                       boolean glowing, CosmeticAnimation animation, boolean unlockedByDefault, Rarity rarity) {
 
     /** Permission, die ein Spieler braucht, um dieses Cosmetic zu benutzen. */
     public String permission() {
         return "nexuscosmetics.cosmetic." + id;
+    }
+
+    /** So steht das Cosmetic in der Besitz-Liste eines Spielers. */
+    public String ownershipKey() {
+        return id;
     }
 
     /** Ein zusätzliches Modell mit Endung, z. B. nexus:mini_dragon_wing_a */

@@ -1,17 +1,19 @@
 package dev.nexus.cosmetics.storage;
 
 import dev.nexus.cosmetics.cosmetic.CosmeticSlot;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 /**
@@ -33,42 +35,64 @@ public final class YamlCosmeticStorage implements CosmeticStorage {
     }
 
     @Override
-    public CompletableFuture<Map<CosmeticSlot, String>> load(UUID player) {
-        return CompletableFuture.supplyAsync(() -> {
-            Map<CosmeticSlot, String> equipped = new EnumMap<>(CosmeticSlot.class);
-            File file = file(player);
-            if (!file.exists()) {
-                return equipped;
-            }
-            YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
-            for (CosmeticSlot slot : CosmeticSlot.values()) {
-                String id = yaml.getString("equipped." + slot.name().toLowerCase());
-                if (id != null) {
-                    equipped.put(slot, id);
-                }
-            }
-            return equipped;
-        }, executor);
+    public CompletableFuture<PlayerProfile> load(UUID player) {
+        return CompletableFuture.supplyAsync(() -> read(player), executor);
     }
 
     @Override
-    public CompletableFuture<Void> save(UUID player, Map<CosmeticSlot, String> equipped) {
-        Map<CosmeticSlot, String> snapshot = Map.copyOf(equipped);
+    public CompletableFuture<Void> save(UUID player, PlayerProfile profile) {
+        PlayerProfile snapshot = profile.copy();
+        return CompletableFuture.runAsync(() -> write(player, snapshot), executor);
+    }
+
+    @Override
+    public CompletableFuture<Void> modify(UUID player, Consumer<PlayerProfile> change) {
         return CompletableFuture.runAsync(() -> {
-            File file = file(player);
-            if (snapshot.isEmpty()) {
-                file.delete();
-                return;
-            }
-            YamlConfiguration yaml = new YamlConfiguration();
-            snapshot.forEach((slot, id) -> yaml.set("equipped." + slot.name().toLowerCase(), id));
-            try {
-                folder.mkdirs();
-                yaml.save(file);
-            } catch (IOException exception) {
-                logger.warning("Cosmetics von " + player + " konnten nicht gespeichert werden: " + exception.getMessage());
-            }
+            PlayerProfile profile = read(player);
+            change.accept(profile);
+            write(player, profile);
         }, executor);
+    }
+
+    private PlayerProfile read(UUID player) {
+        PlayerProfile profile = new PlayerProfile();
+        File file = file(player);
+        if (!file.exists()) {
+            return profile;
+        }
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+        for (CosmeticSlot slot : CosmeticSlot.values()) {
+            String id = yaml.getString("equipped." + slot.name().toLowerCase(Locale.ROOT));
+            if (id != null) {
+                profile.equipped().put(slot, id);
+            }
+        }
+        profile.owned().addAll(yaml.getStringList("owned"));
+        ConfigurationSection keys = yaml.getConfigurationSection("keys");
+        if (keys != null) {
+            for (String crate : keys.getKeys(false)) {
+                profile.addKeys(crate, keys.getInt(crate));
+            }
+        }
+        return profile;
+    }
+
+    private void write(UUID player, PlayerProfile profile) {
+        File file = file(player);
+        if (profile.equipped().isEmpty() && profile.owned().isEmpty() && profile.allKeys().isEmpty()) {
+            file.delete();
+            return;
+        }
+        YamlConfiguration yaml = new YamlConfiguration();
+        profile.equipped().forEach((slot, id) -> yaml.set("equipped." + slot.name().toLowerCase(Locale.ROOT), id));
+        yaml.set("owned", new ArrayList<>(profile.owned()));
+        profile.allKeys().forEach((crate, amount) -> yaml.set("keys." + crate, amount));
+        try {
+            folder.mkdirs();
+            yaml.save(file);
+        } catch (IOException exception) {
+            logger.warning("Profil von " + player + " konnte nicht gespeichert werden: " + exception.getMessage());
+        }
     }
 
     @Override
@@ -76,7 +100,7 @@ public final class YamlCosmeticStorage implements CosmeticStorage {
         executor.shutdown();
         try {
             if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
-                logger.warning("Nicht alle Cosmetics konnten rechtzeitig gespeichert werden.");
+                logger.warning("Nicht alle Profile konnten rechtzeitig gespeichert werden.");
             }
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();

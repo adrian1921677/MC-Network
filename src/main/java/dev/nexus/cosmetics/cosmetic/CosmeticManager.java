@@ -7,6 +7,7 @@ import dev.nexus.cosmetics.render.hat.FloatingHalo;
 import dev.nexus.cosmetics.render.hat.TalkingHat;
 import dev.nexus.cosmetics.render.pet.FakePet;
 import dev.nexus.cosmetics.storage.CosmeticStorage;
+import dev.nexus.cosmetics.storage.PlayerProfile;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
@@ -17,17 +18,20 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 /**
- * Verwaltet, welcher Spieler welches Cosmetic trägt.
+ * Verwaltet, welcher Spieler welches Cosmetic trägt und besitzt.
  *
  * - Hüte (HEAD) liegen im Helm-Slot und sind dort geschützt. Ideal für Lobbys ohne Rüstung.
  * - Capes (BACK) und Haustiere (PET) existieren nur als Netzwerk-Pakete (siehe FakeCosmeticRenderer).
+ * - Pro Spieler gibt es ein Profil (getragen, Besitz, Truhen-Schlüssel), das gespeichert wird.
  */
 public final class CosmeticManager {
 
@@ -40,6 +44,10 @@ public final class CosmeticManager {
     /** Markierung, an der wir unsere Cosmetic-Items erkennen. */
     private final NamespacedKey cosmeticKey;
     private final Map<UUID, Map<CosmeticSlot, Cosmetic>> equipped = new HashMap<>();
+    /** Nur fertig geladene Profile. Solange ein Profil lädt, steht hier nichts. */
+    private final Map<UUID, PlayerProfile> profiles = new HashMap<>();
+    /** Änderungen, die ankommen, während das Profil noch lädt. Sie werden danach angewendet. */
+    private final Map<UUID, List<Consumer<PlayerProfile>>> pendingChanges = new HashMap<>();
 
     public CosmeticManager(NexusCosmetics plugin, CosmeticRegistry registry, FakeCosmeticRenderer renderer, CosmeticStorage storage) {
         this.plugin = plugin;
@@ -56,6 +64,40 @@ public final class CosmeticManager {
     public Cosmetic equipped(Player player, CosmeticSlot slot) {
         Map<CosmeticSlot, Cosmetic> slots = equipped.get(player.getUniqueId());
         return slots == null ? null : slots.get(slot);
+    }
+
+    // ------------------------------------------------------------------ Besitz & Schlüssel
+
+    /** Das Profil eines Online-Spielers (leer, solange es noch lädt). */
+    public PlayerProfile profile(Player player) {
+        PlayerProfile profile = profiles.get(player.getUniqueId());
+        return profile != null ? profile : new PlayerProfile();
+    }
+
+    /** Darf der Spieler das Cosmetic benutzen? (Permission oder gewonnen/geschenkt) */
+    public boolean canUse(Player player, Cosmetic cosmetic) {
+        return player.hasPermission(cosmetic.permission()) || owns(player, cosmetic.ownershipKey());
+    }
+
+    public boolean owns(Player player, String ownershipKey) {
+        return profile(player).owned().contains(ownershipKey);
+    }
+
+    /**
+     * Ändert das Profil eines Spielers und speichert es. Funktioniert auch, wenn der Spieler
+     * offline ist (z. B. wenn ein Shop Schlüssel vergibt).
+     */
+    public void modifyProfile(UUID uuid, Consumer<PlayerProfile> change) {
+        Player online = Bukkit.getPlayer(uuid);
+        if (online == null) {
+            storage.modify(uuid, change);
+        } else if (profiles.containsKey(uuid)) {
+            change.accept(profiles.get(uuid));
+            save(online);
+        } else {
+            // Profil lädt gerade noch: merken und nach dem Laden anwenden (sonst ginge die Änderung verloren)
+            pendingChanges.computeIfAbsent(uuid, key -> new ArrayList<>()).add(change);
+        }
     }
 
     // ------------------------------------------------------------------ Aktionen des Spielers (werden gespeichert)
@@ -82,7 +124,7 @@ public final class CosmeticManager {
 
     // ------------------------------------------------------------------ Einloggen / Ausloggen
 
-    /** Lädt beim Einloggen die gespeicherten Cosmetics und legt sie wieder an. */
+    /** Lädt beim Einloggen das Profil und legt die gespeicherten Cosmetics wieder an. */
     public void handleJoin(Player player) {
         // Aufräumen, falls nach einem Absturz noch alte Cosmetic-Items im Inventar liegen
         removeCosmeticItems(player);
@@ -90,10 +132,19 @@ public final class CosmeticManager {
         storage.load(player.getUniqueId()).thenAccept(saved ->
                 // Zurück auf den Server-Thread: Die Spielwelt darf nur von dort verändert werden
                 Bukkit.getScheduler().runTask(plugin, () -> {
+                    List<Consumer<PlayerProfile>> pending = pendingChanges.remove(player.getUniqueId());
                     if (!player.isOnline()) {
+                        if (pending != null) {
+                            pending.forEach(change -> storage.modify(player.getUniqueId(), change));
+                        }
                         return;
                     }
-                    saved.forEach((slot, id) -> {
+                    profiles.put(player.getUniqueId(), saved);
+                    if (pending != null) {
+                        pending.forEach(change -> change.accept(saved));
+                        storage.save(player.getUniqueId(), saved);
+                    }
+                    saved.equipped().forEach((slot, id) -> {
                         Cosmetic cosmetic = registry.get(id);
                         // Gelöschte Cosmetics oder entzogene Rechte werden still übersprungen
                         if (cosmetic != null && cosmetic.slot() == slot) {
@@ -109,17 +160,19 @@ public final class CosmeticManager {
             remove(player, slot);
         }
         equipped.remove(player.getUniqueId());
+        profiles.remove(player.getUniqueId());
     }
 
-    /** Beim Server-Stopp: Anzeige bei allen entfernen, ohne die Auswahl zu löschen. */
+    /** Beim Server-Stopp oder Reload: Anzeige bei allen entfernen, ohne die Auswahl zu löschen. */
     public void shutdown() {
-        for (UUID uuid : List.copyOf(equipped.keySet())) {
+        for (UUID uuid : List.copyOf(profiles.keySet())) {
             Player player = Bukkit.getPlayer(uuid);
             if (player != null) {
                 handleQuit(player);
             }
         }
         equipped.clear();
+        profiles.clear();
     }
 
     /** Setzt den Hut nach einem Respawn erneut auf, falls er verloren ging. */
@@ -135,7 +188,7 @@ public final class CosmeticManager {
 
     /** Legt ein Cosmetic an, ohne zu speichern. */
     private EquipResult apply(Player player, Cosmetic cosmetic) {
-        if (!player.hasPermission(cosmetic.permission())) {
+        if (!canUse(player, cosmetic)) {
             return EquipResult.NO_PERMISSION;
         }
         switch (cosmetic.slot()) {
@@ -151,7 +204,8 @@ public final class CosmeticManager {
                     }
                     player.getInventory().setHelmet(createItem(cosmetic, List.of()));
                     if (cosmetic.animation() == CosmeticAnimation.TALKING) {
-                        renderer.show(player, CosmeticSlot.HEAD, new TalkingHat(player, cosmetic, this::isCosmeticItem, plugin.messages(), plugin.settings()));
+                        renderer.show(player, CosmeticSlot.HEAD,
+                                new TalkingHat(player, cosmetic, this::isCosmeticItem, plugin.messages(), plugin.settings()));
                     } else {
                         renderer.hide(player, CosmeticSlot.HEAD);
                     }
@@ -180,13 +234,18 @@ public final class CosmeticManager {
         }
     }
 
-    private void save(Player player) {
-        Map<CosmeticSlot, String> ids = new EnumMap<>(CosmeticSlot.class);
+    /** Speichert das Profil (inklusive der gerade getragenen Cosmetics). */
+    public void save(Player player) {
+        PlayerProfile profile = profiles.get(player.getUniqueId());
+        if (profile == null) {
+            return; // Noch nicht geladen: niemals ein leeres Profil über das echte schreiben
+        }
+        profile.equipped().clear();
         Map<CosmeticSlot, Cosmetic> slots = equipped.get(player.getUniqueId());
         if (slots != null) {
-            slots.forEach((slot, cosmetic) -> ids.put(slot, cosmetic.id()));
+            slots.forEach((slot, cosmetic) -> profile.equipped().put(slot, cosmetic.id()));
         }
-        storage.save(player.getUniqueId(), ids);
+        storage.save(player.getUniqueId(), profile);
     }
 
     /** Entfernt alle Cosmetic-Items aus dem Inventar (z. B. nach einem Server-Absturz). */

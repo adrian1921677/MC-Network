@@ -51,6 +51,34 @@ emotes:
     - "<gray>Sneak + F opens this menu"
     - "<gray>Moving ends poses, sneaking stands up"
 
+rarities:
+  COMMON: "<gray>Common"
+  RARE: "<#4C8DFF>Rare"
+  EPIC: "<#B06AFF>Epic"
+  LEGENDARY: "<gold><b>Legendary</b>"
+
+crates:
+  menu-title: "<dark_gray>Crates"
+  button: "<gold>Cosmetic Crates"
+  button-lore: "<gray>Open crates and win cosmetics!"
+  keys: "<gray>Keys: <white><count>"
+  chance-line: "<rarity><gray>: <white><percent>%"
+  click-open: "<yellow>Click to open"
+  no-keys-lore: "<red>No keys"
+  no-keys: "<red>You don't have a key for this crate."
+  all-owned: "<green>You already own everything from this crate!"
+  already-opening: "<red>Wait until your crate has finished opening."
+  won: "<gray>You won: <rarity> <gray>» <name>"
+  broadcast: "<gold><player> <gray>pulled <rarity> <name> <gray>from a crate!"
+  key-given: "<green><player> received <amount>x <crate><green>."
+  key-received: "<green>You received <amount>x <crate><green>! Open it with /cosmetics."
+  unlock-given: "<green><player> has unlocked <name><green>."
+  unknown-crate: "<red>Unknown crate: <name>"
+  unknown-reward: "<red>Unknown cosmetic or emote: <name> <gray>(emotes as emote:<id>)"
+  unknown-player: "<red>Player <name> has never been on the server."
+  usage-givekey: "<red>Usage: /cosmetics givekey <player> <crate> [amount]"
+  usage-give: "<red>Usage: /cosmetics give <player> <cosmetic|emote:id>"
+
 talking-hat:
   # The first time the hat is put on, it sorts the player into a team
   sorting:

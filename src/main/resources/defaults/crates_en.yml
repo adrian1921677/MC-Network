@@ -1,0 +1,23 @@
+# ===========================================
+#  NexusCosmetics - Crates
+# ===========================================
+# Players receive keys with:  /cosmetics givekey <player> <crate> [amount]
+# (also works from the console and for offline players, e.g. for Tebex/Buycraft)
+#
+#   name: "..."           Display name of the crate
+#   chances:              Weight of the rarities. Rewards a player already owns are skipped.
+#   rewards: all          Everything that isn't free for everyone (unlocked-by-default: false / free: false)
+#   rewards:              ... or a fixed list: cosmetic IDs and emotes as "emote:<id>"
+#     - crown
+#     - emote:dance
+
+crates:
+  standard:
+    enabled: true
+    name: "<gradient:#B06AFF:#FFD35A>Cosmetic Crate</gradient>"
+    chances:
+      COMMON: 60
+      RARE: 25
+      EPIC: 12
+      LEGENDARY: 3
+    rewards: all

@@ -1,6 +1,7 @@
 package dev.nexus.cosmetics.emote;
 
 import dev.nexus.cosmetics.cosmetic.CosmeticRegistry;
+import dev.nexus.cosmetics.cosmetic.Rarity;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
@@ -37,9 +38,10 @@ public final class EmoteRegistry {
                         MiniMessage.miniMessage().deserialize(entry.getString("name", id)),
                         type,
                         entry.getBoolean("free", true),
-                        model));
+                        model,
+                        Rarity.valueOf(entry.getString("rarity", "COMMON").toUpperCase(Locale.ROOT))));
             } catch (IllegalArgumentException exception) {
-                logger.warning("Emote '" + id + "' wird übersprungen: unbekannter Typ '" + entry.getString("type") + "'.");
+                logger.warning("Emote '" + id + "' wird übersprungen: " + exception.getMessage());
             }
         }
     }

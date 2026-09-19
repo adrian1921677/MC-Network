@@ -1,0 +1,23 @@
+# ===========================================
+#  NexusCosmetics - Truhen
+# ===========================================
+# Spieler bekommen Schlüssel mit:  /cosmetics givekey <spieler> <truhe> [anzahl]
+# (funktioniert auch über die Konsole und für Offline-Spieler, z. B. für Tebex/Buycraft)
+#
+#   name: "..."           Anzeigename der Truhe
+#   chances:              Gewichtung der Seltenheiten. Gewinne, die ein Spieler schon hat, fallen weg.
+#   rewards: all          Alles, was nicht für alle frei ist (unlocked-by-default: false / free: false)
+#   rewards:              ... oder eine feste Liste: Cosmetic-IDs und Emotes als "emote:<id>"
+#     - crown
+#     - emote:dance
+
+crates:
+  standard:
+    enabled: true
+    name: "<gradient:#B06AFF:#FFD35A>Cosmetic-Truhe</gradient>"
+    chances:
+      COMMON: 60
+      RARE: 25
+      EPIC: 12
+      LEGENDARY: 3
+    rewards: all
