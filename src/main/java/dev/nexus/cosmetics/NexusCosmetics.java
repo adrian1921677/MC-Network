@@ -1,12 +1,12 @@
 package dev.nexus.cosmetics;
 
-import dev.nexus.cosmetics.cape.CapeRenderer;
 import dev.nexus.cosmetics.command.CosmeticsCommand;
 import dev.nexus.cosmetics.cosmetic.CosmeticManager;
 import dev.nexus.cosmetics.cosmetic.CosmeticProtectionListener;
 import dev.nexus.cosmetics.cosmetic.CosmeticRegistry;
 import dev.nexus.cosmetics.menu.CosmeticMenuListener;
 import dev.nexus.cosmetics.pack.ResourcePackService;
+import dev.nexus.cosmetics.render.FakeCosmeticRenderer;
 import dev.nexus.cosmetics.storage.CosmeticStorage;
 import dev.nexus.cosmetics.storage.YamlCosmeticStorage;
 import org.bukkit.plugin.PluginManager;
@@ -20,7 +20,7 @@ import java.util.List;
 public final class NexusCosmetics extends JavaPlugin {
 
     private CosmeticManager cosmeticManager;
-    private CapeRenderer capeRenderer;
+    private FakeCosmeticRenderer renderer;
     private CosmeticStorage storage;
     private ResourcePackService resourcePackService;
 
@@ -30,10 +30,10 @@ public final class NexusCosmetics extends JavaPlugin {
         saveDefaultConfig();
 
         CosmeticRegistry registry = new CosmeticRegistry();
-        capeRenderer = new CapeRenderer(this);
-        capeRenderer.start();
+        renderer = new FakeCosmeticRenderer(this);
+        renderer.start();
         storage = new YamlCosmeticStorage(getDataFolder(), getLogger());
-        cosmeticManager = new CosmeticManager(this, registry, capeRenderer, storage);
+        cosmeticManager = new CosmeticManager(this, registry, renderer, storage);
 
         resourcePackService = new ResourcePackService(this, getFile());
         resourcePackService.start();
@@ -41,7 +41,7 @@ public final class NexusCosmetics extends JavaPlugin {
         PluginManager pluginManager = getServer().getPluginManager();
         pluginManager.registerEvents(new CosmeticProtectionListener(this, cosmeticManager), this);
         pluginManager.registerEvents(new CosmeticMenuListener(), this);
-        pluginManager.registerEvents(capeRenderer, this);
+        pluginManager.registerEvents(renderer, this);
         pluginManager.registerEvents(resourcePackService, this);
 
         registerCommand("cosmetics", "Öffnet das Cosmetics-Menü", List.of("cosmetic"),
@@ -58,8 +58,8 @@ public final class NexusCosmetics extends JavaPlugin {
         if (cosmeticManager != null) {
             cosmeticManager.shutdown();
         }
-        if (capeRenderer != null) {
-            capeRenderer.stop();
+        if (renderer != null) {
+            renderer.stop();
         }
         if (storage != null) {
             storage.close();

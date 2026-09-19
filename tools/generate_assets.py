@@ -339,6 +339,169 @@ def galaxy_cape():
     write_cape_segments("galaxy_cape")
 
 
+# ---------------------------------------------------------------- Haustiere
+# Wichtig: Item-Displays drehen Modelle um 180°. Deshalb zeigt bei Haustieren die
+# NORD-Seite des Modells (kleines z) im Spiel nach vorne. Der Kopf liegt also im Norden.
+PET_DISPLAY = {
+    "gui": {"rotation": [30, 225, 0], "scale": [0.7] * 3},
+    "ground": {"translation": [0, 2, 0], "scale": [0.5] * 3},
+    "fixed": {"rotation": [0, 180, 0], "scale": [0.8] * 3},
+    "thirdperson_righthand": {"rotation": [0, 45, 0], "translation": [0, 2, 0], "scale": [0.45] * 3},
+}
+
+
+def faces(element, **uvs):
+    """Einzelne Seiten eines Quaders mit anderem Texturbereich versehen."""
+    for face, uv in uvs.items():
+        element["faces"][face]["uv"] = uv
+    return element
+
+
+def shift(elements, dx, dy, dz):
+    moved = []
+    for element in elements:
+        copy = json.loads(json.dumps(element))
+        copy["from"] = [round(a + b, 3) for a, b in zip(copy["from"], (dx, dy, dz))]
+        copy["to"] = [round(a + b, 3) for a, b in zip(copy["to"], (dx, dy, dz))]
+        moved.append(copy)
+    return moved
+
+
+def write_extra_model(model_id, texture_id, elements, display_settings=None):
+    """Zusatzmodell (z. B. Flügel), das die Textur eines anderen Cosmetics mitbenutzt."""
+    base = ROOT / "assets" / NS
+    tex = f"{NS}:item/{texture_id}"
+    model = {"textures": {"0": tex, "particle": tex}, "elements": elements}
+    if display_settings:
+        model["display"] = display_settings
+    (base / "models" / "item" / f"{model_id}.json").write_text(json.dumps(model, indent=2))
+    (base / "items" / f"{model_id}.json").write_text(json.dumps(
+        {"model": {"type": "minecraft:model", "model": f"{NS}:item/{model_id}"}}, indent=2))
+
+
+def mini_dragon():
+    red, red_dark, red_light = (196, 48, 38, 255), (140, 28, 24, 255), (226, 84, 60, 255)
+    belly, belly_dark = (244, 204, 96, 255), (214, 168, 64, 255)
+    horn, horn_dark = (238, 228, 204, 255), (196, 182, 150, 255)
+    membrane, vein = (242, 128, 62, 255), (204, 86, 40, 255)
+    bone = (122, 28, 26, 255)
+    eye, pupil, white = (255, 214, 60, 255), (20, 16, 16, 255), (255, 255, 255, 255)
+
+    img = canvas(red, 32, 32)
+    # Schuppen (uv 0,0 - 8,8)
+    for y in range(16):
+        for x in range(16):
+            if (x + (y // 2) * 2) % 4 == 0 and y % 2 == 0:
+                img[y][x] = red_dark
+            elif (x + y) % 7 == 0:
+                img[y][x] = red_light
+    # Bauch (uv 8,0 - 16,8)
+    fill(img, 16, 0, 32, 16, belly)
+    for y in range(1, 16, 3):
+        fill(img, 16, y, 32, y + 1, belly_dark)
+    # Gesicht vorne (uv 0,8 - 8,12): Augen oben links/rechts
+    fill(img, 0, 16, 16, 24, red)
+    fill(img, 1, 17, 5, 20, eye)
+    fill(img, 11, 17, 15, 20, eye)
+    fill(img, 2, 17, 4, 20, pupil)
+    fill(img, 12, 17, 14, 20, pupil)
+    img[17][1] = img[17][11] = white
+    # Schnauze vorne (uv 0,12 - 8,16): Nasenlöcher
+    fill(img, 0, 24, 16, 32, red_light)
+    fill(img, 4, 26, 6, 28, red_dark)
+    fill(img, 10, 26, 12, 28, red_dark)
+    fill(img, 3, 30, 13, 31, red_dark)
+    # Hörner (uv 8,8 - 12,12)
+    fill(img, 16, 16, 24, 24, horn)
+    fill(img, 16, 22, 24, 24, horn_dark)
+    # Flughaut (uv 12,8 - 16,12)
+    fill(img, 24, 16, 32, 24, membrane)
+    for i in range(8):
+        img[16 + i][24 + i] = vein
+    # Flügelknochen (uv 8,12 - 12,16)
+    fill(img, 16, 24, 24, 32, bone)
+
+    scales, belly_uv, face_uv, snout_uv = [0, 0, 8, 8], [8, 0, 16, 8], [0, 8, 8, 12], [0, 12, 8, 16]
+    horn_uv, membrane_uv, bone_uv = [8, 8, 12, 12], [12, 8, 16, 12], [8, 12, 12, 16]
+
+    body = [
+        faces(cube("Körper", [5, 5, 6], [11, 10, 12], scales), down=belly_uv),
+        cube("Bauch", [5.5, 4.5, 6.5], [10.5, 5, 11.5], belly_uv),
+        faces(cube("Kopf", [5.5, 8, 1.5], [10.5, 12, 6], scales), north=face_uv),
+        faces(cube("Schnauze", [6.5, 8, 0], [9.5, 10, 1.5], scales), north=snout_uv),
+        cube("Horn links", [6, 12, 4], [7, 14, 5], horn_uv),
+        cube("Horn rechts", [9, 12, 4], [10, 14, 5], horn_uv),
+        cube("Stachel 1", [7.5, 10, 7], [8.5, 11, 8], horn_uv),
+        cube("Stachel 2", [7.5, 10, 9.5], [8.5, 11, 10.5], horn_uv),
+        cube("Schwanz", [7, 6, 12], [9, 8, 15], scales),
+        cube("Schwanzspitze", [7.5, 6.5, 15], [8.5, 7.5, 17], scales),
+        cube("Stachel Schwanz", [7.75, 7.5, 15.5], [8.25, 8.5, 16.5], horn_uv),
+        cube("Bein vorne links", [5.5, 3, 7], [7, 5, 8.5], scales),
+        cube("Bein vorne rechts", [9, 3, 7], [10.5, 5, 8.5], scales),
+        cube("Bein hinten links", [5.5, 3, 10], [7, 5, 11.5], scales),
+        cube("Bein hinten rechts", [9, 3, 10], [10.5, 5, 11.5], scales),
+    ]
+    # Flügel: Gelenk liegt in der Modellmitte (8, 8, 8), damit sie sich darum drehen
+    wing_a = [
+        cube("Flügelknochen", [8, 8, 7.5], [16, 9, 8.5], bone_uv),
+        cube("Flughaut", [8, 8.25, 8.5], [15, 8.75, 13], membrane_uv),
+    ]
+    wing_b = [
+        cube("Flügelknochen", [0, 8, 7.5], [8, 9, 8.5], bone_uv),
+        cube("Flughaut", [1, 8.25, 8.5], [8, 8.75, 13], membrane_uv),
+    ]
+
+    # Menü-Symbol: Körper mit angelegten Flügeln an den Schultern
+    icon = body + shift(wing_a, 3, 2, 0.5) + shift(wing_b, -3, 2, 0.5)
+    write_cosmetic("mini_dragon", icon, img, display_settings=PET_DISPLAY)
+    write_extra_model("mini_dragon_body", "mini_dragon", body)
+    write_extra_model("mini_dragon_wing_a", "mini_dragon", wing_a)
+    write_extra_model("mini_dragon_wing_b", "mini_dragon", wing_b)
+
+
+def ghost():
+    body, shade, skirt = (244, 247, 255, 255), (222, 230, 252, 255), (210, 222, 250, 255)
+    eye, blush, mouth = (30, 30, 46, 255), (255, 170, 190, 255), (70, 50, 70, 255)
+
+    frames = []
+    for blink in (False, True):
+        img = canvas(body, 32, 32)
+        # Gesicht (uv 0,0 - 8,8)
+        if blink:
+            fill(img, 4, 8, 6, 9, eye)
+            fill(img, 10, 8, 12, 9, eye)
+        else:
+            fill(img, 4, 6, 6, 9, eye)
+            fill(img, 10, 6, 12, 9, eye)
+            img[6][4] = img[6][10] = (120, 120, 150, 255)
+        fill(img, 2, 10, 4, 11, blush)
+        fill(img, 12, 10, 14, 11, blush)
+        fill(img, 7, 11, 9, 13, mouth)
+        # Körper ohne Gesicht (uv 8,0 - 16,8), oben heller
+        fill(img, 16, 0, 32, 16, shade)
+        fill(img, 16, 0, 32, 4, body)
+        # Unterer Saum (uv 0,8 - 8,16)
+        fill(img, 0, 16, 16, 32, skirt)
+        frames.extend(img)
+
+    face_uv, plain, skirt_uv = [0, 0, 8, 8], [8, 0, 16, 8], [0, 8, 8, 16]
+    elements = [
+        faces(cube("Körper", [4, 6, 4], [12, 14, 12], plain), north=face_uv),
+        cube("Saum", [4, 4, 4], [12, 6, 12], skirt_uv),
+        cube("Arm links", [2.5, 8, 7], [4, 10, 9], plain),
+        cube("Arm rechts", [12, 8, 7], [13.5, 10, 9], plain),
+    ]
+    # Gezackter Rand unten
+    for x in (4, 7, 10):
+        for z in (4, 7, 10):
+            if (x, z) != (7, 7):
+                elements.append(cube("Zacke", [x, 3, z], [x + 2, 4, z + 2], skirt_uv))
+
+    # Blinzeln: 3 Sekunden offen, kurz zu
+    animation = {"frametime": 1, "frames": [{"index": 0, "time": 60}, {"index": 1, "time": 4}]}
+    write_cosmetic("ghost", elements, frames, display_settings=PET_DISPLAY, animation=animation)
+
+
 def pack_meta():
     meta = {"pack": {"description": "NexusCosmetics – 3D-Cosmetics", "min_format": 97, "max_format": 100}}
     ROOT.mkdir(parents=True, exist_ok=True)
@@ -351,4 +514,6 @@ if __name__ == "__main__":
     crown()
     royal_cape()
     galaxy_cape()
+    mini_dragon()
+    ghost()
     print("Assets erzeugt in", ROOT)

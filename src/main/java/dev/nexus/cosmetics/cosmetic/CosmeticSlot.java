@@ -4,6 +4,8 @@ package dev.nexus.cosmetics.cosmetic;
 public enum CosmeticSlot {
     /** Hüte, Kronen ... (im Helm-Slot) */
     HEAD,
-    /** Capes (als Fake-Entity hinter dem Spieler) */
-    BACK
+    /** Capes (als Paket-Entity hinter dem Spieler) */
+    BACK,
+    /** Haustiere, die neben dem Spieler schweben (als Paket-Entity) */
+    PET
 }

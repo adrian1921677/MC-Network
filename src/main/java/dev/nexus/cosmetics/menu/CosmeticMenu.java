@@ -20,7 +20,7 @@ import java.util.Map;
 
 /**
  * Das Auswahl-Menü. Jedes Cosmetic wird als 3D-Modell im Menü angezeigt.
- * Reihe 2: Hüte, Reihe 3: Capes.
+ * Reihe 2: Hüte, Reihe 3: Capes, Reihe 4: Haustiere.
  */
 public final class CosmeticMenu implements InventoryHolder {
 
@@ -28,7 +28,8 @@ public final class CosmeticMenu implements InventoryHolder {
     private static final int UNEQUIP_SLOT = 40;
     private static final Map<CosmeticSlot, Integer> ROW_START = Map.of(
             CosmeticSlot.HEAD, 10,
-            CosmeticSlot.BACK, 19);
+            CosmeticSlot.BACK, 19,
+            CosmeticSlot.PET, 28);
 
     private final CosmeticManager manager;
     private final Player player;

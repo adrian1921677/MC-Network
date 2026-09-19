@@ -1,6 +1,8 @@
 package dev.nexus.cosmetics.cosmetic;
 
-import dev.nexus.cosmetics.cape.CapeRenderer;
+import dev.nexus.cosmetics.render.FakeCosmeticRenderer;
+import dev.nexus.cosmetics.render.cape.CapeCosmetic;
+import dev.nexus.cosmetics.render.pet.FakePet;
 import dev.nexus.cosmetics.storage.CosmeticStorage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -24,7 +26,7 @@ import java.util.UUID;
  * Verwaltet, welcher Spieler welches Cosmetic trägt.
  *
  * - Hüte (HEAD) liegen im Helm-Slot und sind dort geschützt. Ideal für Lobbys ohne Rüstung.
- * - Capes (BACK) sind Fake-Entities, die nur per Netzwerk-Paket existieren (siehe CapeRenderer).
+ * - Capes (BACK) und Haustiere (PET) existieren nur als Netzwerk-Pakete (siehe FakeCosmeticRenderer).
  */
 public final class CosmeticManager {
 
@@ -32,16 +34,16 @@ public final class CosmeticManager {
 
     private final Plugin plugin;
     private final CosmeticRegistry registry;
-    private final CapeRenderer capeRenderer;
+    private final FakeCosmeticRenderer renderer;
     private final CosmeticStorage storage;
     /** Markierung, an der wir unsere Cosmetic-Items erkennen. */
     private final NamespacedKey cosmeticKey;
     private final Map<UUID, Map<CosmeticSlot, Cosmetic>> equipped = new HashMap<>();
 
-    public CosmeticManager(Plugin plugin, CosmeticRegistry registry, CapeRenderer capeRenderer, CosmeticStorage storage) {
+    public CosmeticManager(Plugin plugin, CosmeticRegistry registry, FakeCosmeticRenderer renderer, CosmeticStorage storage) {
         this.plugin = plugin;
         this.registry = registry;
-        this.capeRenderer = capeRenderer;
+        this.renderer = renderer;
         this.storage = storage;
         this.cosmeticKey = new NamespacedKey(plugin, "cosmetic");
     }
@@ -143,7 +145,8 @@ public final class CosmeticManager {
                 }
                 player.getInventory().setHelmet(createItem(cosmetic, List.of()));
             }
-            case BACK -> capeRenderer.show(player, cosmetic);
+            case BACK -> renderer.show(player, CosmeticSlot.BACK, new CapeCosmetic(player, cosmetic));
+            case PET -> renderer.show(player, CosmeticSlot.PET, new FakePet(player, cosmetic));
         }
         equipped.computeIfAbsent(player.getUniqueId(), uuid -> new EnumMap<>(CosmeticSlot.class))
                 .put(cosmetic.slot(), cosmetic);
@@ -158,7 +161,7 @@ public final class CosmeticManager {
         }
         switch (slot) {
             case HEAD -> removeCosmeticItems(player);
-            case BACK -> capeRenderer.hide(player);
+            case BACK, PET -> renderer.hide(player, slot);
         }
     }
 

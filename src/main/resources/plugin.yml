@@ -16,3 +16,5 @@ permissions:
       nexuscosmetics.cosmetic.crown: true
       nexuscosmetics.cosmetic.royal_cape: true
       nexuscosmetics.cosmetic.galaxy_cape: true
+      nexuscosmetics.cosmetic.mini_dragon: true
+      nexuscosmetics.cosmetic.ghost: true

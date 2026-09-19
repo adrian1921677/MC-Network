@@ -1,6 +1,7 @@
-package dev.nexus.cosmetics.cape;
+package dev.nexus.cosmetics.render.cape;
 
 import dev.nexus.cosmetics.cosmetic.Cosmetic;
+import dev.nexus.cosmetics.render.Packets;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
@@ -18,14 +19,10 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -85,9 +82,8 @@ final class FakeCape {
         this.segmentViews = new ItemDisplay[SEGMENT_HEIGHTS.length];
 
         for (int i = 0; i < segments.length; i++) {
-            Display.ItemDisplay entity = new Display.ItemDisplay(EntityTypes.ITEM_DISPLAY,
-                    ((CraftWorld) wearer.getWorld()).getHandle());
-            entity.setItemStack(CraftItemStack.asNMSCopy(segmentItem(cosmetic, i)));
+            NamespacedKey model = new NamespacedKey(cosmetic.model().getNamespace(), cosmetic.model().getKey() + "_" + i);
+            Display.ItemDisplay entity = Packets.createItemDisplay(wearer.getWorld(), model);
 
             // Über die Bukkit-Ansicht lassen sich die Display-Werte bequem setzen
             ItemDisplay view = (ItemDisplay) entity.getBukkitEntity();
@@ -102,13 +98,6 @@ final class FakeCape {
         this.lastLocation = wearer.getLocation();
         this.lastBodyYaw = wearer.getBodyYaw();
         applyTransformations();
-    }
-
-    private static ItemStack segmentItem(Cosmetic cosmetic, int index) {
-        ItemStack item = ItemStack.of(Material.PAPER);
-        NamespacedKey model = new NamespacedKey(cosmetic.model().getNamespace(), cosmetic.model().getKey() + "_" + index);
-        item.editMeta(meta -> meta.setItemModel(model));
-        return item;
     }
 
     // ------------------------------------------------------------------ Sichtbarkeit
@@ -127,12 +116,12 @@ final class FakeCape {
             }
         }
         packets.add(passengerPacket());
-        send(viewer, new ClientboundBundlePacket(packets));
+        Packets.send(viewer, new ClientboundBundlePacket(packets));
     }
 
     void hide(Player viewer) {
         if (viewers.remove(viewer.getUniqueId())) {
-            send(viewer, removePacket());
+            Packets.send(viewer, removePacket());
         }
     }
 
@@ -143,14 +132,8 @@ final class FakeCape {
 
     void destroy() {
         ClientboundRemoveEntitiesPacket packet = removePacket();
-        forEachViewer(viewer -> send(viewer, packet));
+        forEachViewer(viewer -> Packets.send(viewer, packet));
         viewers.clear();
-    }
-
-    /** Nach einem Respawn oder Weltwechsel neu anzeigen. */
-    void respawnFor(Player viewer) {
-        hide(viewer);
-        show(viewer);
     }
 
     /**
@@ -159,7 +142,7 @@ final class FakeCape {
      */
     void resendPassengers() {
         ClientboundSetPassengersPacket packet = passengerPacket();
-        forEachViewer(viewer -> send(viewer, packet));
+        forEachViewer(viewer -> Packets.send(viewer, packet));
     }
 
     // ------------------------------------------------------------------ Physik
@@ -219,7 +202,7 @@ final class FakeCape {
             List<SynchedEntityData.DataValue<?>> dirty = entity.getEntityData().packDirty();
             if (dirty != null && !viewers.isEmpty()) {
                 ClientboundSetEntityDataPacket packet = new ClientboundSetEntityDataPacket(entity.getId(), dirty);
-                forEachViewer(viewer -> send(viewer, packet));
+                forEachViewer(viewer -> Packets.send(viewer, packet));
             }
         }
     }
@@ -300,10 +283,4 @@ final class FakeCape {
         return degrees;
     }
 
-    private static void send(Player player, Packet<?> packet) {
-        ServerPlayer handle = ((CraftPlayer) player).getHandle();
-        if (handle.connection != null) {
-            handle.connection.send(packet);
-        }
-    }
 }
