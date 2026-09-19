@@ -113,7 +113,15 @@ public final class CrateService {
         player.sendMessage(plugin.messages().prefixed("crates.won",
                 Placeholder.component("rarity", rarityName),
                 Placeholder.component("name", reward.displayName())));
-        if (reward.rarity() == Rarity.LEGENDARY) {
+        if (reward.rarity() == Rarity.ULTRA) {
+            // ULTRA: großer Titel für alle
+            net.kyori.adventure.title.Title title = net.kyori.adventure.title.Title.title(
+                    rarityName, plugin.messages().get("crates.ultra-subtitle",
+                            Placeholder.unparsed("player", player.getName()),
+                            Placeholder.component("name", reward.displayName())));
+            plugin.getServer().getOnlinePlayers().forEach(other -> other.showTitle(title));
+        }
+        if (reward.rarity().ordinal() >= Rarity.LEGENDARY.ordinal()) {
             Component broadcast = plugin.messages().prefixed("crates.broadcast",
                     Placeholder.unparsed("player", player.getName()),
                     Placeholder.component("rarity", rarityName),

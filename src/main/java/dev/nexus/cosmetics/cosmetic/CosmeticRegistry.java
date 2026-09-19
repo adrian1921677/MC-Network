@@ -2,6 +2,7 @@ package dev.nexus.cosmetics.cosmetic;
 
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -45,13 +46,24 @@ public final class CosmeticRegistry {
                 if (!fits(slot, animation)) {
                     logger.warning("Cosmetic '" + id + "': Typ " + animation + " passt nicht zu Slot " + slot + ".");
                 }
+                Particle aura = null;
+                String particleName = entry.getString("particle", "");
+                if (!particleName.isBlank()) {
+                    aura = Particle.valueOf(particleName.toUpperCase(Locale.ROOT));
+                    if (aura.getDataType() != Void.class) {
+                        logger.warning("Cosmetic '" + id + "': Partikel " + aura + " braucht Zusatzdaten und wird ignoriert.");
+                        aura = null;
+                    }
+                }
                 cosmetics.put(id, new Cosmetic(id,
                         MiniMessage.miniMessage().deserialize(entry.getString("name", id)),
                         slot, model,
                         entry.getBoolean("glowing", false),
                         animation,
                         entry.getBoolean("unlocked-by-default", false),
-                        Rarity.valueOf(entry.getString("rarity", "COMMON").toUpperCase(Locale.ROOT))));
+                        Rarity.valueOf(entry.getString("rarity", "COMMON").toUpperCase(Locale.ROOT)),
+                        Math.clamp(entry.getDouble("scale", 1.0), 0.2, 3.0),
+                        aura));
             } catch (IllegalArgumentException exception) {
                 logger.warning("Cosmetic '" + id + "' wird übersprungen: " + exception.getMessage());
             }

@@ -2,6 +2,7 @@ package dev.nexus.cosmetics.cosmetic;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
 
 /**
  * Beschreibt ein einzelnes Cosmetic (aus cosmetics.yml).
@@ -14,9 +15,12 @@ import org.bukkit.NamespacedKey;
  * @param animation         besonderes Verhalten (Haustier-Art, Umhang, sprechender Hut ...)
  * @param unlockedByDefault true = jeder darf es benutzen, sonst nur mit Permission oder Besitz
  * @param rarity            Seltenheit (für Truhen)
+ * @param scale             Größen-Faktor (1 = normal), z. B. für ULTRA-Cosmetics
+ * @param aura              Partikel, die das Cosmetic ständig ausstößt (oder null)
  */
 public record Cosmetic(String id, Component displayName, CosmeticSlot slot, NamespacedKey model,
-                       boolean glowing, CosmeticAnimation animation, boolean unlockedByDefault, Rarity rarity) {
+                       boolean glowing, CosmeticAnimation animation, boolean unlockedByDefault, Rarity rarity,
+                       double scale, Particle aura) {
 
     /** Permission, die ein Spieler braucht, um dieses Cosmetic zu benutzen. */
     public String permission() {

@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 public final class CrateRegistry {
 
     private static final Map<Rarity, Integer> DEFAULT_CHANCES = Map.of(
-            Rarity.COMMON, 60, Rarity.RARE, 25, Rarity.EPIC, 12, Rarity.LEGENDARY, 3);
+            Rarity.COMMON, 60, Rarity.RARE, 25, Rarity.EPIC, 12, Rarity.LEGENDARY, 3, Rarity.ULTRA, 1);
 
     private final Map<String, Crate> crates = new LinkedHashMap<>();
 

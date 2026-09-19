@@ -13,6 +13,8 @@
 - **Emotes**: animierte 3D-Emojis über dem Kopf und Körper-Posen (Sitzen, Liegen, Tanzen …)
 - **Automatisches Resource Pack**: eingebauter Download-Server, eigene Modelle werden automatisch eingebaut
 - **Cosmetic-Truhen** mit Öffnungs-Animation, Seltenheiten und Shop-Befehlen
+- **ULTRA-Stufe**: riesige, animierte Cosmetics mit Partikel-Aura (Phönixschwingen, Himmelsdrache, Sternenkrone, Aurora-Umhang) und eigener Truhen-Show
+- **Menü-Item** in der Hotbar (Geschenk-Modell), Rechtsklick öffnet das Menü
 - **Voll konfigurierbar**: Cosmetics und Emotes an/aus, Namen, freie oder Premium-Inhalte, eigene Cosmetics, Deutsch und Englisch
 - Paket-basierte Cosmetics stören keine anderen Plugins (Teleports, Weltwechsel, Minigames)
 
@@ -22,6 +24,7 @@
 |---|---|---|
 | `/cosmetics` | Öffnet das Menü | `nexuscosmetics.use` (Standard: alle) |
 | `/cosmetics off` | Legt alle Cosmetics ab | `nexuscosmetics.use` |
+| `/cosmetics item` | Gibt das Menü-Item zurück | `nexuscosmetics.use` |
 | `/cosmetics reload` | Lädt alle Dateien neu | `nexuscosmetics.admin` (Standard: OP) |
 | `/emote [name]` | Emote-Menü bzw. Emote abspielen (auch: Schleichen + F) | `nexuscosmetics.use` |
 

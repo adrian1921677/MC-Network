@@ -51,11 +51,18 @@ emotes:
     - "<gray>Schleichen + F öffnet dieses Menü"
     - "<gray>Bewegen beendet Posen, Schleichen steht auf"
 
+menu-item:
+  name: "<gradient:#FF7AD9:#FFD35A><b>✦ Cosmetics ✦</b></gradient>"
+  lore:
+    - "<gray>Rechtsklick: Menü öffnen"
+    - "<gray>Hüte, Umhänge, Haustiere, Emotes & Truhen"
+
 rarities:
   COMMON: "<gray>Gewöhnlich"
   RARE: "<#4C8DFF>Selten"
   EPIC: "<#B06AFF>Episch"
   LEGENDARY: "<gold><b>Legendär</b>"
+  ULTRA: "<rainbow><b>✦ ULTRA ✦</b></rainbow>"
 
 crates:
   menu-title: "<dark_gray>Truhen"
@@ -68,6 +75,7 @@ crates:
   no-keys: "<red>Du hast keinen Schlüssel für diese Truhe."
   all-owned: "<green>Du hast schon alles aus dieser Truhe!"
   already-opening: "<red>Warte, bis deine Truhe fertig geöffnet ist."
+  ultra-subtitle: "<white><player> <gray>hat <name> <gray>gezogen!"
   won: "<gray>Du hast gewonnen: <rarity> <gray>» <name>"
   broadcast: "<gold><player> <gray>hat <rarity> <name> <gray>aus einer Truhe gezogen!"
   key-given: "<green><player> hat <amount>x <crate> <green>erhalten."

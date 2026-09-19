@@ -32,17 +32,21 @@ public final class FloatingHalo implements FakeCosmetic {
 
     /** Abstand über dem Passagier-Punkt (= Oberkante des Kopfes) in Blöcken */
     private static final float HEIGHT = 0.28f;
-    private static final float SCALE = 0.55f;
+    private static final float BASE_SCALE = 0.55f;
 
     private final Player wearer;
     private final Display.ItemDisplay entity;
     private final ItemDisplay view;
     private final Set<UUID> viewers = new HashSet<>();
     private final Random random = new Random();
+    private final float scale;
+    private final Particle aura;
     private int age;
 
     public FloatingHalo(Player wearer, Cosmetic cosmetic) {
         this.wearer = wearer;
+        this.scale = (float) (BASE_SCALE * cosmetic.scale());
+        this.aura = cosmetic.aura();
         this.entity = Packets.createItemDisplay(wearer.getWorld(), cosmetic.model());
         this.view = (ItemDisplay) entity.getBukkitEntity();
         view.setInterpolationDuration(3);
@@ -95,6 +99,11 @@ public final class FloatingHalo implements FakeCosmetic {
             sendToViewers(new ClientboundSetEntityDataPacket(entity.getId(), dirty));
         }
 
+        if (aura != null && age % 3 == 0) {
+            wearer.getWorld().spawnParticle(aura, wearer.getLocation().add(0, wearer.getHeight() + HEIGHT, 0),
+                    2, 0.25 * scale / BASE_SCALE, 0.1, 0.25 * scale / BASE_SCALE, 0.01);
+        }
+
         // Ab und zu ein Funkeln am Ring
         if (age % 15 == 0) {
             double angle = random.nextDouble() * Math.PI * 2;
@@ -115,7 +124,7 @@ public final class FloatingHalo implements FakeCosmetic {
                 .translate(0, (float) (HEIGHT + bob), -0.04f)
                 .rotateX((float) Math.toRadians(-12))   // leicht nach hinten gekippt
                 .rotateY((float) Math.toRadians(age * 2.5))
-                .scale(SCALE));
+                .scale(scale));
         view.setInterpolationDelay(0);
     }
 

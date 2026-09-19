@@ -8,12 +8,14 @@
 #   slot: HEAD | BACK | PET     Kopf, Rücken oder Haustier
 #   type: ...                   Besonderes Verhalten:
 #                                 HEAD: NONE (normaler Hut), TALKING (sprechender Hut), HALO (schwebend)
-#                                 BACK: NONE (Cape), ROBE (langer Umhang), WINGS (Flügel)
+#                                 BACK: NONE (Cape), ROBE (langer Umhang), WINGS (Flügel), WINGS (Flügel)
 #                                 PET:  GHOST, DRAGON, PENGUIN, KITTEN, BEE, MUSHROOM, OWL
 #   glowing: true/false         Leuchtet im Dunkeln (Capes, Haustiere, Heiligenschein)
 #   unlocked-by-default: true   Jeder Spieler darf es benutzen. Sonst braucht man die Permission
 #                               nexuscosmetics.cosmetic.<id> (z. B. für Ränge oder Shop-Käufe).
-#   rarity: COMMON          Seltenheit: COMMON, RARE, EPIC, LEGENDARY (für Truhen)
+#   rarity: COMMON          Seltenheit: COMMON, RARE, EPIC, LEGENDARY, ULTRA (für Truhen)
+#   scale: 1.5              Größe (Capes, Flügel, Haustiere, Heiligenschein)
+#   particle: FLAME         Partikel-Aura, z. B. FLAME, END_ROD, HEART, CHERRY_LEAVES, SOUL_FIRE_FLAME
 #   model: "nexus:crown"        Optional: eigenes Modell aus dem Resource Pack
 #
 # EIGENE COSMETICS: Lege dein Modell in plugins/NexusCosmetics/pack/ ab (gleiche Ordnerstruktur wie
@@ -140,6 +142,16 @@ cosmetics:
     glowing: false
     unlocked-by-default: false
     rarity: RARE
+  star_crown:
+    enabled: true
+    name: "<gradient:#FFD35A:#FF7AD9><b>Sternenkrone</b></gradient>"
+    slot: HEAD
+    type: HALO
+    glowing: true
+    unlocked-by-default: false
+    rarity: ULTRA
+    scale: 1.4
+    particle: ELECTRIC_SPARK
   royal_cape:
     enabled: true
     name: "<red>Königsumhang"
@@ -228,6 +240,26 @@ cosmetics:
     glowing: true
     unlocked-by-default: false
     rarity: RARE
+  phoenix_wings:
+    enabled: true
+    name: "<gradient:#FFE066:#FF6A00:#E0201A><b>Phönixschwingen</b></gradient>"
+    slot: BACK
+    type: WINGS
+    glowing: true
+    unlocked-by-default: false
+    rarity: ULTRA
+    scale: 1.45
+    particle: FLAME
+  aurora_cape:
+    enabled: true
+    name: "<gradient:#3DFFB0:#3DC8FF:#B07AFF><b>Aurora-Umhang</b></gradient>"
+    slot: BACK
+    type: NONE
+    glowing: true
+    unlocked-by-default: false
+    rarity: ULTRA
+    scale: 1.1
+    particle: END_ROD
   mini_dragon:
     enabled: true
     name: "<#E0533A>Mini-Drache"
@@ -324,3 +356,13 @@ cosmetics:
     glowing: true
     unlocked-by-default: false
     rarity: LEGENDARY
+  celestial_dragon:
+    enabled: true
+    name: "<gradient:#7AA2FF:#C77DFF><b>Himmelsdrache</b></gradient>"
+    slot: PET
+    type: DRAGON
+    glowing: true
+    unlocked-by-default: false
+    rarity: ULTRA
+    scale: 1.8
+    particle: END_ROD

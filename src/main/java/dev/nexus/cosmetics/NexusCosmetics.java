@@ -15,6 +15,7 @@ import dev.nexus.cosmetics.emote.Emote;
 import dev.nexus.cosmetics.emote.EmoteRegistry;
 import dev.nexus.cosmetics.emote.EmoteService;
 import dev.nexus.cosmetics.menu.CosmeticMenuListener;
+import dev.nexus.cosmetics.menu.MenuItemService;
 import dev.nexus.cosmetics.pack.ResourcePackService;
 import dev.nexus.cosmetics.render.FakeCosmeticRenderer;
 import dev.nexus.cosmetics.storage.CosmeticStorage;
@@ -44,6 +45,7 @@ public final class NexusCosmetics extends JavaPlugin {
     private EmoteService emoteService;
     private CrateService crateService;
     private ResourcePackService resourcePackService;
+    private MenuItemService menuItemService;
 
     @Override
     public void onEnable() {
@@ -56,6 +58,7 @@ public final class NexusCosmetics extends JavaPlugin {
         emoteService = new EmoteService(this, emoteRegistry, renderer);
         emoteService.start();
         crateService = new CrateService(this, crateRegistry, renderer);
+        menuItemService = new MenuItemService(this);
 
         resourcePackService = new ResourcePackService(this, getFile());
         resourcePackService.start();
@@ -66,6 +69,7 @@ public final class NexusCosmetics extends JavaPlugin {
         pluginManager.registerEvents(renderer, this);
         pluginManager.registerEvents(emoteService, this);
         pluginManager.registerEvents(resourcePackService, this);
+        pluginManager.registerEvents(menuItemService, this);
 
         registerCommand("cosmetics", "Öffnet das Cosmetics-Menü", List.of("cosmetic"), new CosmeticsCommand(this));
         registerCommand("emote", "Öffnet das Emote-Menü oder spielt ein Emote ab", List.of("emotes"),
@@ -73,6 +77,7 @@ public final class NexusCosmetics extends JavaPlugin {
 
         // Falls das Plugin im laufenden Betrieb neu geladen wird: Cosmetics der Online-Spieler laden
         getServer().getOnlinePlayers().forEach(cosmeticManager::handleJoin);
+        getServer().getOnlinePlayers().forEach(player -> menuItemService.give(player, false));
 
         getLogger().info(cosmeticRegistry.all().size() + " Cosmetics und " + emoteRegistry.all().size() + " Emotes geladen.");
     }
@@ -101,6 +106,7 @@ public final class NexusCosmetics extends JavaPlugin {
         resourcePackService.reload();
         for (Player player : getServer().getOnlinePlayers()) {
             cosmeticManager.handleJoin(player);
+            menuItemService.give(player, false);
         }
     }
 
@@ -159,6 +165,10 @@ public final class NexusCosmetics extends JavaPlugin {
 
     public CrateService crates() {
         return crateService;
+    }
+
+    public MenuItemService menuItem() {
+        return menuItemService;
     }
 
     @Override

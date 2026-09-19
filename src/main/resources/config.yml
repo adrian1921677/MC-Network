@@ -39,6 +39,14 @@ storage:
   # MySQL für Netzwerke folgt in einem späteren Update.
   type: yaml
 
+menu-item:
+  # Ein Geschenk-Item in der Hotbar, das per Rechtsklick das Menü öffnet
+  enabled: true
+  # Hotbar-Platz 0 bis 8 (0 = ganz links). Ist der Platz belegt, wird nichts überschrieben.
+  slot: 8
+  # Nur in diesen Welten (leer = überall), z. B. [lobby, hub]
+  worlds: []
+
 emotes:
   # Wartezeit zwischen zwei Emotes in Sekunden
   cooldown-seconds: 1.5

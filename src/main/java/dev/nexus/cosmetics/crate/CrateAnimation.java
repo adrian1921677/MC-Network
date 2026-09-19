@@ -178,9 +178,12 @@ final class CrateAnimation implements FakeCosmetic {
         }
 
         if (age > OPEN_TICK - 16 && age < OPEN_TICK && age % 3 == 0) {
-            // Kleiner Vorgeschmack: Funken in der Farbe der Seltenheit
+            // Kleiner Vorgeschmack: Funken in der Farbe der Seltenheit (bei ULTRA in Regenbogenfarben)
+            int rgb = reward.rarity() == Rarity.ULTRA
+                    ? java.awt.Color.HSBtoRGB(age / 12f, 0.8f, 1f) & 0xFFFFFF
+                    : reward.rarity().color();
             world.spawnParticle(Particle.DUST, origin.clone().add(0, 0.5, 0), 3, 0.35, 0.2, 0.35, 0,
-                    new Particle.DustOptions(Color.fromRGB(reward.rarity().color()), 1f));
+                    new Particle.DustOptions(Color.fromRGB(rgb), 1f));
         }
         if (age == OPEN_TICK) {
             reveal();
@@ -223,9 +226,23 @@ final class CrateAnimation implements FakeCosmetic {
             }
             world.playSound(origin, Sound.BLOCK_AMETHYST_BLOCK_RESONATE, 1f, 1f);
         }
-        if (rarity == Rarity.LEGENDARY) {
+        if (rarity.ordinal() >= Rarity.LEGENDARY.ordinal()) {
             world.spawnParticle(Particle.TOTEM_OF_UNDYING, center, 80, 0.3, 0.5, 0.3, 0.5);
             world.playSound(origin, Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
+        }
+        if (rarity == Rarity.ULTRA) {
+            // Die große Show: Blitz (ohne Schaden), Lichtsäule und Donnergrollen
+            world.strikeLightningEffect(origin.clone().add(0, 0, 0));
+            for (double y = 0; y < 8; y += 0.25) {
+                world.spawnParticle(Particle.END_ROD, origin.clone().add(0, y, 0), 2, 0.08, 0.05, 0.08, 0.01);
+            }
+            for (int i = 0; i < 40; i++) {
+                double angle = Math.PI * 2 * i / 40;
+                world.spawnParticle(Particle.DUST, center.clone().add(Math.cos(angle) * 1.4, 0, Math.sin(angle) * 1.4), 1,
+                        0, 0, 0, 0, new Particle.DustOptions(Color.fromRGB(java.awt.Color.HSBtoRGB(i / 40f, 0.8f, 1f) & 0xFFFFFF), 1.6f));
+            }
+            world.playSound(origin, Sound.ENTITY_ENDER_DRAGON_GROWL, 0.6f, 1.4f);
+            world.playSound(origin, Sound.BLOCK_END_PORTAL_SPAWN, 0.5f, 1.2f);
         }
 
         prizeView.setBillboard(org.bukkit.entity.Display.Billboard.FIXED);

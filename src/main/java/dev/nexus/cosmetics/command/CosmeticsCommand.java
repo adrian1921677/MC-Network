@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 /**
  * /cosmetics                                   -> öffnet das Menü
  * /cosmetics off                               -> legt alle Cosmetics ab
+ * /cosmetics item                              -> gibt das Menü-Item (Geschenk) zurück
  * /cosmetics reload                            -> lädt alle Dateien neu (Admin)
  * /cosmetics givekey <spieler> <truhe> [anzahl] -> Truhen-Schlüssel geben (Admin, z. B. für Shops)
  * /cosmetics give <spieler> <cosmetic|emote:id> -> Cosmetic/Emote dauerhaft freischalten (Admin)
@@ -59,6 +60,11 @@ public final class CosmeticsCommand implements BasicCommand {
 
         if (!(source.getExecutor() instanceof Player player)) {
             sender.sendMessage(plugin.messages().prefixed("only-players"));
+            return;
+        }
+
+        if (sub.equals("item")) {
+            plugin.menuItem().give(player, true);
             return;
         }
 
@@ -162,6 +168,7 @@ public final class CosmeticsCommand implements BasicCommand {
 
         if (args.length <= 1) {
             options.add("off");
+            options.add("item");
             if (admin) {
                 options.addAll(List.of("reload", "givekey", "give"));
             }

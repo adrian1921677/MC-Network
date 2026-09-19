@@ -12,6 +12,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Display;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.joml.Matrix4f;
@@ -38,7 +39,7 @@ final class FakeCape implements BackPiece {
     private static final int[] CAPE_SEGMENTS = {5, 5, 6};
     /** Langer Umhang: 22 Einheiten, reicht bis zu den Knöcheln */
     private static final int[] ROBE_SEGMENTS = {7, 7, 8};
-    private static final float SCALE = 0.9f;
+    private static final float BASE_SCALE = 0.9f;
 
     // --- Position am Körper (in Blöcken, relativ zum Passagier-Punkt über dem Kopf) ---
     private static final float SHOULDER_OFFSET = -0.45f;
@@ -58,6 +59,9 @@ final class FakeCape implements BackPiece {
     /** Langer, schwerer Umhang statt normaler Cape */
     private final boolean robe;
     private final int[] segmentHeights;
+    /** Größe dieser Cape (Grundgröße × scale aus cosmetics.yml) */
+    private final float scale;
+    private final Particle aura;
     private final Display.ItemDisplay[] segments;
     private final ItemDisplay[] segmentViews;
     private final Set<UUID> viewers = new HashSet<>();
@@ -77,6 +81,8 @@ final class FakeCape implements BackPiece {
         this.ownView = ownView;
         this.robe = cosmetic.animation() == CosmeticAnimation.ROBE;
         this.segmentHeights = robe ? ROBE_SEGMENTS : CAPE_SEGMENTS;
+        this.scale = (float) (BASE_SCALE * cosmetic.scale());
+        this.aura = cosmetic.aura();
         this.angle = new float[segmentHeights.length];
         this.velocity = new float[segmentHeights.length];
         this.segments = new Display.ItemDisplay[segmentHeights.length];
@@ -190,6 +196,7 @@ final class FakeCape implements BackPiece {
         roll += rollVelocity;
 
         applyTransformations();
+        emitAura();
 
         for (Display.ItemDisplay entity : segments) {
             List<SynchedEntityData.DataValue<?>> dirty = entity.getEntityData().packDirty();
@@ -198,6 +205,22 @@ final class FakeCape implements BackPiece {
                 forEachViewer(viewer -> Packets.send(viewer, packet));
             }
         }
+    }
+
+    /** Partikel am unteren Ende der Cape (nur einmal, von der Kopie für die anderen Spieler). */
+    private void emitAura() {
+        if (aura == null || ownView || age % 3 != 0) {
+            return;
+        }
+        double length = 0;
+        for (int height : segmentHeights) {
+            length += height / 16.0 * scale;
+        }
+        double tilt = Math.toRadians(angle[angle.length - 1]);
+        double yaw = Math.toRadians(wearer.getBodyYaw());
+        double back = 0.17 + Math.sin(tilt) * length;
+        Location location = wearer.getLocation().add(Math.sin(yaw) * back, wearer.getHeight() - 0.45 - Math.cos(tilt) * length, -Math.cos(yaw) * back);
+        wearer.getWorld().spawnParticle(aura, location, 2, 0.2, 0.05, 0.2, 0.01);
     }
 
     /**
@@ -219,13 +242,13 @@ final class FakeCape implements BackPiece {
             previousAngle = angle[i];
 
             Matrix4f segmentMatrix = new Matrix4f(joint)
-                    .scale(hidden ? 0.001f : SCALE)
+                    .scale(hidden ? 0.001f : scale)
                     .translate(0, -0.5f, 0);
             segmentViews[i].setTransformationMatrix(segmentMatrix);
             segmentViews[i].setInterpolationDelay(0);
 
             // Gelenk ans untere Ende dieses Segments verschieben
-            joint.translate(0, -segmentHeights[i] / 16f * SCALE, 0);
+            joint.translate(0, -segmentHeights[i] / 16f * scale, 0);
         }
     }
 

@@ -8,7 +8,9 @@ public enum Rarity {
     COMMON(0xB8B8B8),
     RARE(0x4C8DFF),
     EPIC(0xB06AFF),
-    LEGENDARY(0xFFB020);
+    LEGENDARY(0xFFB020),
+    /** Die höchste Stufe: größer, spektakulärer, mit eigener Truhen-Show. */
+    ULTRA(0xFF4DD8);
 
     private final int color;
 

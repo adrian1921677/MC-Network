@@ -11,6 +11,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Display;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.joml.Matrix4f;
@@ -37,11 +38,14 @@ final class FakeWings implements BackPiece {
     private static final float SNEAK_SHOULDER_OFFSET = -0.38f;
     private static final float BACK_OFFSET = -0.2f;
     private static final float SPINE_GAP = 0.05f;
-    private static final float SCALE = 0.8f;
+    private static final float BASE_SCALE = 0.8f;
     private static final float HIDE_OWN_WINGS_PITCH = 50f;
 
     private final Player wearer;
     private final boolean ownView;
+    private final float scale;
+    private final Particle aura;
+    private int age;
     private final Display.ItemDisplay wingA;
     private final Display.ItemDisplay wingB;
     private final ItemDisplay viewA;
@@ -58,6 +62,8 @@ final class FakeWings implements BackPiece {
     FakeWings(Player wearer, Cosmetic cosmetic, boolean ownView) {
         this.wearer = wearer;
         this.ownView = ownView;
+        this.scale = (float) (BASE_SCALE * cosmetic.scale());
+        this.aura = cosmetic.aura();
         this.wingA = Packets.createItemDisplay(wearer.getWorld(), cosmetic.model("wing_a"));
         this.wingB = Packets.createItemDisplay(wearer.getWorld(), cosmetic.model("wing_b"));
         this.viewA = (ItemDisplay) wingA.getBukkitEntity();
@@ -153,6 +159,7 @@ final class FakeWings implements BackPiece {
         phase += flapSpeed;
 
         applyPose();
+        emitAura();
         for (Display.ItemDisplay wing : List.of(wingA, wingB)) {
             List<SynchedEntityData.DataValue<?>> dirty = wing.getEntityData().packDirty();
             if (dirty != null) {
@@ -161,12 +168,31 @@ final class FakeWings implements BackPiece {
         }
     }
 
+    /** Partikel an beiden Flügelspitzen (nur von der Kopie für die anderen Spieler). */
+    private void emitAura() {
+        age++;
+        if (aura == null || ownView || age % 2 != 0) {
+            return;
+        }
+        double yaw = Math.toRadians(wearer.getBodyYaw());
+        double reach = 0.9 * scale / BASE_SCALE * 0.8;
+        double side = Math.cos(Math.toRadians(sweep)) * reach;
+        double back = 0.2 + Math.sin(Math.toRadians(sweep)) * reach;
+        double height = wearer.getHeight() + (wearer.isSneaking() ? -0.38 : -0.5) + 0.25;
+        for (int direction : new int[]{-1, 1}) {
+            // rechts = (-cos, -sin), hinten = (sin, -cos)
+            double x = -Math.cos(yaw) * side * direction + Math.sin(yaw) * back;
+            double z = -Math.sin(yaw) * side * direction - Math.cos(yaw) * back;
+            wearer.getWorld().spawnParticle(aura, wearer.getLocation().add(x, height, z), 1, 0.08, 0.1, 0.08, 0.01);
+        }
+    }
+
     private void applyPose() {
         boolean hidden = ownView && wearer.getLocation().getPitch() > HIDE_OWN_WINGS_PITCH;
         float shoulder = wearer.isSneaking() ? SNEAK_SHOULDER_OFFSET : SHOULDER_OFFSET;
         double flap = Math.sin(phase) * amplitude;          // vor und zurück
         double lift = 12 + Math.sin(phase) * amplitude * 0.7; // Spitzen hoch und runter
-        float scale = hidden ? 0.001f : SCALE;
+        float scale = hidden ? 0.001f : this.scale;
         float bodyYaw = (float) Math.toRadians(-wearer.getBodyYaw());
 
         // Flügel A zeigt nach rechts (-x), Flügel B nach links (+x)

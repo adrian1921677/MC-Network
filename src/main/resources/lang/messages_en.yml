@@ -51,11 +51,18 @@ emotes:
     - "<gray>Sneak + F opens this menu"
     - "<gray>Moving ends poses, sneaking stands up"
 
+menu-item:
+  name: "<gradient:#FF7AD9:#FFD35A><b>✦ Cosmetics ✦</b></gradient>"
+  lore:
+    - "<gray>Right-click: open menu"
+    - "<gray>Hats, capes, pets, emotes & crates"
+
 rarities:
   COMMON: "<gray>Common"
   RARE: "<#4C8DFF>Rare"
   EPIC: "<#B06AFF>Epic"
   LEGENDARY: "<gold><b>Legendary</b>"
+  ULTRA: "<rainbow><b>✦ ULTRA ✦</b></rainbow>"
 
 crates:
   menu-title: "<dark_gray>Crates"
@@ -68,6 +75,7 @@ crates:
   no-keys: "<red>You don't have a key for this crate."
   all-owned: "<green>You already own everything from this crate!"
   already-opening: "<red>Wait until your crate has finished opening."
+  ultra-subtitle: "<white><player> <gray>pulled <name><gray>!"
   won: "<gray>You won: <rarity> <gray>» <name>"
   broadcast: "<gold><player> <gray>pulled <rarity> <name> <gray>from a crate!"
   key-given: "<green><player> received <amount>x <crate><green>."

@@ -183,6 +183,9 @@ public final class FakePet implements FakeCosmetic {
         }
 
         animator.effects(state, this::spawnParticle);
+        if (cosmetic.aura() != null && state.age % 4 == 0) {
+            spawnParticle(cosmetic.aura(), 0, 0.1 * cosmetic.scale(), 0, 2, 0.15 * cosmetic.scale(), 0.01);
+        }
     }
 
     /** Beobachtet den Besitzer: bewegt er sich, springt er, schleicht er ...? */
@@ -273,6 +276,7 @@ public final class FakePet implements FakeCosmetic {
         } else {
             base = new Matrix4f().rotateY((float) Math.toRadians(-yaw));
         }
+        base.scale((float) cosmetic.scale());
 
         Matrix4f[] poses = new Matrix4f[parts.size()];
         animator.pose(state, base, poses);

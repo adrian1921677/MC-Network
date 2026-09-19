@@ -384,7 +384,7 @@ def write_extra_model(model_id, texture_id, elements, display_settings=None):
         {"model": {"type": "minecraft:model", "model": f"{NS}:item/{model_id}"}}, indent=2))
 
 
-def mini_dragon():
+def mini_dragon(cosmetic_id="mini_dragon", texture=None, animation=None):
     red, red_dark, red_light = (196, 48, 38, 255), (140, 28, 24, 255), (226, 84, 60, 255)
     belly, belly_dark = (244, 204, 96, 255), (214, 168, 64, 255)
     horn, horn_dark = (238, 228, 204, 255), (196, 182, 150, 255)
@@ -458,10 +458,10 @@ def mini_dragon():
 
     # Menü-Symbol: Körper mit angelegten Flügeln an den Schultern
     icon = body + shift(wing_a, 3, 2, 0.5) + shift(wing_b, -3, 2, 0.5)
-    write_cosmetic("mini_dragon", icon, img, display_settings=PET_DISPLAY)
-    write_extra_model("mini_dragon_body", "mini_dragon", body)
-    write_extra_model("mini_dragon_wing_a", "mini_dragon", wing_a)
-    write_extra_model("mini_dragon_wing_b", "mini_dragon", wing_b)
+    write_cosmetic(cosmetic_id, icon, texture or img, display_settings=PET_DISPLAY, animation=animation)
+    write_extra_model(f"{cosmetic_id}_body", cosmetic_id, body)
+    write_extra_model(f"{cosmetic_id}_wing_a", cosmetic_id, wing_a)
+    write_extra_model(f"{cosmetic_id}_wing_b", cosmetic_id, wing_b)
 
 
 def ghost():
@@ -1241,32 +1241,39 @@ import math
 WING_ROOT_ROW = 6.5
 
 
-def extrude_pixels(img, depth=1.0, dx=0.0, dy=0.0, mirror=False):
-    """Wie extrude_sprite, aber für fertige Pixel (durchsichtig = Alpha 0), optional gespiegelt."""
-    z0, z1 = 8 - depth / 2, 8 + depth / 2
+def extrude_pixels(img, depth=1.0, dx=0.0, dy=0.0, mirror=False, dz=0.0):
+    """
+    Wie extrude_sprite, aber für fertige Pixel (durchsichtig = Alpha 0), optional gespiegelt.
+    Funktioniert mit 16x16 und 32x32 Bildern: Bei 32x32 ist jeder Pixel nur eine halbe Einheit groß.
+    """
+    n = len(img)
+    k = 16 / n  # Größe eines Pixels in Modell-Einheiten
+    z0, z1 = 8 - depth / 2 + dz, 8 + depth / 2 + dz
     elements = []
-    for y in range(16):
+    for y in range(n):
         x = 0
-        while x < 16:
+        while x < n:
             if img[y][x][3] == 0:
                 x += 1
                 continue
             start = x
-            while x < 16 and img[y][x][3] != 0:
+            while x < n and img[y][x][3] != 0:
                 x += 1
             end = x
-            gx0, gx1 = (16 - end, 16 - start) if mirror else (start, end)
-            forward = [start, y, end, y + 1]
-            backward = [end, y, start, y + 1]
+            u0, u1, v0, v1 = start * k, end * k, y * k, (y + 1) * k
+            gx0, gx1 = (16 - u1, 16 - u0) if mirror else (u0, u1)
+            forward = [u0, v0, u1, v1]
+            backward = [u1, v0, u0, v1]
             elements.append({
-                "from": [gx0 + dx, 15 - y + dy, z0], "to": [gx1 + dx, 16 - y + dy, z1],
+                "from": [round(gx0 + dx, 3), round(16 - v1 + dy, 3), z0],
+                "to": [round(gx1 + dx, 3), round(16 - v0 + dy, 3), z1],
                 "faces": {
                     "south": {"uv": backward if mirror else forward, "texture": "#0"},
                     "north": {"uv": forward if mirror else backward, "texture": "#0"},
                     "up": {"uv": forward, "texture": "#0"},
                     "down": {"uv": forward, "texture": "#0"},
-                    "west": {"uv": [start, y, start + 1, y + 1], "texture": "#0"},
-                    "east": {"uv": [end - 1, y, end, y + 1], "texture": "#0"},
+                    "west": {"uv": [u0, v0, u0 + k, v1], "texture": "#0"},
+                    "east": {"uv": [u1 - k, v0, u1, v1], "texture": "#0"},
                 },
             })
     return elements
@@ -1277,13 +1284,14 @@ def blend(a, b, t):
     return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(4))
 
 
-def wing_sprite(style):
+def wing_sprite(style, res=32):
     clear = (0, 0, 0, 0)
-    img = [[clear] * 16 for _ in range(16)]
+    q = res / 16  # Pixel pro Einheit
+    img = [[clear] * res for _ in range(res)]
 
     def inside(x, y):
-        cx, cy = x + 0.5, y + 0.5
-        if style == "angel":
+        cx, cy = (x + 0.5) / q, (y + 0.5) / q
+        if style in ("angel", "phoenix"):
             # Hochgewölbte Vorderkante, lange Federn hängen nach unten
             top = 5.0 - 4.6 * math.sin(math.pi * cx / 17)
             bottom = 15.6 - 0.42 * cx - 1.3 * abs(math.sin(cx * 0.9))
@@ -1304,22 +1312,24 @@ def wing_sprite(style):
         root = cx < 2.5 and 4 <= cy <= 11
         return upper or lower or root
 
-    mask = [[inside(x, y) for x in range(16)] for y in range(16)]
+    mask = [[inside(x, y) for x in range(res)] for y in range(res)]
 
     def edge(x, y):
-        return any(not (0 <= x + ox < 16 and 0 <= y + oy < 16 and mask[y + oy][x + ox])
+        return any(not (0 <= x + ox < res and 0 <= y + oy < res and mask[y + oy][x + ox])
                    for ox, oy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
 
-    for y in range(16):
-        for x in range(16):
-            if not mask[y][x]:
+    for py in range(res):
+        for px in range(res):
+            if not mask[py][px]:
                 continue
+            x, y = px / q, py / q
             if style == "angel":
-                color = (246, 246, 252, 255)
-                if (x + int(y * 0.7)) % 4 == 0:
-                    color = (214, 222, 240, 255)            # Federlinien
-                if not mask[min(15, y + 2)][x] or not mask[min(15, y + 1)][x]:
-                    color = (255, 236, 170, 255)            # goldene Federspitzen
+                color = blend((255, 255, 255, 255), (222, 230, 246, 255), y / 15)
+                if int(x * 1.5 + y * 0.9) % 5 == 0:
+                    color = blend(color, (196, 206, 232, 255), 0.7)           # Federlinien
+                below = [mask[min(res - 1, py + d)][px] for d in (1, 2, 3)]
+                if not all(below):
+                    color = blend((255, 240, 190, 255), (255, 214, 120, 255), y / 15)   # goldene Federspitzen
                 if y + 0.5 < 5.0 - 4.6 * math.sin(math.pi * (x + 0.5) / 17) + 1.2:
                     color = (255, 255, 255, 255)            # heller Flügelbug
             elif style in ("demon", "dragon"):
@@ -1328,46 +1338,53 @@ def wing_sprite(style):
                 bone = (40, 10, 14, 255) if style == "demon" else (24, 66, 34, 255)
                 color = blend(membrane_top, membrane_bottom, y / 14)
                 top_edge = 5.0 - 4.2 * math.sin(math.pi * (x + 0.5) / 17)
-                on_bone = abs(y + 0.5 - top_edge) < 1.0 or (x % 5 == 4) or x == 0
+                on_bone = abs(y + 0.25 - top_edge) < 0.75 or (4.4 <= x % 5 <= 5.0) or x < 0.5
                 if on_bone:
                     color = bone
-                if style == "dragon" and not on_bone and (x + y) % 5 == 0:
+                if style == "dragon" and not on_bone and int(x * 2 + y * 2) % 5 == 0:
                     color = (110, 190, 100, 255)            # Schuppen-Glanz
             elif style == "butterfly":
                 color = blend((70, 160, 255, 255), (30, 70, 200, 255), x / 15)
                 if y >= 9:
                     color = (255, 150, 40, 255)             # orangefarbener unterer Flügel
-                if edge(x, y):
+                if edge(px, py):
                     color = (24, 22, 40, 255)
             else:  # pixie (Fee): zarte Pastellfarben, halb durchsichtig
                 color = blend((255, 170, 220, 170), (150, 230, 255, 170), x / 15)
-                if edge(x, y):
+                if edge(px, py):
                     color = (255, 255, 255, 220)
-            img[y][x] = color
+            if style in ("demon", "dragon", "butterfly") and not edge(px, py):
+                color = blend(color, (255, 255, 255, color[3]), 0.08 * (1 - y / 16))     # leichter Glanz oben
+            img[py][px] = color
 
     # Kleine Details
+    def dot(sx, sy, color, radius=1):
+        for yy in range(int(sy * q) - radius + 1, int(sy * q) + radius):
+            for xx in range(int(sx * q) - radius + 1, int(sx * q) + radius):
+                if 0 <= xx < res and 0 <= yy < res and mask[yy][xx] and not edge(xx, yy):
+                    img[yy][xx] = color
+
     if style == "butterfly":
         for sx, sy in ((11, 3), (13, 5), (9, 6), (4, 12)):
-            if mask[sy][sx] and not edge(sx, sy):
-                img[sy][sx] = (255, 255, 255, 255)
+            dot(sx, sy, (255, 255, 255, 255), 2)
     if style == "pixie":
         for sx, sy in ((10, 3), (6, 5), (13, 5), (4, 11), (7, 12)):
-            if mask[sy][sx]:
-                img[sy][sx] = (255, 255, 255, 255)
+            dot(sx, sy, (255, 255, 255, 255))
     return img
 
 
-def wings(cosmetic_id, style):
+def wings(cosmetic_id, style, frames=None, animation=None):
     img = wing_sprite(style)
     dy = WING_ROOT_ROW - 7.5
-    wing_a = extrude_pixels(img, dx=8, dy=dy)
-    wing_b = extrude_pixels(img, dx=-8, dy=dy, mirror=True)
+    wing_a = extrude_pixels(img, depth=0.8, dx=8, dy=dy)
+    wing_b = extrude_pixels(img, depth=0.8, dx=-8, dy=dy, mirror=True)
     wing_display = {
         "gui": {"rotation": [0, 180, 0], "scale": [0.45] * 3},
         "ground": {"translation": [0, 2, 0], "scale": [0.3] * 3},
         "fixed": {"scale": [0.45] * 3},
     }
-    write_cosmetic(cosmetic_id, wing_a + wing_b, img, display_settings=wing_display)
+    texture = [row for frame in frames for row in frame] if frames else img
+    write_cosmetic(cosmetic_id, wing_a + wing_b, texture, display_settings=wing_display, animation=animation)
     write_extra_model(f"{cosmetic_id}_wing_a", cosmetic_id, wing_a)
     write_extra_model(f"{cosmetic_id}_wing_b", cosmetic_id, wing_b)
 
@@ -1377,14 +1394,67 @@ def wings(cosmetic_id, style):
 # Einfache Hüte nutzen eine Paletten-Textur: 16 Farbfelder à 4x4 Pixel.
 # uv(i) gibt den Texturbereich von Feld i zurück. Felder können auch Muster enthalten.
 def palette(cells):
-    """cells: Liste von Farben (r, g, b, a) oder Funktionen f(img, x0, y0), die ein 4x4-Feld bemalen."""
-    img = canvas((0, 0, 0, 0))
+    """
+    cells: Liste von Farben (r, g, b, a), (Farbe, "material") oder Funktionen f(img, x0, y0), die ein
+    4x4-Feld bemalen. Das Ergebnis wird auf 64x64 hochgerechnet und bekommt pro Feld Farbverlauf,
+    Materialstruktur und Glanzkanten, damit Flächen nicht flach und pixelig wirken.
+    Materialien: "matte" (Standard), "metal", "felt", "fur", "wood", "gloss", "glow"
+    """
+    low = canvas((0, 0, 0, 0))
+    styles = {}
     for i, cell in enumerate(cells):
         x0, y0 = (i % 4) * 4, (i // 4) * 4
+        if isinstance(cell, tuple) and len(cell) == 2 and isinstance(cell[1], str):
+            styles[i] = cell[1]
+            cell = cell[0]
         if callable(cell):
-            cell(img, x0, y0)
+            cell(low, x0, y0)
         else:
-            fill(img, x0, y0, x0 + 4, y0 + 4, cell)
+            fill(low, x0, y0, x0 + 4, y0 + 4, cell)
+    return shade_cells(low, styles)
+
+
+def shade_cells(low, styles, cell_px=16):
+    """Rechnet ein 16x16-Paletten-Bild auf 64x64 hoch und schattiert jedes der 16 Felder."""
+    import random
+    size = cell_px * 4
+    img = [[low[y * 16 // size][x * 16 // size] for x in range(size)] for y in range(size)]
+    for index in range(16):
+        style = styles.get(index, "matte")
+        rng = random.Random(index * 7919 + len(style))
+        cx0, cy0 = (index % 4) * cell_px, (index // 4) * cell_px
+        for y in range(cell_px):
+            for x in range(cell_px):
+                r, g, b, a = img[cy0 + y][cx0 + x]
+                if a == 0:
+                    continue
+                v = y / (cell_px - 1)
+                light = 1.12 - 0.24 * v                                   # oben heller, unten dunkler
+                noise = rng.uniform(-0.04, 0.04)
+                if style == "metal":
+                    noise = 0.05 * ((y * 3 + rng.randint(0, 2)) % 5 - 2) / 2    # gebürstete Linien
+                    if abs(x - y * 0.6 - 4) < 1.5:
+                        light += 0.18                                     # Glanzstreifen
+                elif style == "felt":
+                    noise = rng.uniform(-0.09, 0.09)
+                elif style == "fur":
+                    noise = 0.07 if (x + rng.randint(0, 1)) % 3 == 0 and y % 4 < 2 else rng.uniform(-0.05, 0.02)
+                elif style == "wood":
+                    noise = 0.06 * ((x + int(2 * rng.random())) % 4 == 0) - 0.03
+                elif style == "gloss":
+                    if x < 5 and y < 5 and x + y < 6:
+                        light += 0.25
+                elif style == "glow":
+                    d = ((x - cell_px / 2) ** 2 + (y - cell_px / 2) ** 2) ** 0.5 / (cell_px / 2)
+                    light = 1.25 - 0.35 * d
+                factor = light + noise
+                # Glanzkante oben/links, Schattenkante unten/rechts
+                if x == 0 or y == 0:
+                    factor += 0.10
+                if x == cell_px - 1 or y == cell_px - 1:
+                    factor -= 0.12
+                img[cy0 + y][cx0 + x] = (min(255, int(r * factor)), min(255, int(g * factor)),
+                                         min(255, int(b * factor)), a)
     return img
 
 
@@ -1425,7 +1495,7 @@ def new_hats():
 
     # Wikingerhelm
     metal, metal_dark, rivet, horn, horn_tip = (164, 170, 180, 255), (118, 124, 136, 255), (220, 224, 230, 255), (238, 228, 204, 255), (196, 184, 156, 255)
-    img = palette([metal, metal_dark, dotted(metal_dark, rivet), horn, horn_tip])
+    img = palette([(metal, "metal"), (metal_dark, "metal"), dotted(metal_dark, rivet), (horn, "gloss"), horn_tip])
     horn_left = [cube("Horn", [-1, t - 1, 7], [1.2, t + 1, 9], uv(3)),
                  cube("Horn Mitte", [-2, t + 1, 7.25], [-0.5, t + 4, 8.75], uv(3)),
                  cube("Hornspitze", [-1.8, t + 4, 7.5], [-1, t + 6, 8.5], uv(4))]
@@ -1439,7 +1509,7 @@ def new_hats():
 
     # Cowboyhut
     brown, brown_dark, band = (150, 98, 56, 255), (116, 74, 40, 255), (62, 40, 24, 255)
-    img = palette([brown, brown_dark, band])
+    img = palette([(brown, "felt"), (brown_dark, "felt"), (band, "gloss")])
     elements = [
         cube("Krempe", [-1, t, -1], [17, t + 0.8, 17], uv(0)),
         cube("Krempe links hoch", [-1.5, t + 0.8, -1], [0.5, t + 1.8, 17], uv(1)),
@@ -1452,7 +1522,7 @@ def new_hats():
 
     # Hexenhut
     black, purple, gold = (40, 34, 52, 255), (124, 62, 178, 255), (240, 196, 70, 255)
-    img = palette([black, purple, gold])
+    img = palette([(black, "felt"), (purple, "gloss"), (gold, "metal")])
     elements = [
         cube("Krempe", [-0.5, t, -0.5], [16.5, t + 0.8, 16.5], uv(0)),
         cube("Hut 1", [3, t + 0.8, 3], [13, t + 4, 13], uv(0)),
@@ -1467,7 +1537,7 @@ def new_hats():
 
     # Weihnachtsmütze
     red, red_dark, white = (212, 36, 44, 255), (168, 22, 30, 255), (248, 248, 244, 255)
-    img = palette([red, red_dark, white])
+    img = palette([(red, "felt"), (red_dark, "felt"), (white, "fur")])
     elements = [
         cube("Fellrand", [1, t - 1, 1], [15, t + 1, 15], uv(2)),
         cube("Mütze 1", [2.5, t + 1, 2.5], [13.5, t + 4, 13.5], uv(0)),
@@ -1493,7 +1563,7 @@ def new_hats():
 
     # Katzenohren
     fur, pink, band_dark = (70, 64, 78, 255), (255, 170, 190, 255), (40, 36, 46, 255)
-    img = palette([fur, pink, band_dark])
+    img = palette([(fur, "fur"), (pink, "gloss"), (band_dark, "gloss")])
     ear = [faces(cube("Ohr", [2.5, t + 0.5, 6.3], [6, t + 2.5, 8.2], uv(0)), north=uv(1)),
            faces(cube("Ohr Mitte", [3, t + 2.5, 6.3], [5.5, t + 4, 8.2], uv(0)), north=uv(1)),
            cube("Ohrspitze", [3.5, t + 4, 6.3], [5, t + 5, 8.2], uv(0))]
@@ -1502,7 +1572,7 @@ def new_hats():
 
     # Hasenohren (eins steht, eins ist umgeknickt)
     white, pink = (250, 250, 250, 255), (255, 176, 196, 255)
-    img = palette([white, pink])
+    img = palette([(white, "fur"), (pink, "gloss")])
     elements = [
         cube("Haarreif", [1.4, t - 0.5, 7], [14.6, t + 0.5, 8.5], uv(0)),
         faces(cube("Ohr links", [3.5, t + 0.5, 7], [6.5, t + 9, 8.5], uv(0)), north=uv(1)),
@@ -1513,7 +1583,7 @@ def new_hats():
 
     # Kopfhörer
     dark, pad, accent = (52, 52, 60, 255), (34, 34, 40, 255), (64, 214, 232, 255)
-    img = palette([dark, pad, accent])
+    img = palette([(dark, "gloss"), (pad, "felt"), (accent, "gloss")])
     side = [cube("Bügel", [0.2, t - 5, 7], [1.4, t, 9], uv(0)),
             cube("Muschel", [-0.8, t - 8.5, 5.5], [1.6, t - 4.5, 10.5], uv(2)),
             cube("Polster", [1.6, t - 8, 6], [1.8, t - 5, 10], uv(1))]
@@ -1543,7 +1613,7 @@ def new_hats():
 
     # Teufelshörner
     red, red_dark = (200, 30, 40, 255), (140, 16, 24, 255)
-    img = palette([red, red_dark])
+    img = palette([(red, "gloss"), (red_dark, "gloss")])
     horn = [cube("Horn", [4, t, 6], [6, t + 1.5, 8], uv(0)),
             cube("Horn Mitte", [4.5, t + 1.5, 6.3], [5.8, t + 3, 7.7], uv(0)),
             cube("Hornspitze", [5, t + 3, 6.6], [5.8, t + 4, 7.4], uv(1))]
@@ -1733,6 +1803,182 @@ def baby_phoenix():
     write_extra_model("baby_phoenix_wing_b", "baby_phoenix", wing_b)
 
 
+
+# ------------------------------------------------------------------ ULTRA
+# ULTRA-Cosmetics: animierte Texturen, leuchtend, größer (scale in cosmetics.yml) und mit Partikeln.
+def phoenix_frames(count=6):
+    """Feuerflügel: Glut an der Wurzel, Flammen an den Spitzen, flackert."""
+    import random
+    base = wing_sprite("phoenix")
+    res = len(base)
+    frames = []
+    for f in range(count):
+        rng = random.Random(f * 31 + 7)
+        img = [[(0, 0, 0, 0)] * res for _ in range(res)]
+        for y in range(res):
+            for x in range(res):
+                if base[y][x][3] == 0:
+                    continue
+                heat = 1 - (x / res) * 0.8 - (y / res) * 0.25                       # innen heißer
+                flicker = 0.12 * math.sin(f / count * math.tau + x * 0.55 + y * 0.35) + rng.uniform(-0.05, 0.05)
+                t = max(0.0, min(1.0, heat + flicker))
+                if t > 0.72:
+                    color = blend((255, 214, 90, 255), (255, 252, 220, 255), (t - 0.72) / 0.28)
+                elif t > 0.42:
+                    color = blend((255, 120, 30, 255), (255, 214, 90, 255), (t - 0.42) / 0.30)
+                else:
+                    color = blend((200, 30, 20, 255), (255, 120, 30, 255), t / 0.42)
+                if int(x * 0.75 + y * 0.45 + f) % 6 == 0:
+                    color = blend(color, (255, 255, 230, 255), 0.35)                  # Federschimmer
+                img[y][x] = color
+        frames.append(img)
+    return frames
+
+
+def celestial_dragon():
+    import random
+    frames = []
+    for f in range(8):
+        rng = random.Random(3)
+        img = canvas((24, 16, 60, 255), 32, 32)
+        for y in range(32):
+            for x in range(32):
+                img[y][x] = blend((20, 14, 58, 255), (70, 30, 120, 255), ((x * 0.6 + y) % 32) / 32)
+        # funkelnde Sterne überall
+        for _ in range(70):
+            sx, sy, phase = rng.randrange(32), rng.randrange(32), rng.random() * math.tau
+            b = 0.5 + 0.5 * math.sin(math.tau * f / 8 + phase)
+            img[sy][sx] = blend(img[sy][sx], (255, 255, 255, 255), 0.3 + 0.7 * b)
+        fill(img, 16, 0, 32, 16, (150, 130, 230, 255))                    # Bauch (uv 8,0 - 16,8)
+        for yy in range(1, 16, 3):
+            fill(img, 16, yy, 32, yy + 1, (120, 100, 210, 255))
+        # Gesicht (uv 0,8 - 8,12): große leuchtende Augen
+        for ex in (1, 11):
+            fill(img, ex, 17, ex + 4, 21, (120, 240, 255, 255))
+            fill(img, ex + 1, 18, ex + 3, 21, (20, 20, 50, 255))
+            img[17][ex] = (255, 255, 255, 255)
+        fill(img, 16, 16, 24, 24, (255, 244, 200, 255))                   # Hörner leuchten (uv 8,8 - 12,12)
+        fill(img, 16, 22, 24, 24, (255, 214, 120, 255))
+        for y in range(16, 24):                                           # Flughaut (uv 12,8 - 16,12)
+            fill(img, 24, y, 32, y + 1, blend((110, 220, 255, 255), (190, 120, 255, 255), (y - 16) / 8))
+        img[18 + f % 4][25 + (f * 3) % 6] = (255, 255, 255, 255)
+        fill(img, 16, 24, 24, 32, (230, 230, 255, 255))                   # Knochen (uv 8,12 - 12,16)
+        frames.extend(img)
+    mini_dragon("celestial_dragon", texture=frames, animation={"frametime": 3, "interpolate": True})
+
+
+def star_crown():
+    img = palette([
+        ((255, 206, 70, 255), "metal"),     # 0 Gold
+        ((255, 236, 150, 255), "gloss"),    # 1 helles Gold
+        ((90, 230, 255, 255), "glow"),      # 2 Saphir
+        ((255, 110, 200, 255), "glow"),     # 3 Rosa-Diamant
+        ((180, 120, 255, 255), "glow"),     # 4 Amethyst
+        ((255, 255, 255, 255), "glow"),     # 5 Stern
+    ])
+    half = 2.4
+    wall = cube("Wand", [8 - half, 6, 1.5], [8 + half, 9.5, 2.7], uv(0))
+    rim = cube("Rand", [8 - half - 0.2, 9.5, 1.3], [8 + half + 0.2, 10.2, 2.9], uv(1))
+    spike = cube("Zacke", [7.3, 10.2, 1.6], [8.7, 12.8, 2.6], uv(0))
+    tip = cube("Spitze", [7.65, 12.8, 1.8], [8.35, 14, 2.4], uv(1))
+    base_parts = [wall, rim, spike, tip]
+
+    elements = []
+    gems = [2, 3, 4, 2, 3, 4, 2, 3]
+    # 8 Seiten: 4 gerade (durch Drehung der Koordinaten) und 4 schräge (Element-Drehung um 45°)
+    def rotate_quarter(element, turns):
+        copy = json.loads(json.dumps(element))
+        for _ in range(turns):
+            (x0, y0, z0), (x1, y1, z1) = copy["from"], copy["to"]
+            copy["from"], copy["to"] = [16 - z1, y0, x0], [16 - z0, y1, x1]
+        return copy
+
+    for turns in range(4):
+        for part in base_parts:
+            elements.append(rotate_quarter(part, turns))
+        gem = cube("Juwel", [7.3, 14, 1.5], [8.7, 15.4, 2.7], uv(gems[turns * 2]))
+        elements.append(rotate_quarter(gem, turns))
+        for part in base_parts + [cube("Juwel", [7.3, 14, 1.5], [8.7, 15.4, 2.7], uv(gems[turns * 2 + 1]))]:
+            diagonal = rotate_quarter(part, turns)
+            diagonal["rotation"] = {"angle": 45, "axis": "y", "origin": [8, 8, 8]}
+            elements.append(diagonal)
+    # Schwebender Stern in der Mitte
+    elements.append(cube("Stern", [7, 9, 7], [9, 11, 9], uv(5)))
+    elements.append(cube("Stern Glanz", [7.5, 8.5, 7.5], [8.5, 11.5, 8.5], uv(5)))
+    crown_display = {
+        "gui": {"rotation": [25, 20, 0], "translation": [0, -1, 0], "scale": [0.85] * 3},
+        "ground": {"translation": [0, 2, 0], "scale": [0.5] * 3},
+        "fixed": {"scale": [0.8] * 3},
+    }
+    write_cosmetic("star_crown", elements, img, display_settings=crown_display)
+
+
+def aurora_cape():
+    frames = 16
+    sheet = []
+    for f in range(frames):
+        img = canvas((10, 14, 40, 255), CAPE_W, CAPE_H)
+        for y in range(32):
+            for x in range(20):
+                # Polarlicht-Bänder, die langsam nach oben wandern und sich wellen
+                wave = math.sin(x * 0.45 + f / frames * math.tau) * 2.2
+                band = (y + wave + f * 2) % 16 / 16
+                glow = max(0.0, math.sin(band * math.pi)) ** 1.6
+                hue = (x / 20 * 0.5 + y / 32 * 0.4 + f / frames) % 1.0
+                if hue < 0.33:
+                    color = blend((60, 255, 170, 255), (60, 200, 255, 255), hue / 0.33)
+                elif hue < 0.66:
+                    color = blend((60, 200, 255, 255), (180, 110, 255, 255), (hue - 0.33) / 0.33)
+                else:
+                    color = blend((180, 110, 255, 255), (60, 255, 170, 255), (hue - 0.66) / 0.34)
+                img[y][x] = blend((10, 14, 40, 255), color, 0.25 + 0.75 * glow)
+        # Rand, Innenfutter, Kanten
+        edge_color = blend((120, 255, 220, 255), (200, 160, 255, 255), 0.5 + 0.5 * math.sin(f / frames * math.tau))
+        fill(img, 0, 0, 1, 32, edge_color)
+        fill(img, 19, 0, 20, 32, edge_color)
+        fill(img, 0, 31, 20, 32, edge_color)
+        fill(img, 20, 0, 30, 32, (14, 18, 48, 255))
+        fill(img, 30, 0, 32, 32, edge_color)
+        sheet.extend(img)
+    write_cosmetic("aurora_cape", cape_element(), sheet, display_settings=CAPE_DISPLAY,
+                   animation={"frametime": 2, "interpolate": True})
+    write_cape_segments("aurora_cape")
+
+
+def menu_item():
+    """Das Menü-Item: ein glänzendes Geschenk mit goldener Schleife."""
+    img = palette([
+        ((190, 90, 255, 255), "gloss"),     # 0 Geschenkpapier lila
+        ((150, 60, 220, 255), "gloss"),     # 1 dunkler
+        ((255, 210, 80, 255), "metal"),     # 2 goldenes Band
+        ((255, 236, 150, 255), "gloss"),    # 3 helles Gold
+    ])
+    elements = [
+        faces(cube("Box", [3, 0, 3], [13, 8, 13], uv(0)), down=uv(1)),
+        cube("Deckel", [2.5, 8, 2.5], [13.5, 10, 13.5], uv(1)),
+        cube("Band vorne", [7, 0, 2.8], [9, 8, 3], uv(2)),
+        cube("Band hinten", [7, 0, 13], [9, 8, 13.2], uv(2)),
+        cube("Band links", [2.8, 0, 7], [3, 8, 9], uv(2)),
+        cube("Band rechts", [13, 0, 7], [13.2, 8, 9], uv(2)),
+        cube("Deckelband quer", [2.3, 8, 7], [13.7, 10.2, 9], uv(2)),
+        cube("Deckelband längs", [7, 8, 2.3], [9, 10.2, 13.7], uv(2)),
+        cube("Schleife links", [3.5, 10.2, 7.25], [7, 12.8, 8.75], uv(3)),
+        cube("Schleife rechts", [9, 10.2, 7.25], [12.5, 12.8, 8.75], uv(3)),
+        cube("Knoten", [7, 10.2, 7], [9, 11.8, 9], uv(2)),
+        cube("Band-Ende links", [5, 10.2, 8.75], [6.5, 10.8, 11], uv(2)),
+        cube("Band-Ende rechts", [9.5, 10.2, 8.75], [11, 10.8, 11], uv(2)),
+    ]
+    held = {
+        "gui": {"rotation": [30, 225, 0], "translation": [0, -0.5, 0], "scale": [0.8] * 3},
+        "ground": {"translation": [0, 3, 0], "scale": [0.5] * 3},
+        "fixed": {"rotation": [0, 180, 0], "scale": [0.8] * 3},
+        "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.45] * 3},
+        "firstperson_righthand": {"rotation": [0, 45, 0], "translation": [1, 2, 0], "scale": [0.5] * 3},
+        "firstperson_lefthand": {"rotation": [0, 225, 0], "translation": [1, 2, 0], "scale": [0.5] * 3},
+    }
+    write_cosmetic("menu_item", elements, img, display_settings=held)
+
+
 def pack_meta():
     meta = {"pack": {"description": "NexusCosmetics – 3D-Cosmetics", "min_format": 97, "max_format": 100}}
     ROOT.mkdir(parents=True, exist_ok=True)
@@ -1771,4 +2017,9 @@ if __name__ == "__main__":
     panda()
     slime()
     baby_phoenix()
+    wings("phoenix_wings", "phoenix", frames=phoenix_frames(), animation={"frametime": 2, "interpolate": True})
+    celestial_dragon()
+    star_crown()
+    aurora_cape()
+    menu_item()
     print("Assets erzeugt in", ROOT)
