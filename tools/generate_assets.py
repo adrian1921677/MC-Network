@@ -218,17 +218,22 @@ def cape_element():
 CAPE_SEGMENTS = [5, 5, 6]
 
 
-def write_cape_segments(cape_id):
+def write_cape_segments(cape_id, segments=None, x0=3, x1=13, top_extras=()):
+    """Zerlegt eine Cape in Segmente. top_extras: zusätzliche Teile am obersten Segment (z. B. Kapuze)."""
+    segments = segments or CAPE_SEGMENTS
+    total = sum(segments)
     base = ROOT / "assets" / NS
     tex = f"{NS}:item/{cape_id}"
-    v0 = 0
-    for index, height in enumerate(CAPE_SEGMENTS):
-        v1 = v0 + height
+    top = 0
+    for index, height in enumerate(segments):
+        v0 = round(top / total * 16, 3)
+        v1 = round((top + height) / total * 16, 3)
+        top += height
         edge = [15, v0, 16, v1]
         element = {
             "name": f"Segment {index}",
-            "from": [3, 16 - height, 7.5],   # Oberkante liegt immer bei y = 16 (Drehpunkt)
-            "to": [13, 16, 8.5],
+            "from": [x0, 16 - height, 7.5],   # Oberkante liegt immer bei y = 16 (Drehpunkt)
+            "to": [x1, 16, 8.5],
             "faces": {
                 "south": {"uv": [0, v0, 10, v1], "texture": "#0"},
                 "north": {"uv": [10, v0, 15, v1], "texture": "#0"},
@@ -239,11 +244,11 @@ def write_cape_segments(cape_id):
             },
         }
         model_id = f"{cape_id}_{index}"
-        model = {"textures": {"0": tex, "particle": tex}, "elements": [element]}
+        elements = [element] + (list(top_extras) if index == 0 else [])
+        model = {"textures": {"0": tex, "particle": tex}, "elements": elements}
         (base / "models" / "item" / f"{model_id}.json").write_text(json.dumps(model, indent=2))
         (base / "items" / f"{model_id}.json").write_text(json.dumps(
             {"model": {"type": "minecraft:model", "model": f"{NS}:item/{model_id}"}}, indent=2))
-        v0 = v1
 
 
 def royal_cape():
@@ -721,6 +726,225 @@ def mushroom():
     write_cosmetic("mushroom", elements, img, display_settings=PET_DISPLAY)
 
 
+
+# --------------------------------------------------------------- Zauberei
+ROBE_SEGMENTS = [7, 7, 8]  # muss zu ROBE_SEGMENTS in FakeCape.java passen
+
+
+def wizard_robe(color_id, lining, lining_dark):
+    black, fold_dark, fold_light = (30, 30, 37, 255), (22, 22, 28, 255), (42, 42, 52, 255)
+
+    img = canvas(black, 32, 32)
+    # Außenseite: schwarzer Stoff mit Falten, farbiger Saum an den Kanten
+    for x in range(20):
+        shade = fold_dark if x % 5 == 1 else fold_light if x % 5 == 3 else black
+        fill(img, x, 0, x + 1, 32, shade)
+    fill(img, 0, 0, 1, 32, lining)
+    fill(img, 19, 0, 20, 32, lining)
+    fill(img, 0, 31, 20, 32, lining)
+    fill(img, 0, 0, 20, 2, fold_dark)                # Kragen
+    # Innenfutter und Kanten in der Hausfarbe
+    fill(img, 20, 0, 30, 32, lining)
+    for y in range(0, 32, 4):
+        fill(img, 20, y, 30, y + 1, lining_dark)
+    fill(img, 30, 0, 32, 32, lining)
+
+    # Kapuze, die auf dem Rücken liegt (Innenseite zeigt nach oben)
+    hood = cube("Kapuze", [4.5, 11, 8.5], [11.5, 16, 10], [0, 0, 10, 5])
+    hood["faces"]["up"]["uv"] = [10, 0, 15, 2]
+    hood["faces"]["north"]["uv"] = [10, 0, 15, 5]
+    hood_rim = cube("Kapuzenrand", [4.5, 15, 10], [11.5, 16, 10.5], [15, 0, 16, 2])
+
+    robe_id = f"wizard_robe_{color_id}"
+    # Menü-Symbol: der ganze Umhang in einem Stück
+    icon = [{
+        "name": "Umhang",
+        "from": [2, -3, 7.5], "to": [14, 19, 8.5],
+        "faces": {
+            "south": {"uv": [0, 0, 10, 16], "texture": "#0"},
+            "north": {"uv": [10, 0, 15, 16], "texture": "#0"},
+            "east": {"uv": [15, 0, 16, 16], "texture": "#0"},
+            "west": {"uv": [15, 0, 16, 16], "texture": "#0"},
+            "up": {"uv": [15, 0, 16, 1], "texture": "#0"},
+            "down": {"uv": [15, 0, 16, 1], "texture": "#0"},
+        },
+    }] + shift([hood, hood_rim], 0, 3, 0)
+    robe_display = dict(CAPE_DISPLAY)
+    robe_display["gui"] = {"rotation": [10, 20, 0], "scale": [0.62] * 3}
+    write_cosmetic(robe_id, icon, img, display_settings=robe_display)
+    write_cape_segments(robe_id, ROBE_SEGMENTS, x0=2, x1=14, top_extras=[hood, hood_rim])
+
+
+def talking_hat():
+    felt, felt_light, felt_dark = (126, 88, 58, 255), (150, 108, 72, 255), (98, 68, 45, 255)
+    patch_a, patch_b, stitch = (156, 120, 78, 255), (104, 80, 60, 255), (62, 44, 30, 255)
+    crease, mouth = (58, 38, 26, 255), (34, 20, 16, 255)
+
+    def face(img, x0, open_mouth):
+        # Die Gesichtsfläche ist breit und flach: Merkmale werden senkrecht gestaucht, deshalb hoch malen
+        fill(img, x0, 0, x0 + 16, 16, felt)
+        fill(img, x0, 0, x0 + 16, 1, felt_dark)
+        for ex in (1, 10):
+            # müde, schräge Augenfalten
+            fill(img, x0 + ex, 3, x0 + ex + 5, 6, crease)
+            fill(img, x0 + ex + 1, 2, x0 + ex + 4, 3, crease)
+            fill(img, x0 + ex, 6, x0 + ex + 5, 7, felt_light)
+        if open_mouth:
+            fill(img, x0 + 3, 8, x0 + 13, 15, mouth)
+            fill(img, x0 + 2, 8, x0 + 14, 9, crease)
+            fill(img, x0 + 5, 12, x0 + 11, 15, (130, 44, 44, 255))
+        else:
+            fill(img, x0 + 3, 10, x0 + 13, 12, crease)
+            fill(img, x0 + 2, 9, x0 + 4, 10, crease)
+            fill(img, x0 + 12, 9, x0 + 14, 10, crease)
+
+    img = canvas(felt, 32, 32)
+    # Filz mit Flicken und Nähten (uv 0,0 - 8,8)
+    fill(img, 0, 0, 16, 16, felt)
+    fill(img, 2, 2, 7, 6, patch_a)
+    fill(img, 9, 9, 14, 14, patch_b)
+    fill(img, 10, 1, 13, 4, patch_b)
+    for x in range(1, 8, 2):
+        img[1][x] = img[6][x] = stitch
+    for x in range(8, 15, 2):
+        img[8][x] = img[14][x] = stitch
+    for y in range(3, 16, 3):
+        fill(img, 0, y, 16, y + 1, felt_dark) if y % 6 == 0 else None
+    face(img, 16, open_mouth=False)             # Gesicht geschlossen (uv 8,0 - 16,8)
+    # Gesicht offen liegt unten links (uv 0,8 - 8,16)
+    tmp = canvas(felt, 32, 32)
+    face(tmp, 0, open_mouth=True)
+    for y in range(16):
+        for x in range(16):
+            img[16 + y][x] = tmp[y][x]
+    # Krempe (uv 8,8 - 16,16)
+    fill(img, 16, 16, 32, 32, felt_dark)
+    fill(img, 16, 16, 32, 17, felt_light)
+    fill(img, 20, 20, 24, 23, patch_a)
+
+    felt_uv, face_closed, face_open, brim_uv = [0, 0, 8, 8], [8, 0, 16, 8], [0, 8, 8, 16], [8, 8, 16, 16]
+    t = HEAD_TOP
+
+    def hat(face_uv):
+        return [
+            cube("Krempe", [0, t, 0], [16, t + 1, 16], brim_uv),
+            faces(cube("Hut unten", [2.5, t + 1, 2.5], [13.5, t + 5, 13.5], felt_uv), north=face_uv),
+            cube("Hut Mitte", [3.5, t + 5, 3.5], [12.5, t + 8, 12.5], felt_uv),
+            cube("Hut oben", [4.5, t + 8, 4.5], [11.5, t + 10.5, 11], felt_uv),
+            cube("Spitze", [5.5, t + 10.5, 5], [10, t + 12.5, 9.5], felt_uv),
+            cube("Spitze geknickt", [3.5, t + 12, 5.5], [6.5, t + 13.5, 8.5], felt_uv),
+            cube("Spitzenende", [2, t + 11, 6], [3.5, t + 12.5, 8], felt_uv),
+        ]
+
+    write_cosmetic("talking_hat", hat(face_closed), img, center_y=t + 6.5, gui_scale=0.5)
+    write_extra_model("talking_hat_talk", "talking_hat", hat(face_open), display(t + 6.5, 0.5))
+
+
+def halo():
+    gold, light = (255, 222, 110, 255), (255, 246, 200, 255)
+    img = canvas(gold)
+    fill(img, 0, 0, 16, 4, light)
+
+    uv = [0, 0, 16, 16]
+    half = 2.3
+    north = cube("Nord", [8 - half, 7.5, 2], [8 + half, 8.5, 3], uv)
+    south = cube("Süd", [8 - half, 7.5, 13], [8 + half, 8.5, 14], uv)
+    elements = [
+        north, south,
+        cube("Ost", [13, 7.5, 8 - half], [14, 8.5, 8 + half], uv),
+        cube("West", [2, 7.5, 8 - half], [3, 8.5, 8 + half], uv),
+    ]
+    # Die Diagonalen entstehen durch um 45° gedrehte Kopien der Nord- und Süd-Kante
+    for source in (north, south):
+        for angle in (45, -45):
+            diagonal = json.loads(json.dumps(source))
+            diagonal["name"] += f" {angle}°"
+            diagonal["rotation"] = {"angle": angle, "axis": "y", "origin": [8, 8, 8]}
+            elements.append(diagonal)
+
+    halo_display = {
+        "gui": {"rotation": [35, 0, 0], "scale": [0.9] * 3},
+        "ground": {"translation": [0, 2, 0], "scale": [0.5] * 3},
+        "fixed": {"rotation": [-90, 0, 0], "scale": [0.9] * 3},
+    }
+    write_cosmetic("halo", elements, img, display_settings=halo_display)
+
+
+def owl():
+    feather, feather_dark, feather_light = (142, 100, 64, 255), (108, 74, 46, 255), (170, 126, 84, 255)
+    belly, belly_spot = (240, 224, 192, 255), (170, 128, 88, 255)
+    disc, disc_edge = (228, 204, 164, 255), (150, 108, 70, 255)
+    amber, pupil = (255, 178, 40, 255), (24, 18, 16, 255)
+    beak = (240, 172, 52, 255)
+    tuft = (92, 62, 40, 255)
+
+    frames = []
+    for blink in (False, True):
+        img = canvas(feather, 32, 32)
+        # Federn mit V-Muster (uv 0,0 - 8,8)
+        for y in range(0, 16, 4):
+            for x in range(0, 16, 4):
+                img[y][x + 1] = img[y + 1][x + 2] = img[y][x + 3] = feather_dark
+        fill(img, 0, 0, 16, 1, feather_light)
+        # Bauch mit Tupfen (uv 8,0 - 16,8)
+        fill(img, 16, 0, 32, 16, belly)
+        for y in range(2, 16, 4):
+            for x in range(18 + (y // 4) % 2 * 2, 32, 4):
+                img[y][x] = belly_spot
+        # Gesicht (uv 0,8 - 8,16): heller Gesichtsschleier, riesige Augen
+        fill(img, 0, 16, 16, 32, feather)
+        fill(img, 1, 17, 15, 31, disc)
+        fill(img, 1, 17, 15, 18, disc_edge)
+        fill(img, 7, 17, 9, 19, disc_edge)          # Herzform oben
+        for ex in (2, 9):
+            if blink:
+                fill(img, ex, 23, ex + 5, 24, pupil)
+                img[22][ex] = img[22][ex + 4] = pupil
+            else:
+                fill(img, ex, 20, ex + 5, 26, amber)
+                fill(img, ex + 1, 21, ex + 4, 25, pupil)
+                img[21][ex + 1] = img[22][ex + 1] = SPARKLE
+        fill(img, 1, 27, 3, 28, BLUSH)
+        fill(img, 13, 27, 15, 28, BLUSH)
+        # Schnabel und Füße (uv 8,8 - 12,12)
+        fill(img, 16, 16, 24, 24, beak)
+        # Flügel (uv 12,8 - 16,12)
+        fill(img, 24, 16, 32, 24, feather_dark)
+        for y in range(17, 24, 2):
+            fill(img, 24, y, 32, y + 1, feather)
+        # Federohren (uv 8,12 - 12,16)
+        fill(img, 16, 24, 24, 32, tuft)
+        frames.extend(img)
+
+    feather_uv, belly_uv, face_uv, beak_uv, wing_uv, tuft_uv = (
+        [0, 0, 8, 8], [8, 0, 16, 8], [0, 8, 8, 16], [8, 8, 12, 12], [12, 8, 16, 12], [8, 12, 12, 16])
+
+    body = [
+        faces(cube("Körper", [5, 4.5, 6], [11, 10, 11], feather_uv), north=belly_uv),
+        cube("Fuß links", [6, 3.5, 5], [7.5, 4.5, 7], beak_uv),
+        cube("Fuß rechts", [8.5, 3.5, 5], [10, 4.5, 7], beak_uv),
+        cube("Schwanzfedern", [6.5, 4.5, 11], [9.5, 6, 12.5], feather_uv),
+    ]
+    # Kopf: Drehpunkt (Hals) in der Modellmitte
+    head = [
+        faces(cube("Kopf", [4.5, 8, 5], [11.5, 13, 10.5], feather_uv), north=face_uv),
+        cube("Schnabel", [7.5, 9, 4.5], [8.5, 10.5, 5], beak_uv),
+        cube("Federohr links", [4.5, 13, 6.5], [6, 14.5, 7.5], tuft_uv),
+        cube("Federohr rechts", [10, 13, 6.5], [11.5, 14.5, 7.5], tuft_uv),
+    ]
+    wing_a = [cube("Flügel", [8, 3, 6.5], [9, 8, 10.5], wing_uv)]
+    wing_b = [cube("Flügel", [7, 3, 6.5], [8, 8, 10.5], wing_uv)]
+
+    animation = {"frametime": 1, "frames": [{"index": 0, "time": 80}, {"index": 1, "time": 4},
+                                            {"index": 0, "time": 5}, {"index": 1, "time": 4}]}
+    icon = body + shift(head, 0, 2, 0.25) + shift(wing_a, 3, 1.5, 0.5) + shift(wing_b, -3, 1.5, 0.5)
+    write_cosmetic("owl", icon, frames, display_settings=PET_DISPLAY, animation=animation)
+    write_extra_model("owl_body", "owl", body)
+    write_extra_model("owl_head", "owl", head)
+    write_extra_model("owl_wing_a", "owl", wing_a)
+    write_extra_model("owl_wing_b", "owl", wing_b)
+
+
 def pack_meta():
     meta = {"pack": {"description": "NexusCosmetics – 3D-Cosmetics", "min_format": 97, "max_format": 100}}
     ROOT.mkdir(parents=True, exist_ok=True)
@@ -739,4 +963,11 @@ if __name__ == "__main__":
     kitten()
     bee()
     mushroom()
+    wizard_robe("red", (172, 32, 38, 255), (130, 20, 26, 255))
+    wizard_robe("green", (38, 124, 62, 255), (26, 92, 44, 255))
+    wizard_robe("blue", (44, 84, 176, 255), (30, 58, 130, 255))
+    wizard_robe("yellow", (220, 174, 44, 255), (176, 132, 26, 255))
+    talking_hat()
+    halo()
+    owl()
     print("Assets erzeugt in", ROOT)

@@ -44,9 +44,14 @@ public final class Packets {
         entity.setItemStack(CraftItemStack.asNMSCopy(item));
     }
 
-    public static ClientboundAddEntityPacket spawn(Display.ItemDisplay entity, double x, double y, double z) {
+    /** Erstellt eine Text-Anzeige (z. B. Sprechblase), die nur per Paket verschickt wird. */
+    public static Display.TextDisplay createTextDisplay(World world) {
+        return new Display.TextDisplay(EntityTypes.TEXT_DISPLAY, ((CraftWorld) world).getHandle());
+    }
+
+    public static ClientboundAddEntityPacket spawn(Entity entity, double x, double y, double z) {
         return new ClientboundAddEntityPacket(entity.getId(), entity.getUUID(), x, y, z, 0f, 0f,
-                EntityTypes.ITEM_DISPLAY, 0, Vec3.ZERO, 0d);
+                entity.getType(), 0, Vec3.ZERO, 0d);
     }
 
     /**

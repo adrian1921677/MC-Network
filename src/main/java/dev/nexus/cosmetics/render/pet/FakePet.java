@@ -198,6 +198,8 @@ public final class FakePet implements FakeCosmetic {
         state.ownerVerticalSpeed = dy;
         state.ownerSneaking = owner.isSneaking();
         state.ownerSprinting = owner.isSprinting();
+        long time = owner.getWorld().getTime();
+        state.night = time > 13000 && time < 23000;
         boolean still = state.ownerSpeed < 0.01 && Math.abs(dy) < 0.01;
         state.ownerIdleTicks = still ? state.ownerIdleTicks + 1 : 0;
 

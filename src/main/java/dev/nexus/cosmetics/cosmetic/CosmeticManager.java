@@ -2,6 +2,8 @@ package dev.nexus.cosmetics.cosmetic;
 
 import dev.nexus.cosmetics.render.FakeCosmeticRenderer;
 import dev.nexus.cosmetics.render.cape.CapeCosmetic;
+import dev.nexus.cosmetics.render.hat.FloatingHalo;
+import dev.nexus.cosmetics.render.hat.TalkingHat;
 import dev.nexus.cosmetics.render.pet.FakePet;
 import dev.nexus.cosmetics.storage.CosmeticStorage;
 import net.kyori.adventure.text.Component;
@@ -125,7 +127,7 @@ public final class CosmeticManager {
     public void restoreHat(Player player) {
         Cosmetic hat = equipped(player, CosmeticSlot.HEAD);
         ItemStack helmet = player.getInventory().getHelmet();
-        if (hat != null && (helmet == null || helmet.isEmpty())) {
+        if (hat != null && hat.animation() != CosmeticAnimation.HALO && (helmet == null || helmet.isEmpty())) {
             player.getInventory().setHelmet(createItem(hat, List.of()));
         }
     }
@@ -139,11 +141,22 @@ public final class CosmeticManager {
         }
         switch (cosmetic.slot()) {
             case HEAD -> {
-                ItemStack current = player.getInventory().getHelmet();
-                if (current != null && !current.isEmpty() && !isCosmeticItem(current)) {
-                    return EquipResult.HEAD_OCCUPIED;
+                if (cosmetic.animation() == CosmeticAnimation.HALO) {
+                    // Der Heiligenschein schwebt als Paket-Entity, der Helm-Slot bleibt frei
+                    removeCosmeticItems(player);
+                    renderer.show(player, CosmeticSlot.HEAD, new FloatingHalo(player, cosmetic));
+                } else {
+                    ItemStack current = player.getInventory().getHelmet();
+                    if (current != null && !current.isEmpty() && !isCosmeticItem(current)) {
+                        return EquipResult.HEAD_OCCUPIED;
+                    }
+                    player.getInventory().setHelmet(createItem(cosmetic, List.of()));
+                    if (cosmetic.animation() == CosmeticAnimation.TALKING) {
+                        renderer.show(player, CosmeticSlot.HEAD, new TalkingHat(player, cosmetic, this::isCosmeticItem));
+                    } else {
+                        renderer.hide(player, CosmeticSlot.HEAD);
+                    }
                 }
-                player.getInventory().setHelmet(createItem(cosmetic, List.of()));
             }
             case BACK -> renderer.show(player, CosmeticSlot.BACK, new CapeCosmetic(player, cosmetic));
             case PET -> renderer.show(player, CosmeticSlot.PET, new FakePet(player, cosmetic));
@@ -160,7 +173,10 @@ public final class CosmeticManager {
             slots.remove(slot);
         }
         switch (slot) {
-            case HEAD -> removeCosmeticItems(player);
+            case HEAD -> {
+                removeCosmeticItems(player);
+                renderer.hide(player, slot);
+            }
             case BACK, PET -> renderer.hide(player, slot);
         }
     }

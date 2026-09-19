@@ -20,6 +20,8 @@ public final class PetState {
     public int ownerIdleTicks;
     public boolean ownerSneaking;
     public boolean ownerSprinting;
+    /** Ist es in der Welt des Besitzers gerade Nacht? */
+    public boolean night;
 
     public final Random random = new Random();
 }

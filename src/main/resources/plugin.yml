@@ -11,14 +11,4 @@ permissions:
   nexuscosmetics.cosmetic.*:
     description: Schaltet alle Cosmetics frei
     default: op
-    children:
-      nexuscosmetics.cosmetic.top_hat: true
-      nexuscosmetics.cosmetic.crown: true
-      nexuscosmetics.cosmetic.royal_cape: true
-      nexuscosmetics.cosmetic.galaxy_cape: true
-      nexuscosmetics.cosmetic.mini_dragon: true
-      nexuscosmetics.cosmetic.ghost: true
-      nexuscosmetics.cosmetic.penguin: true
-      nexuscosmetics.cosmetic.kitten: true
-      nexuscosmetics.cosmetic.bee: true
-      nexuscosmetics.cosmetic.mushroom: true
+    # Die einzelnen Rechte (nexuscosmetics.cosmetic.<id>) legt das Plugin automatisch an.

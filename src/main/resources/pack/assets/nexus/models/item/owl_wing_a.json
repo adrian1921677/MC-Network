@@ -1,0 +1,77 @@
+{
+  "textures": {
+    "0": "nexus:item/owl",
+    "particle": "nexus:item/owl"
+  },
+  "elements": [
+    {
+      "name": "Fl\u00fcgel",
+      "from": [
+        8,
+        3,
+        6.5
+      ],
+      "to": [
+        9,
+        8,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            8,
+            16,
+            12
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            12,
+            8,
+            16,
+            12
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            12,
+            8,
+            16,
+            12
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            12,
+            8,
+            16,
+            12
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            12,
+            8,
+            16,
+            12
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            12,
+            8,
+            16,
+            12
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}

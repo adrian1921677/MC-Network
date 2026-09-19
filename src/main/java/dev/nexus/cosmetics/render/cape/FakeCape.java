@@ -1,6 +1,7 @@
 package dev.nexus.cosmetics.render.cape;
 
 import dev.nexus.cosmetics.cosmetic.Cosmetic;
+import dev.nexus.cosmetics.cosmetic.CosmeticAnimation;
 import dev.nexus.cosmetics.render.Packets;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -11,7 +12,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Display;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.joml.Matrix4f;
@@ -33,8 +33,11 @@ import java.util.function.Consumer;
  */
 final class FakeCape {
 
-    // --- Aufbau (Modell-Einheiten: 16 = ganze Cape-Höhe) ---
-    private static final int[] SEGMENT_HEIGHTS = {5, 5, 6};
+    // --- Aufbau (Modell-Einheiten, 1/16 Block vor der Skalierung) ---
+    /** Normale Cape: 16 Einheiten lang */
+    private static final int[] CAPE_SEGMENTS = {5, 5, 6};
+    /** Langer Umhang: 22 Einheiten, reicht bis zu den Knöcheln */
+    private static final int[] ROBE_SEGMENTS = {7, 7, 8};
     private static final float SCALE = 0.9f;
 
     // --- Position am Körper (in Blöcken, relativ zum Passagier-Punkt über dem Kopf) ---
@@ -52,13 +55,16 @@ final class FakeCape {
     private final Player wearer;
     /** true = diese Instanz sieht nur der Träger selbst. */
     private final boolean ownView;
+    /** Langer, schwerer Umhang statt normaler Cape */
+    private final boolean robe;
+    private final int[] segmentHeights;
     private final Display.ItemDisplay[] segments;
     private final ItemDisplay[] segmentViews;
     private final Set<UUID> viewers = new HashSet<>();
 
     // Physik-Zustand (Winkel in Grad, von der Senkrechten nach hinten gemessen)
-    private final float[] angle = new float[SEGMENT_HEIGHTS.length];
-    private final float[] velocity = new float[SEGMENT_HEIGHTS.length];
+    private final float[] angle;
+    private final float[] velocity;
     private float roll;
     private float rollVelocity;
 
@@ -69,12 +75,15 @@ final class FakeCape {
     FakeCape(Player wearer, Cosmetic cosmetic, boolean ownView) {
         this.wearer = wearer;
         this.ownView = ownView;
-        this.segments = new Display.ItemDisplay[SEGMENT_HEIGHTS.length];
-        this.segmentViews = new ItemDisplay[SEGMENT_HEIGHTS.length];
+        this.robe = cosmetic.animation() == CosmeticAnimation.ROBE;
+        this.segmentHeights = robe ? ROBE_SEGMENTS : CAPE_SEGMENTS;
+        this.angle = new float[segmentHeights.length];
+        this.velocity = new float[segmentHeights.length];
+        this.segments = new Display.ItemDisplay[segmentHeights.length];
+        this.segmentViews = new ItemDisplay[segmentHeights.length];
 
         for (int i = 0; i < segments.length; i++) {
-            NamespacedKey model = new NamespacedKey(cosmetic.model().getNamespace(), cosmetic.model().getKey() + "_" + i);
-            Display.ItemDisplay entity = Packets.createItemDisplay(wearer.getWorld(), model);
+            Display.ItemDisplay entity = Packets.createItemDisplay(wearer.getWorld(), cosmetic.model(String.valueOf(i)));
 
             // Über die Bukkit-Ansicht lassen sich die Display-Werte bequem setzen
             ItemDisplay view = (ItemDisplay) entity.getBukkitEntity();
@@ -150,7 +159,7 @@ final class FakeCape {
         double speed = Math.max(0, forward);
 
         // Oberes Segment: Grundwinkel aus Laufgeschwindigkeit, Fallen und Schleichen
-        double target = 4 + Math.min(speed * 260, 80);
+        double target = robe ? 3 + Math.min(speed * 190, 55) : 4 + Math.min(speed * 260, 80);
         if (dy < -0.08) {
             target += Math.min(-dy * 90, 35);
         }
@@ -211,7 +220,7 @@ final class FakeCape {
             segmentViews[i].setInterpolationDelay(0);
 
             // Gelenk ans untere Ende dieses Segments verschieben
-            joint.translate(0, -SEGMENT_HEIGHTS[i] / 16f * SCALE, 0);
+            joint.translate(0, -segmentHeights[i] / 16f * SCALE, 0);
         }
     }
 

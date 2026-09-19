@@ -9,6 +9,9 @@ import dev.nexus.cosmetics.pack.ResourcePackService;
 import dev.nexus.cosmetics.render.FakeCosmeticRenderer;
 import dev.nexus.cosmetics.storage.CosmeticStorage;
 import dev.nexus.cosmetics.storage.YamlCosmeticStorage;
+import dev.nexus.cosmetics.cosmetic.Cosmetic;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -39,6 +42,7 @@ public final class NexusCosmetics extends JavaPlugin {
         resourcePackService.start();
 
         PluginManager pluginManager = getServer().getPluginManager();
+        registerPermissions(pluginManager, registry);
         pluginManager.registerEvents(new CosmeticProtectionListener(this, cosmeticManager), this);
         pluginManager.registerEvents(new CosmeticMenuListener(), this);
         pluginManager.registerEvents(renderer, this);
@@ -51,6 +55,22 @@ public final class NexusCosmetics extends JavaPlugin {
         getServer().getOnlinePlayers().forEach(cosmeticManager::handleJoin);
 
         getLogger().info(registry.all().size() + " Cosmetics geladen.");
+    }
+
+    /** Legt für jedes Cosmetic ein eigenes Recht an und hängt es an nexuscosmetics.cosmetic.* */
+    private void registerPermissions(PluginManager pluginManager, CosmeticRegistry registry) {
+        Permission all = pluginManager.getPermission("nexuscosmetics.cosmetic.*");
+        for (Cosmetic cosmetic : registry.all()) {
+            if (pluginManager.getPermission(cosmetic.permission()) == null) {
+                pluginManager.addPermission(new Permission(cosmetic.permission(), PermissionDefault.OP));
+            }
+            if (all != null) {
+                all.getChildren().put(cosmetic.permission(), true);
+            }
+        }
+        if (all != null) {
+            all.recalculatePermissibles();
+        }
     }
 
     @Override

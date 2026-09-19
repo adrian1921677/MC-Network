@@ -23,10 +23,16 @@ public final class CosmeticRegistry {
         // Hüte
         register("top_hat", Component.text("Zylinder", NamedTextColor.GRAY), CosmeticSlot.HEAD, false, CosmeticAnimation.NONE);
         register("crown", Component.text("Krone", NamedTextColor.GOLD), CosmeticSlot.HEAD, false, CosmeticAnimation.NONE);
+        register("talking_hat", Component.text("Sprechender Hut", TextColor.color(0xB08050)), CosmeticSlot.HEAD, false, CosmeticAnimation.TALKING);
+        register("halo", Component.text("Heiligenschein", TextColor.color(0xFFE27A)), CosmeticSlot.HEAD, true, CosmeticAnimation.HALO);
 
         // Capes
         register("royal_cape", Component.text("Königsumhang", NamedTextColor.RED), CosmeticSlot.BACK, false, CosmeticAnimation.NONE);
         register("galaxy_cape", Component.text("Galaxie-Cape", TextColor.color(0xA070FF)), CosmeticSlot.BACK, true, CosmeticAnimation.NONE);
+        register("wizard_robe_red", Component.text("Zauberumhang (Rot)", TextColor.color(0xD8413A)), CosmeticSlot.BACK, false, CosmeticAnimation.ROBE);
+        register("wizard_robe_green", Component.text("Zauberumhang (Grün)", TextColor.color(0x3FAF5A)), CosmeticSlot.BACK, false, CosmeticAnimation.ROBE);
+        register("wizard_robe_blue", Component.text("Zauberumhang (Blau)", TextColor.color(0x4C7FE0)), CosmeticSlot.BACK, false, CosmeticAnimation.ROBE);
+        register("wizard_robe_yellow", Component.text("Zauberumhang (Gelb)", TextColor.color(0xF0C23A)), CosmeticSlot.BACK, false, CosmeticAnimation.ROBE);
 
         // Haustiere
         register("mini_dragon", Component.text("Mini-Drache", TextColor.color(0xE0533A)), CosmeticSlot.PET, false, CosmeticAnimation.DRAGON);
@@ -35,6 +41,7 @@ public final class CosmeticRegistry {
         register("kitten", Component.text("Kätzchen", TextColor.color(0xFFA64D)), CosmeticSlot.PET, false, CosmeticAnimation.KITTEN);
         register("bee", Component.text("Bienchen", TextColor.color(0xFFD43B)), CosmeticSlot.PET, false, CosmeticAnimation.BEE);
         register("mushroom", Component.text("Pilzchen", TextColor.color(0xFF6B6B)), CosmeticSlot.PET, false, CosmeticAnimation.MUSHROOM);
+        register("owl", Component.text("Eule", TextColor.color(0xC8A070)), CosmeticSlot.PET, false, CosmeticAnimation.OWL);
     }
 
     private void register(String id, Component name, CosmeticSlot slot, boolean glowing, CosmeticAnimation animation) {
