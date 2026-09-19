@@ -1,0 +1,24 @@
+# ===========================================
+#  NexusCosmetics - Konfiguration
+# ===========================================
+
+resource-pack:
+  # Das Plugin liefert sein Resource Pack (die 3D-Modelle) selbst an die Spieler aus.
+  enabled: true
+
+  # Adresse, unter der Spieler deinen Server erreichen (Server-IP oder Domain).
+  # Zum Testen auf dem eigenen PC reicht "localhost".
+  host: "localhost"
+
+  # Port für den eingebauten Download-Server. Muss auf deinem Server freigegeben sein.
+  port: 8163
+
+  # Optional: eigener Download-Link, falls du das Pack selbst hostest.
+  # Wenn hier etwas steht, werden "host" und "port" ignoriert.
+  public-url: ""
+
+  # true = Spieler werden gekickt, wenn sie das Pack ablehnen.
+  required: false
+
+  # Nachricht im Download-Dialog (MiniMessage-Format für Farben)
+  prompt: "<gold>Dieses Pack wird für die 3D-Cosmetics benötigt."

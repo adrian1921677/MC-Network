@@ -1,0 +1,18 @@
+name: NexusCosmetics
+version: '${version}'
+main: dev.nexus.cosmetics.NexusCosmetics
+api-version: '26.3'
+description: 3D-Cosmetics für Server-Netzwerke
+
+permissions:
+  nexuscosmetics.use:
+    description: Erlaubt das Öffnen des Cosmetics-Menüs
+    default: true
+  nexuscosmetics.cosmetic.*:
+    description: Schaltet alle Cosmetics frei
+    default: op
+    children:
+      nexuscosmetics.cosmetic.top_hat: true
+      nexuscosmetics.cosmetic.crown: true
+      nexuscosmetics.cosmetic.royal_cape: true
+      nexuscosmetics.cosmetic.galaxy_cape: true
