@@ -502,6 +502,225 @@ def ghost():
     write_cosmetic("ghost", elements, frames, display_settings=PET_DISPLAY, animation=animation)
 
 
+
+# ---------------------------------------------------------- Süße Haustiere
+# Gemeinsame Zutaten für den Süß-Faktor: große glänzende Augen und rosa Bäckchen.
+BLUSH = (255, 150, 170, 255)
+SPARKLE = (255, 255, 255, 255)
+
+
+def cute_eyes(img, x0, y0, left_x, right_x, eye_w=3, eye_h=4, color=(28, 26, 40, 255)):
+    """Zwei große Augen mit Glanzpunkt oben links."""
+    for ex in (left_x, right_x):
+        fill(img, x0 + ex, y0, x0 + ex + eye_w, y0 + eye_h, color)
+        img[y0][x0 + ex] = SPARKLE
+        img[y0 + 1][x0 + ex] = SPARKLE if eye_h > 3 else color
+
+
+def penguin():
+    black, black_light = (38, 42, 58, 255), (58, 64, 86, 255)
+    white, white_shade = (248, 248, 244, 255), (226, 230, 236, 255)
+    orange, orange_dark = (255, 166, 46, 255), (224, 128, 30, 255)
+
+    img = canvas(black, 32, 32)
+    # Rücken/Seiten (uv 0,0 - 8,8) mit leichtem Glanz
+    fill(img, 2, 0, 5, 16, black_light)
+    # Bauch vorne (uv 8,0 - 16,8): weißer Bauch mit schwarzem Rand
+    fill(img, 16, 0, 32, 16, black)
+    fill(img, 18, 0, 30, 16, white)
+    fill(img, 18, 12, 30, 16, white_shade)
+    # Kopf vorne (uv 0,8 - 8,12): weißes Gesicht, Augen, Bäckchen
+    fill(img, 0, 16, 16, 24, black)
+    fill(img, 1, 18, 15, 24, white)
+    fill(img, 3, 17, 7, 18, white)
+    fill(img, 9, 17, 13, 18, white)
+    cute_eyes(img, 0, 18, 3, 10, eye_w=3, eye_h=4)
+    fill(img, 1, 22, 4, 23, BLUSH)
+    fill(img, 12, 22, 15, 23, BLUSH)
+    # Orange: Schnabel und Füße (uv 8,8 - 12,12)
+    fill(img, 16, 16, 24, 24, orange)
+    fill(img, 16, 22, 24, 24, orange_dark)
+    # Flossen (uv 12,8 - 16,12)
+    fill(img, 24, 16, 32, 24, black_light)
+    fill(img, 24, 22, 32, 24, black)
+
+    back, belly, face, beak, flipper = [0, 0, 8, 8], [8, 0, 16, 8], [0, 8, 8, 12], [8, 8, 12, 12], [12, 8, 16, 12]
+    body = [
+        faces(cube("Körper", [4.5, 2, 5.5], [11.5, 8, 11.5], back), north=belly),
+        faces(cube("Kopf", [4.5, 8, 5.5], [11.5, 13.5, 11.5], back), north=face),
+        cube("Haarbüschel", [7.5, 13.5, 7.5], [8.5, 14.5, 9], back),
+        cube("Schnabel", [7.25, 9, 4.5], [8.75, 10, 5.5], beak),
+        cube("Fuß links", [5, 1, 4.5], [7.25, 2, 7.5], beak),
+        cube("Fuß rechts", [8.75, 1, 4.5], [11, 2, 7.5], beak),
+        cube("Schwänzchen", [7, 2.5, 11.5], [9, 3.5, 12.5], back),
+    ]
+    flipper_a = [cube("Flosse", [8, 3.5, 7], [9, 8, 10], flipper)]
+    flipper_b = [cube("Flosse", [7, 3.5, 7], [8, 8, 10], flipper)]
+
+    write_cosmetic("penguin", body + shift(flipper_a, 3.5, 0, 0.5) + shift(flipper_b, -3.5, 0, 0.5), img,
+                   display_settings=PET_DISPLAY)
+    write_extra_model("penguin_body", "penguin", body)
+    write_extra_model("penguin_flipper_a", "penguin", flipper_a)
+    write_extra_model("penguin_flipper_b", "penguin", flipper_b)
+
+
+def kitten():
+    fur, stripe, fur_light = (250, 160, 70, 255), (214, 116, 40, 255), (255, 190, 110, 255)
+    cream, pink, nose = (255, 244, 228, 255), (255, 170, 185, 255), (240, 110, 130, 255)
+    eye = (50, 150, 90, 255)
+
+    img = canvas(fur, 32, 32)
+    # Fell mit Tigerstreifen (uv 0,0 - 8,8)
+    for x in range(1, 16, 5):
+        fill(img, x, 0, x + 1, 16, (228, 134, 52, 255))
+    fill(img, 0, 0, 16, 1, fur_light)
+    # Gesicht wach (uv 8,0 - 16,8)
+    fill(img, 16, 0, 32, 16, fur)
+    fill(img, 17, 0, 19, 3, stripe)
+    fill(img, 23, 0, 25, 3, stripe)
+    fill(img, 29, 0, 31, 3, stripe)
+    fill(img, 20, 9, 28, 16, cream)                  # helle Schnauze
+    for ex in (18, 26):                               # große grüne Augen
+        fill(img, ex, 5, ex + 4, 10, eye)
+        fill(img, ex + 1, 6, ex + 3, 10, (20, 30, 25, 255))
+        img[5][ex] = img[6][ex] = SPARKLE
+    fill(img, 23, 10, 25, 11, nose)
+    img[12][22] = img[12][25] = (120, 70, 60, 255)    # Mündchen
+    img[13][23] = img[13][24] = (120, 70, 60, 255)
+    fill(img, 16, 11, 19, 12, BLUSH)
+    fill(img, 29, 11, 32, 12, BLUSH)
+    # Gesicht schlafend (uv 0,8 - 8,16): geschlossene Äuglein ^^
+    fill(img, 0, 16, 16, 32, fur)
+    fill(img, 4, 25, 12, 32, cream)
+    for ex in (2, 10):
+        img[22][ex] = img[21][ex + 1] = img[21][ex + 2] = img[22][ex + 3] = (60, 40, 40, 255)
+    fill(img, 7, 26, 9, 27, nose)
+    fill(img, 0, 24, 3, 25, BLUSH)
+    fill(img, 13, 24, 16, 25, BLUSH)
+    # Creme (uv 8,8 - 12,12): Pfoten, Brust
+    fill(img, 16, 16, 24, 24, cream)
+    # Ohren (uv 12,8 - 16,12): außen orange, innen rosa
+    fill(img, 24, 16, 32, 24, fur)
+    fill(img, 26, 18, 30, 24, pink)
+    # Schwanz geringelt (uv 8,12 - 12,16)
+    for y in range(24, 32):
+        fill(img, 16, y, 24, y + 1, stripe if y % 3 == 0 else fur)
+    fill(img, 16, 30, 24, 32, cream)
+
+    fur_uv, face_uv, sleep_uv, cream_uv, ear_uv, tail_uv = (
+        [0, 0, 8, 8], [8, 0, 16, 8], [0, 8, 8, 16], [8, 8, 12, 12], [12, 8, 16, 12], [8, 12, 12, 16])
+
+    body = [
+        faces(cube("Körper", [5.5, 4, 7], [10.5, 8, 11], fur_uv), north=cream_uv),
+        faces(cube("Kopf", [4.5, 8, 5], [11.5, 13.5, 10.5], fur_uv), north=face_uv),
+        faces(cube("Ohr links", [5, 13.5, 6.5], [7.25, 15.5, 7.5], ear_uv), south=fur_uv),
+        faces(cube("Ohr rechts", [8.75, 13.5, 6.5], [11, 15.5, 7.5], ear_uv), south=fur_uv),
+        cube("Pfote links", [6, 4, 6], [7.5, 5, 7], cream_uv),
+        cube("Pfote rechts", [8.5, 4, 6], [10, 5, 7], cream_uv),
+    ]
+    # Schwanz: Gelenk in der Modellmitte, zeigt nach hinten (+z) und biegt sich nach oben
+    tail = [
+        cube("Schwanz", [7.25, 8, 8], [8.75, 9.5, 13], tail_uv),
+        cube("Schwanzspitze", [7.25, 9.5, 11.5], [8.75, 13, 13], tail_uv),
+    ]
+    # Eingerollt schlafend: flacher Laib, Kopf auf den Pfoten, Schwanz vorne herum
+    sleep = [
+        cube("Körper", [4.5, 4, 6.5], [11.5, 8, 11.5], fur_uv),
+        faces(cube("Kopf", [5, 4, 2.5], [11, 8.5, 7], fur_uv), north=sleep_uv),
+        faces(cube("Ohr links", [5.5, 8.5, 4], [7.5, 10, 5], ear_uv), south=fur_uv),
+        faces(cube("Ohr rechts", [8.5, 8.5, 4], [10.5, 10, 5], ear_uv), south=fur_uv),
+        cube("Schwanz", [3.5, 4, 2], [5, 5.5, 11.5], tail_uv),
+        cube("Schwanz vorne", [3.5, 4, 1], [9, 5.5, 2.5], tail_uv),
+    ]
+
+    write_cosmetic("kitten", body + shift(tail, 0, -3, 3), img, display_settings=PET_DISPLAY)
+    write_extra_model("kitten_body", "kitten", body)
+    write_extra_model("kitten_tail", "kitten", tail)
+    write_extra_model("kitten_sleep", "kitten", sleep)
+
+
+def bee():
+    yellow, yellow_light, black = (255, 206, 52, 255), (255, 228, 110, 255), (46, 36, 34, 255)
+    wing, wing_edge = (214, 238, 255, 255), (250, 252, 255, 255)
+
+    img = canvas(yellow, 32, 32)
+    # Seiten mit Streifen quer zur Körperlänge (uv 0,0 - 8,8)
+    for x in (5, 6, 10, 11):
+        fill(img, x, 0, x + 1, 16, black)
+    fill(img, 0, 0, 16, 2, yellow_light)
+    # Rücken/Bauch mit Streifen (uv 8,0 - 16,8)
+    fill(img, 16, 0, 32, 16, yellow)
+    for y in (5, 6, 10, 11):
+        fill(img, 16, y, 32, y + 1, black)
+    # Gesicht (uv 0,8 - 8,16)
+    fill(img, 0, 16, 16, 32, yellow)
+    cute_eyes(img, 0, 20, 2, 10, eye_w=4, eye_h=5)
+    fill(img, 1, 26, 3, 27, BLUSH)
+    fill(img, 13, 26, 15, 27, BLUSH)
+    img[27][7] = img[27][8] = (120, 60, 30, 255)
+    # Schwarz: Stachel, Fühler (uv 8,8 - 12,12)
+    fill(img, 16, 16, 24, 24, black)
+    # Flügel (uv 12,8 - 16,12)
+    fill(img, 24, 16, 32, 24, wing)
+    fill(img, 24, 16, 32, 17, wing_edge)
+    fill(img, 24, 16, 25, 24, wing_edge)
+
+    side, top, face, dark, wing_uv = [0, 0, 8, 8], [8, 0, 16, 8], [0, 8, 8, 16], [8, 8, 12, 12], [12, 8, 16, 12]
+    body = [
+        faces(cube("Körper", [5, 5, 5], [11, 10, 12], side), north=face, up=top, down=top, south=top),
+        cube("Stachel", [7.5, 6.5, 12], [8.5, 7.5, 13.5], dark),
+        cube("Fühler links", [6, 10, 5], [6.5, 12, 5.5], dark),
+        cube("Fühler rechts", [9.5, 10, 5], [10, 12, 5.5], dark),
+        cube("Fühler Kugel links", [5.75, 12, 4.75], [6.75, 13, 5.75], dark),
+        cube("Fühler Kugel rechts", [9.25, 12, 4.75], [10.25, 13, 5.75], dark),
+    ]
+    wing_a = [cube("Flügel", [8, 8, 7], [13, 8.4, 11], wing_uv)]
+    wing_b = [cube("Flügel", [3, 8, 7], [8, 8.4, 11], wing_uv)]
+
+    write_cosmetic("bee", body + shift(wing_a, 2, 2, 0.5) + shift(wing_b, -2, 2, 0.5), img,
+                   display_settings=PET_DISPLAY)
+    write_extra_model("bee_body", "bee", body)
+    write_extra_model("bee_wing_a", "bee", wing_a)
+    write_extra_model("bee_wing_b", "bee", wing_b)
+
+
+def mushroom():
+    red, red_dark, dot = (232, 58, 58, 255), (190, 36, 40, 255), (255, 250, 240, 255)
+    stem, stem_shade, gills = (252, 240, 214, 255), (232, 214, 184, 255), (236, 206, 170, 255)
+
+    img = canvas(red, 32, 32)
+    # Hut mit weißen Punkten (uv 0,0 - 8,8)
+    fill(img, 0, 12, 16, 16, red_dark)
+    for dx, dy in ((2, 2), (9, 1), (12, 7), (5, 8), (1, 11), (10, 12)):
+        fill(img, dx, dy, dx + 3, dy + 2, dot)
+    # Stiel (uv 8,0 - 16,8)
+    fill(img, 16, 0, 32, 16, stem)
+    fill(img, 16, 12, 32, 16, stem_shade)
+    # Gesicht (uv 0,8 - 8,16)
+    fill(img, 0, 16, 16, 32, stem)
+    cute_eyes(img, 0, 19, 3, 10, eye_w=3, eye_h=4)
+    fill(img, 1, 24, 4, 25, BLUSH)
+    fill(img, 12, 24, 15, 25, BLUSH)
+    img[25][6] = img[25][9] = (110, 60, 50, 255)      # Lächeln
+    fill(img, 7, 26, 9, 27, (110, 60, 50, 255))
+    # Lamellen unter dem Hut (uv 8,8 - 12,12)
+    fill(img, 16, 16, 24, 24, gills)
+    for x in range(16, 24, 2):
+        fill(img, x, 16, x + 1, 24, stem_shade)
+    # Füßchen (uv 12,8 - 16,12)
+    fill(img, 24, 16, 32, 24, stem_shade)
+
+    cap, stem_uv, face, gill_uv, feet = [0, 0, 8, 8], [8, 0, 16, 8], [0, 8, 8, 16], [8, 8, 12, 12], [12, 8, 16, 12]
+    elements = [
+        faces(cube("Stiel", [5.5, 2, 5.5], [10.5, 8, 10.5], stem_uv), north=face),
+        faces(cube("Hut", [3, 8, 3], [13, 12, 13], cap), down=gill_uv),
+        cube("Hut oben", [4.5, 12, 4.5], [11.5, 13.5, 11.5], cap),
+        cube("Fuß links", [6, 1, 5], [7.5, 2, 8], feet),
+        cube("Fuß rechts", [8.5, 1, 5], [10, 2, 8], feet),
+    ]
+    write_cosmetic("mushroom", elements, img, display_settings=PET_DISPLAY)
+
+
 def pack_meta():
     meta = {"pack": {"description": "NexusCosmetics – 3D-Cosmetics", "min_format": 97, "max_format": 100}}
     ROOT.mkdir(parents=True, exist_ok=True)
@@ -516,4 +735,8 @@ if __name__ == "__main__":
     galaxy_cape()
     mini_dragon()
     ghost()
+    penguin()
+    kitten()
+    bee()
+    mushroom()
     print("Assets erzeugt in", ROOT)

@@ -25,6 +25,11 @@ public interface FakeCosmetic {
     /** Entfernt das Cosmetic bei allen Zuschauern. */
     void destroy();
 
+    /** Entity-IDs, die für diesen Zuschauer als Passagiere auf dem Träger sitzen sollen. */
+    default int[] passengerIds(Player viewer) {
+        return new int[0];
+    }
+
     /** Neu anzeigen, z. B. nach Respawn oder Weltwechsel. */
     default void respawnFor(Player viewer) {
         hide(viewer);

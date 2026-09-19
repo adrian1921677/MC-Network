@@ -2,25 +2,16 @@ package dev.nexus.cosmetics.render.cape;
 
 import dev.nexus.cosmetics.cosmetic.Cosmetic;
 import dev.nexus.cosmetics.render.Packets;
-import io.netty.buffer.Unpooled;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundBundlePacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
-import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Display;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.phys.Vec3;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.joml.Matrix4f;
@@ -107,15 +98,12 @@ final class FakeCape {
         Location loc = wearer.getLocation();
         List<Packet<? super ClientGamePacketListener>> packets = new ArrayList<>();
         for (Display.ItemDisplay entity : segments) {
-            packets.add(new ClientboundAddEntityPacket(entity.getId(), entity.getUUID(),
-                    loc.getX(), loc.getY() + wearer.getHeight(), loc.getZ(), 0f, 0f,
-                    EntityTypes.ITEM_DISPLAY, 0, Vec3.ZERO, 0d));
+            packets.add(Packets.spawn(entity, loc.getX(), loc.getY() + wearer.getHeight(), loc.getZ()));
             List<SynchedEntityData.DataValue<?>> data = entity.getEntityData().getNonDefaultValues();
             if (data != null) {
                 packets.add(new ClientboundSetEntityDataPacket(entity.getId(), data));
             }
         }
-        packets.add(passengerPacket());
         Packets.send(viewer, new ClientboundBundlePacket(packets));
     }
 
@@ -134,15 +122,6 @@ final class FakeCape {
         ClientboundRemoveEntitiesPacket packet = removePacket();
         forEachViewer(viewer -> Packets.send(viewer, packet));
         viewers.clear();
-    }
-
-    /**
-     * Vanilla schickt die Passagier-Liste des Trägers manchmal neu (z. B. wenn etwas anderes aufsteigt).
-     * Dann wäre unsere Cape "abgestiegen". Deshalb senden wir sie regelmäßig erneut.
-     */
-    void resendPassengers() {
-        ClientboundSetPassengersPacket packet = passengerPacket();
-        forEachViewer(viewer -> Packets.send(viewer, packet));
     }
 
     // ------------------------------------------------------------------ Physik
@@ -238,33 +217,16 @@ final class FakeCape {
 
     // ------------------------------------------------------------------ Hilfsmethoden
 
-    private ClientboundSetPassengersPacket passengerPacket() {
-        ServerPlayer handle = ((CraftPlayer) wearer).getHandle();
-        List<Entity> realPassengers = handle.getPassengers();
-        int[] ids = new int[realPassengers.size() + segments.length];
-        for (int i = 0; i < realPassengers.size(); i++) {
-            ids[i] = realPassengers.get(i).getId();
-        }
-        for (int i = 0; i < segments.length; i++) {
-            ids[realPassengers.size() + i] = segments[i].getId();
-        }
-
-        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
-        try {
-            buffer.writeVarInt(handle.getId());
-            buffer.writeVarIntArray(ids);
-            return ClientboundSetPassengersPacket.STREAM_CODEC.decode(buffer);
-        } finally {
-            buffer.release();
-        }
-    }
-
-    private ClientboundRemoveEntitiesPacket removePacket() {
+    int[] entityIds() {
         int[] ids = new int[segments.length];
         for (int i = 0; i < segments.length; i++) {
             ids[i] = segments[i].getId();
         }
-        return new ClientboundRemoveEntitiesPacket(ids);
+        return ids;
+    }
+
+    private ClientboundRemoveEntitiesPacket removePacket() {
+        return new ClientboundRemoveEntitiesPacket(entityIds());
     }
 
     private void forEachViewer(Consumer<Player> action) {

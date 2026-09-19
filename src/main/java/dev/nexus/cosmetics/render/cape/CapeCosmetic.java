@@ -13,8 +13,6 @@ import java.util.UUID;
  */
 public final class CapeCosmetic implements FakeCosmetic {
 
-    private static final int PASSENGER_RESEND_TICKS = 40;
-
     private final Player wearer;
     private final FakeCape forOthers;
     private final FakeCape forSelf;
@@ -49,10 +47,11 @@ public final class CapeCosmetic implements FakeCosmetic {
     public void tick(int serverTick) {
         forOthers.tick();
         forSelf.tick();
-        if (serverTick % PASSENGER_RESEND_TICKS == 0) {
-            forOthers.resendPassengers();
-            forSelf.resendPassengers();
-        }
+    }
+
+    @Override
+    public int[] passengerIds(Player viewer) {
+        return copyFor(viewer).entityIds();
     }
 
     @Override

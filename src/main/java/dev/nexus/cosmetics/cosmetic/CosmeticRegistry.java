@@ -29,8 +29,12 @@ public final class CosmeticRegistry {
         register("galaxy_cape", Component.text("Galaxie-Cape", TextColor.color(0xA070FF)), CosmeticSlot.BACK, true, CosmeticAnimation.NONE);
 
         // Haustiere
-        register("mini_dragon", Component.text("Mini-Drache", TextColor.color(0xE0533A)), CosmeticSlot.PET, false, CosmeticAnimation.WINGS);
-        register("ghost", Component.text("Geist", NamedTextColor.WHITE), CosmeticSlot.PET, true, CosmeticAnimation.FLOAT);
+        register("mini_dragon", Component.text("Mini-Drache", TextColor.color(0xE0533A)), CosmeticSlot.PET, false, CosmeticAnimation.DRAGON);
+        register("ghost", Component.text("Geist", NamedTextColor.WHITE), CosmeticSlot.PET, true, CosmeticAnimation.GHOST);
+        register("penguin", Component.text("Pinguin", TextColor.color(0x9FC7FF)), CosmeticSlot.PET, false, CosmeticAnimation.PENGUIN);
+        register("kitten", Component.text("Kätzchen", TextColor.color(0xFFA64D)), CosmeticSlot.PET, false, CosmeticAnimation.KITTEN);
+        register("bee", Component.text("Bienchen", TextColor.color(0xFFD43B)), CosmeticSlot.PET, false, CosmeticAnimation.BEE);
+        register("mushroom", Component.text("Pilzchen", TextColor.color(0xFF6B6B)), CosmeticSlot.PET, false, CosmeticAnimation.MUSHROOM);
     }
 
     private void register(String id, Component name, CosmeticSlot slot, boolean glowing, CosmeticAnimation animation) {

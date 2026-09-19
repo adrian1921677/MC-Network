@@ -1,11 +1,13 @@
 package dev.nexus.cosmetics.cosmetic;
 
-/** Wie sich ein Haustier bewegt. */
+/** Welche Haustier-Persönlichkeit (Animation und Verhalten) ein Cosmetic hat. */
 public enum CosmeticAnimation {
-    /** Keine besondere Animation (Hüte, Capes) */
+    /** Keine (Hüte, Capes) */
     NONE,
-    /** Schwebt, wackelt hin und her */
-    FLOAT,
-    /** Fliegt mit schlagenden Flügeln (Modell besteht aus Körper + zwei Flügeln) */
-    WINGS
+    GHOST,
+    DRAGON,
+    PENGUIN,
+    KITTEN,
+    BEE,
+    MUSHROOM
 }

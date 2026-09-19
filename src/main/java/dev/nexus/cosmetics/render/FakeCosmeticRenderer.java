@@ -3,6 +3,7 @@ package dev.nexus.cosmetics.render;
 import dev.nexus.cosmetics.cosmetic.CosmeticSlot;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
 import io.papermc.paper.event.player.PlayerUntrackEntityEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -13,11 +14,13 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 /**
  * Verwaltet alle Paket-Cosmetics (Capes, Haustiere ...): wer trägt was, wer sieht es,
@@ -27,6 +30,9 @@ import java.util.UUID;
  * ihm diesen Spieler anzeigt ("tracking"). Der Träger sieht seine eigenen immer.
  */
 public final class FakeCosmeticRenderer implements Listener {
+
+    /** Vanilla schickt die Passagier-Liste manchmal neu (z. B. beim Aufsteigen). Dann senden wir unsere erneut. */
+    private static final int PASSENGER_RESEND_TICKS = 40;
 
     private final Plugin plugin;
     private final Map<UUID, Map<CosmeticSlot, FakeCosmetic>> worn = new HashMap<>();
@@ -53,9 +59,9 @@ public final class FakeCosmeticRenderer implements Listener {
     public void show(Player wearer, CosmeticSlot slot, FakeCosmetic cosmetic) {
         hide(wearer, slot);
         worn.computeIfAbsent(wearer.getUniqueId(), uuid -> new EnumMap<>(CosmeticSlot.class)).put(slot, cosmetic);
-        cosmetic.show(wearer);
-        for (Player viewer : wearer.getTrackedBy()) {
+        for (Player viewer : viewersOf(wearer)) {
             cosmetic.show(viewer);
+            sendPassengers(wearer, viewer);
         }
     }
 
@@ -75,9 +81,16 @@ public final class FakeCosmeticRenderer implements Listener {
 
     private void tick() {
         tickCounter++;
-        for (Map<CosmeticSlot, FakeCosmetic> slots : worn.values()) {
-            for (FakeCosmetic cosmetic : slots.values()) {
+        boolean resendPassengers = tickCounter % PASSENGER_RESEND_TICKS == 0;
+        for (Map.Entry<UUID, Map<CosmeticSlot, FakeCosmetic>> entry : List.copyOf(worn.entrySet())) {
+            for (FakeCosmetic cosmetic : List.copyOf(entry.getValue().values())) {
                 cosmetic.tick(tickCounter);
+            }
+            if (resendPassengers) {
+                Player wearer = Bukkit.getPlayer(entry.getKey());
+                if (wearer != null) {
+                    viewersOf(wearer).forEach(viewer -> sendPassengers(wearer, viewer));
+                }
             }
         }
     }
@@ -85,6 +98,24 @@ public final class FakeCosmeticRenderer implements Listener {
     private List<FakeCosmetic> cosmeticsOf(Player wearer) {
         Map<CosmeticSlot, FakeCosmetic> slots = worn.get(wearer.getUniqueId());
         return slots == null ? List.of() : List.copyOf(slots.values());
+    }
+
+    /** Der Träger selbst und alle Spieler, die ihn gerade sehen. */
+    private static List<Player> viewersOf(Player wearer) {
+        List<Player> viewers = new ArrayList<>();
+        viewers.add(wearer);
+        viewers.addAll(wearer.getTrackedBy());
+        return viewers;
+    }
+
+    /** Schickt die gemeinsame Passagier-Liste aller Cosmetics des Trägers (Cape, Schulter-Haustier ...). */
+    private void sendPassengers(Player wearer, Player viewer) {
+        int[] ids = cosmeticsOf(wearer).stream()
+                .flatMapToInt(cosmetic -> IntStream.of(cosmetic.passengerIds(viewer)))
+                .toArray();
+        if (ids.length > 0) {
+            Packets.send(viewer, Packets.passengers(wearer, ids));
+        }
     }
 
     // ------------------------------------------------------------------ Events
@@ -98,8 +129,9 @@ public final class FakeCosmeticRenderer implements Listener {
         Player viewer = event.getPlayer();
         // Einen Tick warten, bis der Träger beim Zuschauer wirklich gespawnt ist
         plugin.getServer().getScheduler().runTask(plugin, () -> {
-            if (viewer.isOnline()) {
+            if (viewer.isOnline() && wearer.isOnline()) {
                 cosmeticsOf(wearer).forEach(cosmetic -> cosmetic.show(viewer));
+                sendPassengers(wearer, viewer);
             }
         });
     }
@@ -133,6 +165,7 @@ public final class FakeCosmeticRenderer implements Listener {
         plugin.getServer().getScheduler().runTask(plugin, () -> {
             if (wearer.isOnline()) {
                 cosmeticsOf(wearer).forEach(cosmetic -> cosmetic.respawnFor(wearer));
+                sendPassengers(wearer, wearer);
             }
         });
     }
