@@ -35,9 +35,46 @@ resource-pack:
   prompt: "<gold>Dieses Pack wird für die 3D-Cosmetics benötigt."
 
 storage:
-  # Wo gespeichert wird, was Spieler tragen. Aktuell: "yaml" (eine Datei pro Spieler).
-  # MySQL für Netzwerke folgt in einem späteren Update.
+  # Wo gespeichert wird, was Spieler tragen, besitzen und an Schlüsseln haben.
+  #
+  #   yaml  - eine Datei pro Spieler. Richtig für einen einzelnen Server.
+  #   mysql - eine Datenbank für alle Server. Richtig für Netzwerke: Das Profil folgt dem
+  #           Spieler von der Lobby in den Spielmodus und wieder zurück.
+  #
+  # Funktioniert auch mit MariaDB. Beim ersten Start mit "mysql" lädt Paper zwei kleine
+  # Bibliotheken nach (Ordner "libraries") - dafür muss der Server einmal ins Internet dürfen.
+  # Ist die Datenbank nicht erreichbar, startet der Server trotzdem und speichert solange lokal.
   type: yaml
+
+  mysql:
+    host: "127.0.0.1"
+    port: 3306
+    database: "nexus"
+    user: "nexus"
+    password: ""
+
+    # Vorsilbe der Tabelle. Mehrere Netzwerke können sich so eine Datenbank teilen.
+    # Angelegt wird daraus die Tabelle "nexus_profiles".
+    table-prefix: "nexus_"
+
+    # Name dieses Servers im Netzwerk, z. B. "lobby-1" oder "bedwars-3".
+    # Daran erkennt das Plugin, auf welchem Server ein Spieler gerade ist, damit das Profil
+    # beim Wechsel sauber übergeben wird. Bitte auf jedem Server anders eintragen!
+    server-name: ""
+
+    # Wie viele Datenbank-Verbindungen offen gehalten werden. 6 reicht für die meisten Server.
+    pool-size: 6
+
+    # Wie oft (in Sekunden) nachgesehen wird, ob ein anderer Server etwas am Profil geändert hat
+    # (z. B. ein Shop hat Schlüssel vergeben, während der Spieler in der Lobby steht).
+    # 0 schaltet die Abfrage ab.
+    sync-interval-seconds: 5
+
+    # Zusätzliche Einstellungen für die Verbindung. Normalerweise unverändert lassen.
+    properties:
+      useSSL: false
+      allowPublicKeyRetrieval: true
+      characterEncoding: utf8
 
 menu-item:
   # Ein Geschenk-Item in der Hotbar, das per Rechtsklick das Menü öffnet

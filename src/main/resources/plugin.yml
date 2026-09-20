@@ -4,6 +4,12 @@ main: dev.nexus.cosmetics.NexusCosmetics
 api-version: '26.3'
 description: 3D-Cosmetics für Server-Netzwerke
 
+# Paper lädt diese Bibliotheken beim ersten Start selbst herunter und legt sie im Ordner
+# "libraries" ab. Sie werden für den MySQL-Speicher gebraucht (storage.type: mysql).
+libraries:
+  - com.zaxxer:HikariCP:5.1.0
+  - com.mysql:mysql-connector-j:9.1.0
+
 permissions:
   nexuscosmetics.use:
     description: Erlaubt das Öffnen des Cosmetics-Menüs

@@ -5,6 +5,7 @@ import dev.nexus.cosmetics.command.EmoteCommand;
 import dev.nexus.cosmetics.config.ConfigFiles;
 import dev.nexus.cosmetics.config.Messages;
 import dev.nexus.cosmetics.config.Settings;
+import dev.nexus.cosmetics.config.StorageSettings;
 import dev.nexus.cosmetics.cosmetic.Cosmetic;
 import dev.nexus.cosmetics.cosmetic.CosmeticManager;
 import dev.nexus.cosmetics.cosmetic.CosmeticProtectionListener;
@@ -19,6 +20,7 @@ import dev.nexus.cosmetics.menu.MenuItemService;
 import dev.nexus.cosmetics.pack.ResourcePackService;
 import dev.nexus.cosmetics.render.FakeCosmeticRenderer;
 import dev.nexus.cosmetics.storage.CosmeticStorage;
+import dev.nexus.cosmetics.storage.MySqlCosmeticStorage;
 import dev.nexus.cosmetics.storage.YamlCosmeticStorage;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
@@ -53,7 +55,7 @@ public final class NexusCosmetics extends JavaPlugin {
 
         renderer = new FakeCosmeticRenderer(this);
         renderer.start();
-        storage = new YamlCosmeticStorage(getDataFolder(), getLogger());
+        storage = createStorage();
         cosmeticManager = new CosmeticManager(this, cosmeticRegistry, renderer, storage);
         emoteService = new EmoteService(this, emoteRegistry, renderer);
         emoteService.start();
@@ -80,6 +82,28 @@ public final class NexusCosmetics extends JavaPlugin {
         getServer().getOnlinePlayers().forEach(player -> menuItemService.give(player, false));
 
         getLogger().info(cosmeticRegistry.all().size() + " Cosmetics und " + emoteRegistry.all().size() + " Emotes geladen.");
+    }
+
+    /**
+     * Baut den Profil-Speicher aus der config.yml.
+     *
+     * Ist MySQL eingestellt, aber nicht erreichbar, läuft der Server trotzdem weiter — dann eben
+     * mit lokalen Dateien. Ein Cosmetics-Plugin darf keinen Server am Start hindern.
+     */
+    private CosmeticStorage createStorage() {
+        StorageSettings storageSettings = StorageSettings.from(getConfig());
+        if (storageSettings.mysql()) {
+            try {
+                MySqlCosmeticStorage mysql = new MySqlCosmeticStorage(storageSettings, getLogger());
+                getLogger().info("Profil-Speicher: " + mysql.describe());
+                return mysql;
+            } catch (Exception exception) {
+                getLogger().severe("MySQL ist nicht erreichbar: " + exception.getMessage());
+                getLogger().severe("Es wird vorübergehend lokal gespeichert. Profile folgen den Spielern "
+                        + "dann NICHT über die Server hinweg.");
+            }
+        }
+        return new YamlCosmeticStorage(getDataFolder(), getLogger());
     }
 
     /** Liest config.yml, die Sprachdatei, cosmetics.yml und emotes.yml (neu) ein. */

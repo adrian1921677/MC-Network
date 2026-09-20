@@ -56,6 +56,8 @@ public final class CosmeticManager {
         this.renderer = renderer;
         this.storage = storage;
         this.cosmeticKey = new NamespacedKey(plugin, "cosmetic");
+        // Im Netzwerk: Hat ein anderer Server etwas am Profil geändert, holen wir es nach.
+        storage.onExternalChange(this::reloadFromOtherServer);
     }
 
     public CosmeticRegistry registry() {
@@ -162,6 +164,33 @@ public final class CosmeticManager {
         }
         equipped.remove(player.getUniqueId());
         profiles.remove(player.getUniqueId());
+        // Im Netzwerk das Profil freigeben, damit der nächste Server es sofort übernehmen kann
+        storage.release(player.getUniqueId());
+    }
+
+    /**
+     * Ein anderer Server im Netzwerk hat das Profil verändert (z. B. ein Shop hat Schlüssel
+     * vergeben). Besitz und Schlüssel werden übernommen.
+     *
+     * Was der Spieler hier gerade trägt, bleibt unangetastet — dafür ist dieser Server zuständig,
+     * und ein Überschreiben würde ihm das Cosmetic mitten im Spiel vom Kopf nehmen.
+     */
+    private void reloadFromOtherServer(UUID uuid) {
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (!profiles.containsKey(uuid)) {
+                return;
+            }
+            storage.load(uuid).thenAccept(fresh -> Bukkit.getScheduler().runTask(plugin, () -> {
+                PlayerProfile current = profiles.get(uuid);
+                if (current == null) {
+                    return;
+                }
+                current.owned().clear();
+                current.owned().addAll(fresh.owned());
+                current.allKeys().clear();
+                current.allKeys().putAll(fresh.allKeys());
+            }));
+        });
     }
 
     /** Beim Server-Stopp oder Reload: Anzeige bei allen entfernen, ohne die Auswahl zu löschen. */

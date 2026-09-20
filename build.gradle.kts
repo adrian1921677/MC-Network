@@ -19,6 +19,10 @@ repositories {
 dependencies {
     // Paper 26.3 inklusive Server-Interna
     paperweight.paperDevBundle("26.3.build.19-alpha")
+
+    // Verbindungs-Pool für den MySQL-Speicher. Wird nicht mitgeliefert: Paper lädt ihn zur
+    // Laufzeit selbst nach (siehe "libraries" in der plugin.yml).
+    compileOnly("com.zaxxer:HikariCP:5.1.0")
 }
 
 // Ab Minecraft 26.1 ist der Server nicht mehr verschleiert, das Plugin wird direkt so ausgeliefert
