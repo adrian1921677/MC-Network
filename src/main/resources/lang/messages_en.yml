@@ -57,6 +57,8 @@ menu:
   favorites-filter-off: "<gray>Click: show favourites only"
   favorite-marked: "<gold>★ Favourite"
   favorite-hint: "<dark_gray>Right click: favourite"
+  preview-hint: "<dark_gray>Shift click: preview"
+  preview-shown: "<gray>Preview: <white><name>"
   favorite-added: "<gold>★ <name> <gray>is now a favourite."
   favorite-removed: "<gray>★ <name> is no longer a favourite."
   reset-filters: "<red>Reset filters"

@@ -19,6 +19,7 @@ import dev.nexus.cosmetics.menu.ChatInputService;
 import dev.nexus.cosmetics.menu.CosmeticMenuListener;
 import dev.nexus.cosmetics.menu.MenuItemService;
 import dev.nexus.cosmetics.pack.ResourcePackService;
+import dev.nexus.cosmetics.preview.PreviewService;
 import dev.nexus.cosmetics.render.FakeCosmeticRenderer;
 import dev.nexus.cosmetics.storage.CosmeticStorage;
 import dev.nexus.cosmetics.storage.MySqlCosmeticStorage;
@@ -50,6 +51,7 @@ public final class NexusCosmetics extends JavaPlugin {
     private ResourcePackService resourcePackService;
     private MenuItemService menuItemService;
     private ChatInputService chatInputService;
+    private PreviewService previewService;
 
     @Override
     public void onEnable() {
@@ -64,6 +66,8 @@ public final class NexusCosmetics extends JavaPlugin {
         crateService = new CrateService(this, crateRegistry, renderer);
         menuItemService = new MenuItemService(this);
         chatInputService = new ChatInputService(this);
+        previewService = new PreviewService(this);
+        previewService.start();
 
         resourcePackService = new ResourcePackService(this, getFile());
         resourcePackService.start();
@@ -76,6 +80,7 @@ public final class NexusCosmetics extends JavaPlugin {
         pluginManager.registerEvents(resourcePackService, this);
         pluginManager.registerEvents(menuItemService, this);
         pluginManager.registerEvents(chatInputService, this);
+        pluginManager.registerEvents(previewService, this);
 
         registerCommand("cosmetics", "Öffnet das Cosmetics-Menü", List.of("cosmetic"), new CosmeticsCommand(this));
         registerCommand("emote", "Öffnet das Emote-Menü oder spielt ein Emote ab", List.of("emotes"),
@@ -128,6 +133,8 @@ public final class NexusCosmetics extends JavaPlugin {
      * Getragene Cosmetics werden kurz abgelegt und danach aus dem Speicher wieder angelegt.
      */
     public void reloadAll() {
+        // Die Vorschau-Puppen tragen Cosmetics, die es gleich nicht mehr gibt
+        previewService.clearAll();
         emoteService.stopAllPoses();
         cosmeticManager.shutdown();
         loadConfiguration();
@@ -204,6 +211,11 @@ public final class NexusCosmetics extends JavaPlugin {
         return chatInputService;
     }
 
+    /** Die Schaufensterpuppe, die im Menü zeigt, wie ein Cosmetic aussieht. */
+    public PreviewService preview() {
+        return previewService;
+    }
+
     @Override
     public void onDisable() {
         if (emoteService != null) {
@@ -211,6 +223,9 @@ public final class NexusCosmetics extends JavaPlugin {
         }
         if (cosmeticManager != null) {
             cosmeticManager.shutdown();
+        }
+        if (previewService != null) {
+            previewService.stop();
         }
         if (renderer != null) {
             renderer.stop();

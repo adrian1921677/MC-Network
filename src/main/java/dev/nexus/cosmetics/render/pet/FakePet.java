@@ -1,6 +1,7 @@
 package dev.nexus.cosmetics.render.pet;
 
 import dev.nexus.cosmetics.cosmetic.Cosmetic;
+import dev.nexus.cosmetics.render.CosmeticCarrier;
 import dev.nexus.cosmetics.render.FakeCosmetic;
 import dev.nexus.cosmetics.render.Packets;
 import net.minecraft.network.protocol.Packet;
@@ -64,7 +65,7 @@ public final class FakePet implements FakeCosmetic {
         }
     }
 
-    private final Player owner;
+    private final CosmeticCarrier owner;
     private final Cosmetic cosmetic;
     private final PetAnimator animator;
     private final PetState state = new PetState();
@@ -79,7 +80,7 @@ public final class FakePet implements FakeCosmetic {
     private int ownerAirTicks;
     private Location lastOwnerLocation;
 
-    public FakePet(Player owner, Cosmetic cosmetic) {
+    public FakePet(CosmeticCarrier owner, Cosmetic cosmetic) {
         this.owner = owner;
         this.cosmetic = cosmetic;
         this.animator = PetAnimators.create(cosmetic.animation());
@@ -87,7 +88,7 @@ public final class FakePet implements FakeCosmetic {
         List<String> suffixes = animator.parts();
         for (int i = 0; i < suffixes.size(); i++) {
             String suffix = suffixes.get(i);
-            Display.ItemDisplay entity = Packets.createItemDisplay(owner.getWorld(), modelKey(suffix));
+            Display.ItemDisplay entity = Packets.createItemDisplay(owner.world(), modelKey(suffix));
             ItemDisplay view = (ItemDisplay) entity.getBukkitEntity();
             view.setInterpolationDuration(animator.interpolation(i));
             view.setTeleportDuration(3);
@@ -97,13 +98,13 @@ public final class FakePet implements FakeCosmetic {
             parts.add(new Part(entity, view, suffix));
         }
 
-        lastOwnerLocation = owner.getLocation();
+        lastOwnerLocation = owner.location();
         groundY = lastOwnerLocation.getY();
         Vec3 start = targetPosition();
         x = start.x;
         y = start.y;
         z = start.z;
-        yaw = owner.getBodyYaw();
+        yaw = owner.bodyYaw();
         applyPose();
     }
 
@@ -120,11 +121,11 @@ public final class FakePet implements FakeCosmetic {
     @Override
     public void show(Player viewer) {
         viewers.add(viewer.getUniqueId());
-        Location ownerLocation = owner.getLocation();
+        Location ownerLocation = owner.location();
         List<Packet<? super ClientGamePacketListener>> packets = new ArrayList<>();
         for (Part part : parts) {
             packets.add(onShoulder()
-                    ? Packets.spawn(part.entity, ownerLocation.getX(), ownerLocation.getY() + owner.getHeight(), ownerLocation.getZ())
+                    ? Packets.spawn(part.entity, ownerLocation.getX(), ownerLocation.getY() + owner.height(), ownerLocation.getZ())
                     : Packets.spawn(part.entity, x, y, z));
             List<SynchedEntityData.DataValue<?>> data = part.entity.getEntityData().getNonDefaultValues();
             if (data != null) {
@@ -191,7 +192,7 @@ public final class FakePet implements FakeCosmetic {
     /** Beobachtet den Besitzer: bewegt er sich, springt er, schleicht er ...? */
     private void updateState() {
         state.age++;
-        Location now = owner.getLocation();
+        Location now = owner.location();
         double dx = now.getX() - lastOwnerLocation.getX();
         double dz = now.getZ() - lastOwnerLocation.getZ();
         double dy = now.getY() - lastOwnerLocation.getY();
@@ -199,16 +200,16 @@ public final class FakePet implements FakeCosmetic {
 
         state.ownerSpeed = Math.hypot(dx, dz);
         state.ownerVerticalSpeed = dy;
-        state.ownerSneaking = owner.isSneaking();
-        state.ownerSprinting = owner.isSprinting();
-        long time = owner.getWorld().getTime();
+        state.ownerSneaking = owner.sneaking();
+        state.ownerSprinting = owner.sprinting();
+        long time = owner.world().getTime();
         state.night = time > 13000 && time < 23000;
         boolean still = state.ownerSpeed < 0.01 && Math.abs(dy) < 0.01;
         state.ownerIdleTicks = still ? state.ownerIdleTicks + 1 : 0;
 
         // Bodenhöhe merken: Beim Springen soll ein Boden-Haustier nicht mit in die Luft
         @SuppressWarnings("deprecation")
-        boolean onGround = owner.isOnGround();
+        boolean onGround = owner.onGround();
         ownerAirTicks = onGround ? 0 : ownerAirTicks + 1;
         if (onGround || ownerAirTicks > 30) {
             groundY = now.getY();
@@ -239,14 +240,14 @@ public final class FakePet implements FakeCosmetic {
         // Beim Laufen in Laufrichtung schauen, im Stand dorthin, wo der Besitzer hinschaut
         float desiredYaw = state.speed > 0.04
                 ? (float) Math.toDegrees(Math.atan2(-stepX, stepZ))
-                : owner.getLocation().getYaw();
+                : owner.location().getYaw();
         yaw += wrapDegrees(desiredYaw - yaw) * 0.15f;
     }
 
     /** Der Platz neben dem Besitzer, plus der Versatz der Animation (z. B. Kreise fliegen). */
     private Vec3 targetPosition() {
-        Location location = owner.getLocation();
-        double bodyYaw = Math.toRadians(owner.getBodyYaw());
+        Location location = owner.location();
+        double bodyYaw = Math.toRadians(owner.bodyYaw());
         double forwardX = -Math.sin(bodyYaw);
         double forwardZ = Math.cos(bodyYaw);
         double rightX = -Math.cos(bodyYaw);
@@ -271,8 +272,8 @@ public final class FakePet implements FakeCosmetic {
         Matrix4f base;
         if (onShoulder()) {
             base = new Matrix4f()
-                    .rotateY((float) Math.toRadians(-owner.getBodyYaw()))
-                    .translate(SHOULDER_X, owner.isSneaking() ? SNEAK_SHOULDER_Y : SHOULDER_Y, 0.02f);
+                    .rotateY((float) Math.toRadians(-owner.bodyYaw()))
+                    .translate(SHOULDER_X, owner.sneaking() ? SNEAK_SHOULDER_Y : SHOULDER_Y, 0.02f);
         } else {
             base = new Matrix4f().rotateY((float) Math.toRadians(-yaw));
         }
@@ -301,8 +302,8 @@ public final class FakePet implements FakeCosmetic {
         double baseZ;
         double facing;
         if (onShoulder()) {
-            Location location = owner.getLocation();
-            facing = Math.toRadians(owner.getBodyYaw());
+            Location location = owner.location();
+            facing = Math.toRadians(owner.bodyYaw());
             baseX = location.getX() - Math.cos(facing) * 0.34;
             baseY = location.getY() + 1.45;
             baseZ = location.getZ() - Math.sin(facing) * 0.34;

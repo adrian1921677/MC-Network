@@ -1,6 +1,7 @@
 package dev.nexus.cosmetics.render.cape;
 
 import dev.nexus.cosmetics.cosmetic.Cosmetic;
+import dev.nexus.cosmetics.render.CosmeticCarrier;
 import dev.nexus.cosmetics.render.FakeCosmetic;
 import org.bukkit.entity.Player;
 
@@ -13,33 +14,33 @@ import java.util.UUID;
  */
 public final class BackCosmetic implements FakeCosmetic {
 
-    private final Player wearer;
+    private final CosmeticCarrier wearer;
     private final BackPiece forOthers;
     private final BackPiece forSelf;
 
-    private BackCosmetic(Player wearer, BackPiece forOthers, BackPiece forSelf) {
+    private BackCosmetic(CosmeticCarrier wearer, BackPiece forOthers, BackPiece forSelf) {
         this.wearer = wearer;
         this.forOthers = forOthers;
         this.forSelf = forSelf;
     }
 
     /** Cape oder langer Umhang. */
-    public static BackCosmetic cape(Player wearer, Cosmetic cosmetic) {
+    public static BackCosmetic cape(CosmeticCarrier wearer, Cosmetic cosmetic) {
         return new BackCosmetic(wearer, new FakeCape(wearer, cosmetic, false), new FakeCape(wearer, cosmetic, true));
     }
 
     /** Festes Teil auf dem Rücken (Rucksack, Jetpack ...). */
-    public static BackCosmetic backItem(Player wearer, Cosmetic cosmetic) {
+    public static BackCosmetic backItem(CosmeticCarrier wearer, Cosmetic cosmetic) {
         return new BackCosmetic(wearer, new FakeBackItem(wearer, cosmetic, false), new FakeBackItem(wearer, cosmetic, true));
     }
 
     /** Schlagende Flügel. */
-    public static BackCosmetic wings(Player wearer, Cosmetic cosmetic) {
+    public static BackCosmetic wings(CosmeticCarrier wearer, Cosmetic cosmetic) {
         return new BackCosmetic(wearer, new FakeWings(wearer, cosmetic, false), new FakeWings(wearer, cosmetic, true));
     }
 
     private BackPiece copyFor(Player viewer) {
-        return viewer.getUniqueId().equals(wearer.getUniqueId()) ? forSelf : forOthers;
+        return viewer.getUniqueId().equals(wearer.uniqueId()) ? forSelf : forOthers;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package dev.nexus.cosmetics.render.hat;
 
 import dev.nexus.cosmetics.cosmetic.Cosmetic;
+import dev.nexus.cosmetics.render.CosmeticCarrier;
 import dev.nexus.cosmetics.render.FakeCosmetic;
 import dev.nexus.cosmetics.render.Packets;
 import net.minecraft.network.protocol.Packet;
@@ -34,7 +35,7 @@ public final class FloatingHalo implements FakeCosmetic {
     private static final float HEIGHT = 0.28f;
     private static final float BASE_SCALE = 0.55f;
 
-    private final Player wearer;
+    private final CosmeticCarrier wearer;
     private final Display.ItemDisplay entity;
     private final ItemDisplay view;
     private final Set<UUID> viewers = new HashSet<>();
@@ -43,11 +44,11 @@ public final class FloatingHalo implements FakeCosmetic {
     private final Particle aura;
     private int age;
 
-    public FloatingHalo(Player wearer, Cosmetic cosmetic) {
+    public FloatingHalo(CosmeticCarrier wearer, Cosmetic cosmetic) {
         this.wearer = wearer;
         this.scale = (float) (BASE_SCALE * cosmetic.scale());
         this.aura = cosmetic.aura();
-        this.entity = Packets.createItemDisplay(wearer.getWorld(), cosmetic.model());
+        this.entity = Packets.createItemDisplay(wearer.world(), cosmetic.model());
         this.view = (ItemDisplay) entity.getBukkitEntity();
         view.setInterpolationDuration(3);
         view.setBrightness(new org.bukkit.entity.Display.Brightness(15, 15));
@@ -57,9 +58,9 @@ public final class FloatingHalo implements FakeCosmetic {
     @Override
     public void show(Player viewer) {
         viewers.add(viewer.getUniqueId());
-        Location location = wearer.getLocation();
+        Location location = wearer.location();
         List<Packet<? super ClientGamePacketListener>> packets = new ArrayList<>();
-        packets.add(Packets.spawn(entity, location.getX(), location.getY() + wearer.getHeight(), location.getZ()));
+        packets.add(Packets.spawn(entity, location.getX(), location.getY() + wearer.height(), location.getZ()));
         List<SynchedEntityData.DataValue<?>> data = entity.getEntityData().getNonDefaultValues();
         if (data != null) {
             packets.add(new ClientboundSetEntityDataPacket(entity.getId(), data));
@@ -100,14 +101,14 @@ public final class FloatingHalo implements FakeCosmetic {
         }
 
         if (aura != null && age % 3 == 0) {
-            wearer.getWorld().spawnParticle(aura, wearer.getLocation().add(0, wearer.getHeight() + HEIGHT, 0),
+            wearer.spawnParticle(aura, wearer.location().add(0, wearer.height() + HEIGHT, 0),
                     2, 0.25 * scale / BASE_SCALE, 0.1, 0.25 * scale / BASE_SCALE, 0.01);
         }
 
         // Ab und zu ein Funkeln am Ring
         if (age % 15 == 0) {
             double angle = random.nextDouble() * Math.PI * 2;
-            Location location = wearer.getLocation().add(Math.cos(angle) * 0.22, wearer.getHeight() + HEIGHT, Math.sin(angle) * 0.22);
+            Location location = wearer.location().add(Math.cos(angle) * 0.22, wearer.height() + HEIGHT, Math.sin(angle) * 0.22);
             for (UUID uuid : List.copyOf(viewers)) {
                 Player viewer = Bukkit.getPlayer(uuid);
                 if (viewer != null) {
@@ -120,7 +121,7 @@ public final class FloatingHalo implements FakeCosmetic {
     private void applyPose() {
         double bob = Math.sin(age * 0.07) * 0.04;
         view.setTransformationMatrix(new Matrix4f()
-                .rotateY((float) Math.toRadians(-wearer.getBodyYaw()))
+                .rotateY((float) Math.toRadians(-wearer.bodyYaw()))
                 .translate(0, (float) (HEIGHT + bob), -0.04f)
                 .rotateX((float) Math.toRadians(-12))   // leicht nach hinten gekippt
                 .rotateY((float) Math.toRadians(age * 2.5))
