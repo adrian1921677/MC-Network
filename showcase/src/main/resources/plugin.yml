@@ -14,4 +14,6 @@ permissions:
     default: op
   nexusshowcase.skip:
     description: Wer dieses Recht hat, wird beim Betreten nicht automatisch gefuehrt
-    default: op
+    # Standard false: Jeder wird gefuehrt, auch Operatoren. Wer davon ausgenommen sein
+    # will, bekommt das Recht ausdruecklich zugeteilt.
+    default: false

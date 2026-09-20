@@ -7,8 +7,8 @@
 language: de
 
 tour:
-  # Besucher werden beim Betreten des Servers automatisch abgeholt.
-  # Wer das Recht nexusshowcase.skip hat (Standard: Operatoren), wird in Ruhe gelassen.
+  # Besucher werden beim Betreten des Servers automatisch abgeholt - jeder, auch Operatoren.
+  # Wer ausgenommen sein soll, braucht ausdruecklich das Recht nexusshowcase.skip.
   auto-start: true
   # Sekunden, die der Besucher zwischen zwei Haltestellen unterwegs ist
   travel-seconds: 5
