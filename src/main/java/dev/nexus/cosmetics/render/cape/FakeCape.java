@@ -2,6 +2,7 @@ package dev.nexus.cosmetics.render.cape;
 
 import dev.nexus.cosmetics.cosmetic.Cosmetic;
 import dev.nexus.cosmetics.cosmetic.CosmeticAnimation;
+import dev.nexus.cosmetics.render.CosmeticCarrier;
 import dev.nexus.cosmetics.render.Packets;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -53,7 +54,7 @@ final class FakeCape implements BackPiece {
     // --- Ab diesem Blickwinkel nach unten wird die eigene Cape ausgeblendet ---
     private static final float HIDE_OWN_CAPE_PITCH = 50f;
 
-    private final Player wearer;
+    private final CosmeticCarrier wearer;
     /** true = diese Instanz sieht nur der Träger selbst. */
     private final boolean ownView;
     /** Langer, schwerer Umhang statt normaler Cape */
@@ -76,7 +77,7 @@ final class FakeCape implements BackPiece {
     private float lastBodyYaw;
     private int age;
 
-    FakeCape(Player wearer, Cosmetic cosmetic, boolean ownView) {
+    FakeCape(CosmeticCarrier wearer, Cosmetic cosmetic, boolean ownView) {
         this.wearer = wearer;
         this.ownView = ownView;
         this.robe = cosmetic.animation() == CosmeticAnimation.ROBE;
@@ -89,7 +90,7 @@ final class FakeCape implements BackPiece {
         this.segmentViews = new ItemDisplay[segmentHeights.length];
 
         for (int i = 0; i < segments.length; i++) {
-            Display.ItemDisplay entity = Packets.createItemDisplay(wearer.getWorld(), cosmetic.model(String.valueOf(i)));
+            Display.ItemDisplay entity = Packets.createItemDisplay(wearer.world(), cosmetic.model(String.valueOf(i)));
 
             // Über die Bukkit-Ansicht lassen sich die Display-Werte bequem setzen
             ItemDisplay view = (ItemDisplay) entity.getBukkitEntity();
@@ -101,8 +102,8 @@ final class FakeCape implements BackPiece {
             segmentViews[i] = view;
         }
 
-        this.lastLocation = wearer.getLocation();
-        this.lastBodyYaw = wearer.getBodyYaw();
+        this.lastLocation = wearer.location();
+        this.lastBodyYaw = wearer.bodyYaw();
         applyTransformations();
     }
 
@@ -111,10 +112,10 @@ final class FakeCape implements BackPiece {
     @Override
     public void show(Player viewer) {
         viewers.add(viewer.getUniqueId());
-        Location loc = wearer.getLocation();
+        Location loc = wearer.location();
         List<Packet<? super ClientGamePacketListener>> packets = new ArrayList<>();
         for (Display.ItemDisplay entity : segments) {
-            packets.add(Packets.spawn(entity, loc.getX(), loc.getY() + wearer.getHeight(), loc.getZ()));
+            packets.add(Packets.spawn(entity, loc.getX(), loc.getY() + wearer.height(), loc.getZ()));
             List<SynchedEntityData.DataValue<?>> data = entity.getEntityData().getNonDefaultValues();
             if (data != null) {
                 packets.add(new ClientboundSetEntityDataPacket(entity.getId(), data));
@@ -148,7 +149,7 @@ final class FakeCape implements BackPiece {
     @Override
     public void tick() {
         age++;
-        Location now = wearer.getLocation();
+        Location now = wearer.location();
         double dx = now.getX() - lastLocation.getX();
         double dy = now.getY() - lastLocation.getY();
         double dz = now.getZ() - lastLocation.getZ();
@@ -159,7 +160,7 @@ final class FakeCape implements BackPiece {
             dx = dy = dz = 0;
         }
 
-        float bodyYaw = wearer.getBodyYaw();
+        float bodyYaw = wearer.bodyYaw();
         float turnSpeed = wrapDegrees(bodyYaw - lastBodyYaw);
         lastBodyYaw = bodyYaw;
 
@@ -174,7 +175,7 @@ final class FakeCape implements BackPiece {
         if (dy < -0.08) {
             target += Math.min(-dy * 90, 35);
         }
-        if (wearer.isSneaking()) {
+        if (wearer.sneaking()) {
             target += 22;
         }
         target += Math.sin(age * 0.09) * 1.5;
@@ -217,10 +218,10 @@ final class FakeCape implements BackPiece {
             length += height / 16.0 * scale;
         }
         double tilt = Math.toRadians(angle[angle.length - 1]);
-        double yaw = Math.toRadians(wearer.getBodyYaw());
+        double yaw = Math.toRadians(wearer.bodyYaw());
         double back = 0.17 + Math.sin(tilt) * length;
-        Location location = wearer.getLocation().add(Math.sin(yaw) * back, wearer.getHeight() - 0.45 - Math.cos(tilt) * length, -Math.cos(yaw) * back);
-        wearer.getWorld().spawnParticle(aura, location, 2, 0.2, 0.05, 0.2, 0.01);
+        Location location = wearer.location().add(Math.sin(yaw) * back, wearer.height() - 0.45 - Math.cos(tilt) * length, -Math.cos(yaw) * back);
+        wearer.spawnParticle(aura, location, 2, 0.2, 0.05, 0.2, 0.01);
     }
 
     /**
@@ -228,11 +229,11 @@ final class FakeCape implements BackPiece {
      * mit dem Körper drehen → zu den Schultern → seitlich kippen → Segment für Segment nach hinten schwingen.
      */
     private void applyTransformations() {
-        boolean hidden = ownView && wearer.getLocation().getPitch() > HIDE_OWN_CAPE_PITCH;
-        float shoulder = wearer.isSneaking() ? SNEAK_SHOULDER_OFFSET : SHOULDER_OFFSET;
+        boolean hidden = ownView && wearer.location().getPitch() > HIDE_OWN_CAPE_PITCH;
+        float shoulder = wearer.sneaking() ? SNEAK_SHOULDER_OFFSET : SHOULDER_OFFSET;
 
         Matrix4f joint = new Matrix4f()
-                .rotateY((float) Math.toRadians(-wearer.getBodyYaw()))
+                .rotateY((float) Math.toRadians(-wearer.bodyYaw()))
                 .translate(0, shoulder, BACK_OFFSET)
                 .rotateZ((float) Math.toRadians(roll));
 

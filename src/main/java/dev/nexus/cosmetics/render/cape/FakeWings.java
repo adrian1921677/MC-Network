@@ -1,6 +1,7 @@
 package dev.nexus.cosmetics.render.cape;
 
 import dev.nexus.cosmetics.cosmetic.Cosmetic;
+import dev.nexus.cosmetics.render.CosmeticCarrier;
 import dev.nexus.cosmetics.render.Packets;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -41,7 +42,7 @@ final class FakeWings implements BackPiece {
     private static final float BASE_SCALE = 0.8f;
     private static final float HIDE_OWN_WINGS_PITCH = 50f;
 
-    private final Player wearer;
+    private final CosmeticCarrier wearer;
     private final boolean ownView;
     private final float scale;
     private final Particle aura;
@@ -59,13 +60,13 @@ final class FakeWings implements BackPiece {
     private double phase;
     private Location lastLocation;
 
-    FakeWings(Player wearer, Cosmetic cosmetic, boolean ownView) {
+    FakeWings(CosmeticCarrier wearer, Cosmetic cosmetic, boolean ownView) {
         this.wearer = wearer;
         this.ownView = ownView;
         this.scale = (float) (BASE_SCALE * cosmetic.scale());
         this.aura = cosmetic.aura();
-        this.wingA = Packets.createItemDisplay(wearer.getWorld(), cosmetic.model("wing_a"));
-        this.wingB = Packets.createItemDisplay(wearer.getWorld(), cosmetic.model("wing_b"));
+        this.wingA = Packets.createItemDisplay(wearer.world(), cosmetic.model("wing_a"));
+        this.wingB = Packets.createItemDisplay(wearer.world(), cosmetic.model("wing_b"));
         this.viewA = (ItemDisplay) wingA.getBukkitEntity();
         this.viewB = (ItemDisplay) wingB.getBukkitEntity();
         for (ItemDisplay view : List.of(viewA, viewB)) {
@@ -74,17 +75,17 @@ final class FakeWings implements BackPiece {
                 view.setBrightness(new org.bukkit.entity.Display.Brightness(15, 15));
             }
         }
-        this.lastLocation = wearer.getLocation();
+        this.lastLocation = wearer.location();
         applyPose();
     }
 
     @Override
     public void show(Player viewer) {
         viewers.add(viewer.getUniqueId());
-        Location location = wearer.getLocation();
+        Location location = wearer.location();
         List<Packet<? super ClientGamePacketListener>> packets = new ArrayList<>();
         for (Display.ItemDisplay wing : List.of(wingA, wingB)) {
-            packets.add(Packets.spawn(wing, location.getX(), location.getY() + wearer.getHeight(), location.getZ()));
+            packets.add(Packets.spawn(wing, location.getX(), location.getY() + wearer.height(), location.getZ()));
             List<SynchedEntityData.DataValue<?>> data = wing.getEntityData().getNonDefaultValues();
             if (data != null) {
                 packets.add(new ClientboundSetEntityDataPacket(wing.getId(), data));
@@ -118,7 +119,7 @@ final class FakeWings implements BackPiece {
 
     @Override
     public void tick() {
-        Location now = wearer.getLocation();
+        Location now = wearer.location();
         double dx = now.getX() - lastLocation.getX();
         double dy = now.getY() - lastLocation.getY();
         double dz = now.getZ() - lastLocation.getZ();
@@ -132,15 +133,15 @@ final class FakeWings implements BackPiece {
         double targetSweep;
         double targetAmplitude;
         double targetSpeed;
-        if (wearer.isSneaking()) {
+        if (wearer.sneaking()) {
             targetSweep = 80;
             targetAmplitude = 3;
             targetSpeed = 0.08;
-        } else if (wearer.isGliding() || dy < -0.3) {
+        } else if (wearer.gliding() || dy < -0.3) {
             targetSweep = 5;
             targetAmplitude = 22;
             targetSpeed = 0.45;
-        } else if (wearer.isSprinting()) {
+        } else if (wearer.sprinting()) {
             targetSweep = 62;
             targetAmplitude = 10;
             targetSpeed = 0.32;
@@ -174,26 +175,26 @@ final class FakeWings implements BackPiece {
         if (aura == null || ownView || age % 2 != 0) {
             return;
         }
-        double yaw = Math.toRadians(wearer.getBodyYaw());
+        double yaw = Math.toRadians(wearer.bodyYaw());
         double reach = 0.9 * scale / BASE_SCALE * 0.8;
         double side = Math.cos(Math.toRadians(sweep)) * reach;
         double back = 0.2 + Math.sin(Math.toRadians(sweep)) * reach;
-        double height = wearer.getHeight() + (wearer.isSneaking() ? -0.38 : -0.5) + 0.25;
+        double height = wearer.height() + (wearer.sneaking() ? -0.38 : -0.5) + 0.25;
         for (int direction : new int[]{-1, 1}) {
             // rechts = (-cos, -sin), hinten = (sin, -cos)
             double x = -Math.cos(yaw) * side * direction + Math.sin(yaw) * back;
             double z = -Math.sin(yaw) * side * direction - Math.cos(yaw) * back;
-            wearer.getWorld().spawnParticle(aura, wearer.getLocation().add(x, height, z), 1, 0.08, 0.1, 0.08, 0.01);
+            wearer.spawnParticle(aura, wearer.location().add(x, height, z), 1, 0.08, 0.1, 0.08, 0.01);
         }
     }
 
     private void applyPose() {
-        boolean hidden = ownView && wearer.getLocation().getPitch() > HIDE_OWN_WINGS_PITCH;
-        float shoulder = wearer.isSneaking() ? SNEAK_SHOULDER_OFFSET : SHOULDER_OFFSET;
+        boolean hidden = ownView && wearer.location().getPitch() > HIDE_OWN_WINGS_PITCH;
+        float shoulder = wearer.sneaking() ? SNEAK_SHOULDER_OFFSET : SHOULDER_OFFSET;
         double flap = Math.sin(phase) * amplitude;          // vor und zurück
         double lift = 12 + Math.sin(phase) * amplitude * 0.7; // Spitzen hoch und runter
         float scale = hidden ? 0.001f : this.scale;
-        float bodyYaw = (float) Math.toRadians(-wearer.getBodyYaw());
+        float bodyYaw = (float) Math.toRadians(-wearer.bodyYaw());
 
         // Flügel A zeigt nach rechts (-x), Flügel B nach links (+x)
         viewA.setTransformationMatrix(new Matrix4f()

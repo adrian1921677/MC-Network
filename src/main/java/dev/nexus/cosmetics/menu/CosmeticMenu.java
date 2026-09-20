@@ -255,6 +255,7 @@ public final class CosmeticMenu implements ClickableMenu {
                 lore.add(messages.item("menu.locked"));
             }
             lore.add(messages.item("menu.favorite-hint"));
+            lore.add(messages.item("menu.preview-hint"));
             inventory.setItem(ITEM_SLOTS[i], manager.createItem(cosmetic, lore));
             cosmeticSlots.put(ITEM_SLOTS[i], cosmetic);
         }
@@ -333,6 +334,7 @@ public final class CosmeticMenu implements ClickableMenu {
             new CrateMenu(plugin.crates(), manager, messages, player).open();
         } else if (slot == UNEQUIP_ALL_SLOT) {
             manager.unequipAll(player);
+            plugin.preview().refresh(player);
             player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_LEATHER, 1f, 0.8f);
             player.sendMessage(messages.prefixed("cosmetics.unequipped-all"));
         }
@@ -382,7 +384,7 @@ public final class CosmeticMenu implements ClickableMenu {
             case UNEQUIP_CATEGORY_SLOT -> {
                 manager.unequip(player, category);
                 player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_LEATHER, 1f, 0.8f);
-                reopen();
+                refreshAndReopen();
                 return;
             }
             default -> {
@@ -391,6 +393,12 @@ public final class CosmeticMenu implements ClickableMenu {
 
         Cosmetic cosmetic = cosmeticSlots.get(slot);
         if (cosmetic == null) {
+            return;
+        }
+
+        // Shift zuerst: Umschalt-Rechtsklick ist ebenfalls eine Vorschau, kein Favoriten-Klick
+        if (click.isShiftClick()) {
+            preview(cosmetic);
             return;
         }
 
@@ -403,7 +411,7 @@ public final class CosmeticMenu implements ClickableMenu {
         if (cosmetic.equals(manager.equipped(player, cosmetic.slot()))) {
             manager.unequip(player, cosmetic.slot());
             player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_LEATHER, 1f, 0.8f);
-            reopen();
+            refreshAndReopen();
             return;
         }
 
@@ -421,7 +429,31 @@ public final class CosmeticMenu implements ClickableMenu {
                 player.sendMessage(messages.prefixed("cosmetics.head-occupied"));
             }
         }
+        refreshAndReopen();
+    }
+
+    /**
+     * Nach jeder Änderung am Getragenen: erst die Puppe nachziehen, dann das Menü neu aufbauen.
+     * Sonst zeigte die Vorschau weiter das Stück, das der Spieler gerade ersetzt hat.
+     */
+    private void refreshAndReopen() {
+        plugin.preview().refresh(player);
         reopen();
+    }
+
+    /**
+     * Schliesst das Menü und stellt die Schaufensterpuppe davor.
+     *
+     * Danach landet der Spieler wieder auf genau dieser Seite — mit derselben Suche,
+     * Sortierung und Seitenzahl. Sonst wäre eine Vorschau beim Durchblättern lästig.
+     */
+    private void preview(Cosmetic cosmetic) {
+        if (!plugin.preview().enabled()) {
+            return;
+        }
+        player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.5f, 1.6f);
+        plugin.preview().preview(player, cosmetic,
+                () -> new CosmeticMenu(plugin, player, category, page, view).open());
     }
 
     private void toggleFavorite(Cosmetic cosmetic) {

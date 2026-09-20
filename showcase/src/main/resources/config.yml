@@ -1,0 +1,47 @@
+# NexusShowcase - die gefuehrte Tour auf dem Demo-Server.
+#
+# Was der Fuehrer sagt, steht nicht hier, sondern in tour_de.yml bzw. tour_en.yml.
+# Diese Datei regelt nur den Ablauf.
+
+# de oder en - bestimmt, welche tour_<sprache>.yml gelesen wird
+language: de
+
+tour:
+  # Besucher werden beim Betreten des Servers automatisch abgeholt - jeder, auch Operatoren.
+  # Wer ausgenommen sein soll, braucht ausdruecklich das Recht nexusshowcase.skip.
+  auto-start: true
+  # Sekunden, die der Besucher zwischen zwei Haltestellen unterwegs ist
+  travel-seconds: 5
+  # Lesetempo: So viele Ticks bleibt ein Satz je Wort stehen (20 Ticks = 1 Sekunde).
+  # Kurze Saetze bleiben mindestens 'min-hold-ticks' stehen.
+  ticks-per-word: 9
+  min-hold-ticks: 45
+  # Am Ende der Fuehrung: true = der Besucher darf sich frei bewegen und alles ausprobieren,
+  # false = die Fuehrung beginnt von vorne
+  free-roam-at-end: true
+
+  # So viele Sekunden darf er sich danach umsehen, dann wird er hoeflich hinausgebeten -
+  # damit auf einem kleinen Server Platz fuer den naechsten Interessenten ist.
+  # 0 schaltet den Rauswurf ab.
+  free-roam-seconds: 180
+
+guide:
+  # Das Minecraft-Konto, dessen Haut der Fuehrer traegt.
+  # Wird beim Start einmal bei Mojang nachgeschlagen; klappt das nicht, bleibt er ohne Haut.
+  skin: c4llmeadrian
+  # So wird er im Chat und ueber dem Kopf genannt
+  name: "Adrian"
+
+world:
+  # Diese Welt legt das Plugin selbst an (leere Void-Welt). Sie darf ruhig geloescht werden,
+  # sie wird beim naechsten Start neu gebaut.
+  name: nexus_showcase
+  # Abstand zwischen zwei Haltestellen in Bloecken
+  spacing: 60
+  # Hoehe der Plattformen
+  height: 70
+
+# Der Knopf am Ende der Fuehrung
+buy:
+  url: "https://discord.gg/"
+  label: "Jetzt kaufen"

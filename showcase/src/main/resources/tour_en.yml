@@ -1,0 +1,200 @@
+# What the guide says during the tour. See tour_de.yml for the full list of step options.
+
+prefix: "<gradient:#ffd54a:#ff8a3d><bold>Nexus</bold></gradient> <dark_gray>|</dark_gray> "
+
+guide-idle: "<gray>…</gray>"
+
+question-item: "<gold><bold>Ask a question</bold>"
+question-item-lore: "<gray>Right click - I'll answer."
+question-title: "<dark_gray>What would you like to know?"
+question-back: "<gray>Close"
+
+travel-subtitle: "<gray>Moving on …</gray>"
+
+# After the last station
+free-roam: "That's it from me. You've got <minutes> minutes to try everything in peace — flying included."
+free-roam-warning: "<gray><seconds> seconds left."
+kick:
+  - "<gold><bold>Thanks for stopping by!"
+  - ""
+  - "<gray>I'm making room for the next visitor."
+  - "<gray>Come back in any time if there's more you want to see."
+
+stations:
+  - id: welcome
+    title: "<gradient:#ffd54a:#ff8a3d><bold>Welcome</bold></gradient>"
+    accent: WAXED_COPPER_BLOCK
+    steps:
+      - text: "Hey, good to have you here. I'm Adrian."
+        emote: wave
+      - text: "In a few minutes I'll show you what NexusCosmetics would do on your server."
+      - text: "You don't have to do anything. Walking is off for now, but you can look around freely — turn as much as you like."
+      - text: "If something comes up: there's a book in your hand. Right click and I'll answer."
+
+  - id: hats
+    title: "<gradient:#ffe08a:#ffb300><bold>Hats</bold></gradient>"
+    accent: GOLD_BLOCK
+    steps:
+      - text: "Let's start at the top. 59 head cosmetics."
+      - text: "And these aren't pictures pasted on a player head — they're real 3D models."
+        equip: crown
+      - text: "A crown, for instance. Have a look down at yourself."
+      - text: "This one is among the rare ones. It glows in the dark, too."
+        equip: star_crown
+      - text: "And some don't sit in the helmet slot at all. They float above you and turn with you."
+        equip: halo
+
+  - id: backs
+    title: "<gradient:#ff8a80:#d32f2f><bold>Capes &amp; Wings</bold></gradient>"
+    accent: REDSTONE_BLOCK
+    steps:
+      - text: "The back is where the eye-catchers go. 58 capes and wings."
+        action: strip
+      - text: "This cloth isn't painted on. It swings behind you — three segments, each on its own spring."
+        equip: royal_cape
+      - text: "Spin around once. See how it follows?"
+        hold: 100
+      - text: "Wings beat differently depending on what you do: relaxed while standing, tucked in while sprinting, wide open while falling."
+        equip: dragon_wings
+      - text: "And a jetpack fires the moment you leave the ground."
+        equip: jetpack
+
+  - id: pets
+    title: "<gradient:#a5d6a7:#2e7d32><bold>Pets</bold></gradient>"
+    accent: EMERALD_BLOCK
+    steps:
+      - text: "57 pets. Each one has its own character, not just a different model."
+        action: strip
+      - text: "The kitten walks beside you — and falls asleep if you stand still too long."
+        equip: kitten
+      - text: "The little dragon flies instead, flaps its wings and circles around you."
+        equip: mini_dragon
+      - text: "And this is an ULTRA: bigger, glowing, with a particle trail."
+        equip: celestial_dragon
+
+  - id: emotes
+    title: "<gradient:#90caf9:#1565c0><bold>Emotes</bold></gradient>"
+    accent: LAPIS_BLOCK
+    steps:
+      - text: "13 emotes. Some float above the head, others move the whole body."
+        action: strip
+      - text: "Like this."
+        emote: dance
+        hold: 90
+      - text: "Or this."
+        emote: party
+        hold: 90
+      - text: "Sounds like a small thing. But players use it constantly — and stay in the hub for it."
+
+  - id: crates
+    title: "<gradient:#ce93d8:#6a1b9a><bold>Crates</bold></gradient>"
+    accent: AMETHYST_BLOCK
+    steps:
+      - text: "Now the part that earns you money: crates."
+      - text: "Here's a key. Go ahead and open one."
+        action: crate
+        hold: 160
+      - text: "The animation runs, the rarity decides, and at the end something is yours for good."
+      - text: "You hand out keys from your own shop with a single command. The plugin does the rest."
+
+  - id: ultra
+    title: "<gradient:#ffd54a:#e91e63><bold>ULTRA</bold></gradient>"
+    accent: CRYING_OBSIDIAN
+    steps:
+      - text: "ULTRA is the top tier. There are only 13 of them — on purpose."
+        action: strip
+      - text: "A planet with its own ring."
+        equip: cosmos_ringed_planet
+      - text: "Comet wings."
+        equip: cosmos_comet_wings
+      - text: "And a star whale swimming after you."
+        equip: cosmos_star_whale
+      - text: "Wear something like this in a hub and people ask about it. That's exactly why the next player buys one."
+        hold: 120
+
+  - id: menu
+    title: "<gradient:#b0bec5:#37474f><bold>Menu &amp; Network</bold></gradient>"
+    accent: IRON_BLOCK
+    steps:
+      - text: "Now for what you don't see straight away — but what matters day to day."
+        action: strip
+      - text: "With 174 cosmetics, paging through would be painful. So: search, sorting, favourites and saved outfits."
+        action: menu
+      - text: "Try holding shift and clicking a cosmetic. The menu closes and a mannequin with your own skin steps up in front of you."
+        hold: 160
+      - text: "That way you see how it looks on you before you put it on — a chest menu hides your own character otherwise. Sneak to go back."
+      - text: "And if your network runs on several servers: the profile follows the player. Over MySQL, with a clean handover."
+
+  - id: outro
+    title: "<gradient:#ffd54a:#ff8a3d><bold>That's it</bold></gradient>"
+    accent: WAXED_COPPER_BLOCK
+    steps:
+      - text: "That was the round. 174 cosmetics, 13 emotes, crates, network sync."
+        action: strip
+      - text: "You get the plugin, the finished resource pack and every model. German and English, both maintained."
+      - text: "If anything's still open, take the book again. Otherwise: this way."
+        action: buy
+
+questions:
+  - id: price
+    question: "What does it cost?"
+    icon: GOLD_INGOT
+    answer:
+      - "Best to message me directly — it depends on whether you need it for one server or a whole network."
+
+  - id: version
+    question: "Does it run on my version?"
+    icon: PAPER
+    answer:
+      - "It's built for Paper 26.3."
+      - "Your players may be on older clients though — ViaVersion lets them in all the same."
+
+  - id: pack
+    question: "Do my players need a modpack?"
+    icon: CHEST
+    answer:
+      - "No. Just a resource pack, and the server serves it itself."
+      - "For the player that's one click on 'Yes' when joining. Nothing else."
+
+  - id: amount
+    question: "How many cosmetics are there?"
+    icon: BOOKSHELF
+    answer:
+      - "174 of them: 59 for the head, 58 for the back, 57 pets."
+      - "Plus 13 emotes and a crate system."
+
+  - id: performance
+    question: "Does it cost performance?"
+    icon: REDSTONE
+    answer:
+      - "Capes, wings and pets aren't real entities — they're network packets only."
+      - "The server doesn't manage them, other plugins don't trip over them, and teleports don't break anything."
+
+  - id: network
+    question: "Does it work across several servers?"
+    icon: ENDER_PEARL
+    answer:
+      - "Yes. With MySQL the profile follows the player from server to server."
+      - "Put something on in the lobby, switch to BedWars, and it's already there."
+
+  - id: own
+    question: "Can I add my own cosmetics?"
+    icon: CRAFTING_TABLE
+    answer:
+      - "Yes. One entry in cosmetics.yml and your model in the resource pack, done."
+      - "Permissions, the menu entry and the crate hook-up are handled automatically."
+
+  - id: shop
+    question: "How do I hook it into my shop?"
+    icon: EMERALD
+    answer:
+      - "Two commands, both usable from the console and for offline players:"
+      - "/cosmetics give <player> <id> unlocks a cosmetic for good."
+      - "/cosmetics givekey <player> <crate> <amount> hands out crate keys."
+
+  - id: language
+    question: "Is it available in German?"
+    icon: WRITABLE_BOOK
+    answer:
+      - "German and English ship ready to use — messages, cosmetic names, everything."
+      - "Further languages are one file in the lang folder."

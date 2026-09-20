@@ -60,3 +60,18 @@ python tools/generate_assets.py   # 3D-Modelle und Texturen neu erzeugen (inkl. 
 ```
 
 Die Modelle in `src/main/resources/pack/assets/nexus/models/item/` lassen sich in Blockbench öffnen.
+
+## Showcase-Server
+
+Im Ordner `showcase/` liegt ein zweites, eigenständiges Plugin: **NexusShowcase**. Es führt Besucher
+des Demo-Servers automatisch durch NexusCosmetics — eigene Void-Welt, neun Haltestellen, ein Führer
+mit Spielerhaut und ein Menü mit vorbereiteten Fragen.
+
+Es gehört bewusst **nicht** zum verkauften Plugin und wird deshalb getrennt gebaut:
+
+```bash
+./gradlew -p showcase build   # -> showcase/build/libs/NexusShowcase-0.1.0.jar
+```
+
+Auf dem Demo-Server liegen dann beide Jars in `plugins/`. Die Texte der Führung stehen in
+`plugins/NexusShowcase/tour_de.yml` bzw. `tour_en.yml`, der Ablauf in der `config.yml`.

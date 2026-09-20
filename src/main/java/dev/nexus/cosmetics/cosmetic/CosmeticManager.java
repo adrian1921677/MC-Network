@@ -1,6 +1,7 @@
 package dev.nexus.cosmetics.cosmetic;
 
 import dev.nexus.cosmetics.NexusCosmetics;
+import dev.nexus.cosmetics.render.CosmeticCarrier;
 import dev.nexus.cosmetics.render.FakeCosmeticRenderer;
 import dev.nexus.cosmetics.render.cape.BackCosmetic;
 import dev.nexus.cosmetics.render.hat.FloatingHalo;
@@ -221,12 +222,13 @@ public final class CosmeticManager {
         if (!canUse(player, cosmetic)) {
             return EquipResult.NO_PERMISSION;
         }
+        CosmeticCarrier carrier = CosmeticCarrier.of(player);
         switch (cosmetic.slot()) {
             case HEAD -> {
                 if (cosmetic.animation() == CosmeticAnimation.HALO) {
                     // Der Heiligenschein schwebt als Paket-Entity, der Helm-Slot bleibt frei
                     removeCosmeticItems(player);
-                    renderer.show(player, CosmeticSlot.HEAD, new FloatingHalo(player, cosmetic));
+                    renderer.show(player, CosmeticSlot.HEAD, new FloatingHalo(carrier, cosmetic));
                 } else {
                     ItemStack current = player.getInventory().getHelmet();
                     if (current != null && !current.isEmpty() && !isCosmeticItem(current)) {
@@ -244,11 +246,11 @@ public final class CosmeticManager {
                 }
             }
             case BACK -> renderer.show(player, CosmeticSlot.BACK, switch (cosmetic.animation()) {
-                case WINGS -> BackCosmetic.wings(player, cosmetic);
-                case BACKPACK -> BackCosmetic.backItem(player, cosmetic);
-                default -> BackCosmetic.cape(player, cosmetic);
+                case WINGS -> BackCosmetic.wings(carrier, cosmetic);
+                case BACKPACK -> BackCosmetic.backItem(carrier, cosmetic);
+                default -> BackCosmetic.cape(carrier, cosmetic);
             });
-            case PET -> renderer.show(player, CosmeticSlot.PET, new FakePet(player, cosmetic));
+            case PET -> renderer.show(player, CosmeticSlot.PET, new FakePet(carrier, cosmetic));
         }
         equipped.computeIfAbsent(player.getUniqueId(), uuid -> new EnumMap<>(CosmeticSlot.class))
                 .put(cosmetic.slot(), cosmetic);

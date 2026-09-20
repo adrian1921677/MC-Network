@@ -180,6 +180,7 @@ public final class OutfitMenu implements ClickableMenu {
                 applied++;
             }
         }
+        plugin.preview().refresh(player);
         player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_GENERIC, 1f, 1.2f);
         player.sendMessage(messages.prefixed("menu.outfit-applied",
                 Placeholder.unparsed("name", name),
