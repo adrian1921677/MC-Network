@@ -1,0 +1,17 @@
+name: NexusShowcase
+version: '${version}'
+main: dev.nexus.showcase.NexusShowcase
+api-version: '26.3'
+description: Gefuehrte Tour durch NexusCosmetics fuer den Demo-Server
+author: Nexus
+# Die Fuehrung legt dem Besucher echte Cosmetics an und braucht das Plugin daher zwingend.
+depend:
+  - NexusCosmetics
+
+permissions:
+  nexusshowcase.admin:
+    description: Erlaubt /tour reload, /tour build und /tour stop
+    default: op
+  nexusshowcase.skip:
+    description: Wer dieses Recht hat, wird beim Betreten nicht automatisch gefuehrt
+    default: op

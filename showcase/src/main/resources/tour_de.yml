@@ -1,0 +1,208 @@
+# Was der Fuehrer waehrend der Tour sagt.
+#
+# Jede Haltestelle ist eine eigene Plattform in der Showcase-Welt. Die Schritte laufen
+# nacheinander ab; wie lange ein Satz stehen bleibt, rechnet das Plugin aus seiner Laenge
+# (siehe ticks-per-word in der config.yml) - ausser du setzt "hold" selbst.
+#
+# Moegliche Zusaetze zu einem Schritt:
+#   equip:  <cosmetic-id>   legt dem Besucher dieses Cosmetic an
+#   emote:  <emote-id>      spielt ein Emote auf dem Besucher ab
+#   action: menu            oeffnet dem Besucher das Cosmetics-Menue
+#   action: crate           schenkt einen Truhen-Schluessel und oeffnet die Truhen-Uebersicht
+#   action: strip           nimmt dem Besucher alles wieder ab
+#   action: buy             zeigt den Kauf-Knopf aus der config.yml
+#   hold:   <ticks>         feste Standzeit statt der berechneten (20 Ticks = 1 Sekunde)
+
+prefix: "<gradient:#ffd54a:#ff8a3d><bold>Nexus</bold></gradient> <dark_gray>|</dark_gray> "
+
+# Steht ueber dem Kopf des Fuehrers, wenn er gerade nichts sagt
+guide-idle: "<gray>…</gray>"
+
+# Der Gegenstand in der Hand des Besuchers
+question-item: "<gold><bold>Fragen stellen</bold>"
+question-item-lore: "<gray>Rechtsklick - ich antworte dir."
+question-title: "<dark_gray>Was willst du wissen?"
+question-back: "<gray>Schliessen"
+
+# Wird beim Start und beim Wechsel der Haltestelle eingeblendet
+travel-subtitle: "<gray>Wir fahren weiter …"
+
+stations:
+  - id: welcome
+    title: "<gradient:#ffd54a:#ff8a3d><bold>Willkommen</bold></gradient>"
+    accent: WAXED_COPPER_BLOCK
+    steps:
+      - text: "Hey, schön dass du da bist. Ich bin Adrian."
+        emote: wave
+      - text: "Ich zeige dir in ein paar Minuten, was NexusCosmetics auf deinem Server machen würde."
+      - text: "Du musst nichts tun. Laufen kannst du gerade nicht, aber umsehen jederzeit — dreh dich ruhig."
+      - text: "Wenn du zwischendurch etwas wissen willst: In deiner Hand liegt ein Buch. Rechtsklick, und ich antworte."
+
+  - id: hats
+    title: "<gradient:#ffe08a:#ffb300><bold>Hüte</bold></gradient>"
+    accent: GOLD_BLOCK
+    steps:
+      - text: "Fangen wir oben an. 59 Kopf-Cosmetics."
+      - text: "Und das sind keine Bilder auf einem Spielerkopf, sondern echte 3D-Modelle."
+        equip: crown
+      - text: "Eine Krone zum Beispiel. Schau mal an dir herunter."
+      - text: "Die hier ist eine der seltenen. Sie leuchtet auch im Dunkeln."
+        equip: star_crown
+      - text: "Und manche sitzen gar nicht im Helm-Slot, sondern schweben über dir und drehen sich mit."
+        equip: halo
+
+  - id: backs
+    title: "<gradient:#ff8a80:#d32f2f><bold>Umhänge &amp; Flügel</bold></gradient>"
+    accent: REDSTONE_BLOCK
+    steps:
+      - text: "Auf den Rücken kommt das, was am meisten auffällt. 58 Umhänge und Flügel."
+        action: strip
+      - text: "Der Stoff hier ist nicht gemalt. Er schwingt nach, wenn du dich drehst — drei Segmente, jedes mit eigener Federung."
+        equip: royal_cape
+      - text: "Dreh dich mal im Kreis. Siehst du, wie er hinterherkommt?"
+        hold: 100
+      - text: "Flügel schlagen unterschiedlich, je nachdem was du tust: im Stand gemütlich, beim Sprinten angelegt, beim Fallen weit auf."
+        equip: dragon_wings
+      - text: "Und ein Jetpack sprüht, sobald du in der Luft bist."
+        equip: jetpack
+
+  - id: pets
+    title: "<gradient:#a5d6a7:#2e7d32><bold>Haustiere</bold></gradient>"
+    accent: EMERALD_BLOCK
+    steps:
+      - text: "57 Haustiere. Jedes hat einen eigenen Charakter, nicht nur ein anderes Modell."
+        action: strip
+      - text: "Das Kätzchen läuft neben dir her — und schläft ein, wenn du zu lange stehen bleibst."
+        equip: kitten
+      - text: "Der kleine Drache fliegt stattdessen, schlägt mit den Flügeln und zieht Kreise um dich."
+        equip: mini_dragon
+      - text: "Und das hier ist ein ULTRA: größer, leuchtend, mit Partikelspur."
+        equip: celestial_dragon
+
+  - id: emotes
+    title: "<gradient:#90caf9:#1565c0><bold>Emotes</bold></gradient>"
+    accent: LAPIS_BLOCK
+    steps:
+      - text: "13 Emotes. Manche schweben über dem Kopf, andere gehen durch den ganzen Körper."
+        action: strip
+      - text: "So zum Beispiel."
+        emote: dance
+        hold: 90
+      - text: "Oder so."
+        emote: party
+        hold: 90
+      - text: "Klingt nach einer Kleinigkeit. Aber Spieler benutzen das dauernd — und bleiben dafür im Hub."
+
+  - id: crates
+    title: "<gradient:#ce93d8:#6a1b9a><bold>Truhen</bold></gradient>"
+    accent: AMETHYST_BLOCK
+    steps:
+      - text: "Jetzt der Teil, mit dem du Geld verdienst: Truhen."
+      - text: "Ich schenke dir einen Schlüssel. Mach sie auf."
+        action: crate
+        hold: 160
+      - text: "Die Animation läuft, die Seltenheit entscheidet, und am Ende gehört dir etwas dauerhaft."
+      - text: "Schlüssel vergibst du aus deinem Shop heraus mit einem Befehl. Das Plugin kümmert sich um den Rest."
+
+  - id: ultra
+    title: "<gradient:#ffd54a:#e91e63><bold>ULTRA</bold></gradient>"
+    accent: CRYING_OBSIDIAN
+    steps:
+      - text: "ULTRA ist die oberste Stufe. Es gibt nur 13 davon — absichtlich."
+        action: strip
+      - text: "Ein Planet mit eigenem Ring."
+        equip: cosmos_ringed_planet
+      - text: "Kometenflügel."
+        equip: cosmos_comet_wings
+      - text: "Und ein Sternenwal, der dir hinterherschwimmt."
+        equip: cosmos_star_whale
+      - text: "Wer so etwas trägt, wird im Hub angesprochen. Genau darum kaufen andere es dann auch."
+        hold: 120
+
+  - id: menu
+    title: "<gradient:#b0bec5:#37474f><bold>Menü &amp; Netzwerk</bold></gradient>"
+    accent: IRON_BLOCK
+    steps:
+      - text: "Jetzt das, was man nicht sofort sieht — aber im Alltag den Unterschied macht."
+        action: strip
+      - text: "Bei 174 Cosmetics wäre blättern eine Qual. Deshalb: Suche, Sortierung, Favoriten und gespeicherte Outfits."
+        action: menu
+      - text: "Drück im Menü mal Shift auf ein Cosmetic. Dann stellt sich eine Puppe mit deiner Haut daneben."
+        hold: 160
+      - text: "So siehst du, wie es an dir aussieht, bevor du es anziehst. Im Menü siehst du dich ja sonst selbst nicht."
+      - text: "Und wenn dein Netzwerk aus mehreren Servern besteht: Das Profil folgt dem Spieler. Über MySQL, mit sauberer Übergabe."
+
+  - id: outro
+    title: "<gradient:#ffd54a:#ff8a3d><bold>Das war's</bold></gradient>"
+    accent: WAXED_COPPER_BLOCK
+    steps:
+      - text: "Das war die Runde. 174 Cosmetics, 13 Emotes, Truhen, Netzwerk-Sync."
+        action: strip
+      - text: "Du bekommst das Plugin, den fertigen Resource Pack und alle Modelle. Deutsch und Englisch, beides gepflegt."
+      - text: "Wenn du Fragen hast, nimm nochmal das Buch. Sonst: hier entlang."
+        action: buy
+
+# Die Fragen, die der Besucher stellen kann. Reihenfolge = Reihenfolge im Menü.
+questions:
+  - id: price
+    question: "Was kostet das?"
+    icon: GOLD_INGOT
+    answer:
+      - "Dazu schreibst du mich am besten direkt an — je nachdem, ob du es für einen Server oder ein ganzes Netzwerk brauchst."
+
+  - id: version
+    question: "Läuft das auf meiner Version?"
+    icon: PAPER
+    answer:
+      - "Gebaut ist es für Paper 26.3."
+      - "Deine Spieler dürfen aber ältere Clients haben — über ViaVersion kommen sie trotzdem rein."
+
+  - id: pack
+    question: "Brauchen meine Spieler ein Modpack?"
+    icon: CHEST
+    answer:
+      - "Nein. Nur einen Resource Pack, und den liefert der Server selbst aus."
+      - "Für den Spieler ist das ein Klick auf 'Ja' beim Betreten. Mehr nicht."
+
+  - id: amount
+    question: "Wie viele Cosmetics sind das?"
+    icon: BOOKSHELF
+    answer:
+      - "174 Stück: 59 für den Kopf, 58 für den Rücken, 57 Haustiere."
+      - "Dazu 13 Emotes und ein Truhen-System."
+
+  - id: performance
+    question: "Kostet das Leistung?"
+    icon: REDSTONE
+    answer:
+      - "Capes, Flügel und Haustiere sind keine echten Entities, sondern nur Netzwerk-Pakete."
+      - "Der Server verwaltet sie nicht, andere Plugins stolpern nicht darüber, und beim Teleportieren geht nichts kaputt."
+
+  - id: network
+    question: "Funktioniert das über mehrere Server?"
+    icon: ENDER_PEARL
+    answer:
+      - "Ja. Mit MySQL folgt das Profil dem Spieler von Server zu Server."
+      - "Wenn jemand im Lobby-Server etwas anlegt und nach BedWars wechselt, ist es dort sofort da."
+
+  - id: own
+    question: "Kann ich eigene Cosmetics hinzufügen?"
+    icon: CRAFTING_TABLE
+    answer:
+      - "Ja. Ein Eintrag in der cosmetics.yml und dein Modell im Resource Pack, fertig."
+      - "Rechte, Menü-Eintrag und Truhen-Anbindung macht das Plugin automatisch."
+
+  - id: shop
+    question: "Wie binde ich das in meinen Shop ein?"
+    icon: EMERALD
+    answer:
+      - "Über zwei Befehle, die auch von der Konsole und für Offline-Spieler funktionieren:"
+      - "/cosmetics give <spieler> <id> schaltet ein Cosmetic dauerhaft frei."
+      - "/cosmetics givekey <spieler> <truhe> <anzahl> vergibt Truhen-Schlüssel."
+
+  - id: language
+    question: "Gibt es das auf Deutsch?"
+    icon: WRITABLE_BOOK
+    answer:
+      - "Deutsch und Englisch sind fertig dabei — Texte, Cosmetic-Namen, alles."
+      - "Weitere Sprachen sind eine Datei im lang-Ordner."
