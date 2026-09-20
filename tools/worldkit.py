@@ -235,6 +235,38 @@ def shift(elements, dx=0.0, dy=0.0, dz=0.0):
 
 
 # ---------------------------------------------------------------- Menü-Darstellung automatisch
+# Minecraft lädt ein Modell nur, wenn alle Element-Koordinaten in -16..32 liegen.
+# Alles darüber wird als fehlende Textur (schwarz/magenta) angezeigt.
+COORD_MIN, COORD_MAX = -15.5, 31.5
+
+
+def fit_factor(groups):
+    """Faktor, um den ein Modell um (8,8,8) geschrumpft werden muss, damit es in den
+    erlaubten Koordinatenbereich passt. 1.0 = passt bereits."""
+    lo, hi = 1e9, -1e9
+    for elements in groups:
+        for e in elements:
+            for k in range(3):
+                lo = min(lo, e["from"][k], e["to"][k])
+                hi = max(hi, e["from"][k], e["to"][k])
+    factor = 1.0
+    if lo < COORD_MIN:
+        factor = min(factor, (COORD_MIN - 8) / (lo - 8))
+    if hi > COORD_MAX:
+        factor = min(factor, (COORD_MAX - 8) / (hi - 8))
+    return round(factor, 4)
+
+
+def scale_about(elements, factor, origin=8.0):
+    """Skaliert Elemente (samt Rotationsursprung) um den Modellmittelpunkt."""
+    for e in elements:
+        for key in ("from", "to"):
+            e[key] = [round(origin + (v - origin) * factor, 4) for v in e[key]]
+        if "rotation" in e:
+            e["rotation"]["origin"] = [round(origin + (v - origin) * factor, 4) for v in e["rotation"]["origin"]]
+    return elements
+
+
 def auto_display(elements, kind):
     lo = [min(min(e["from"][k], e["to"][k]) for e in elements) for k in range(3)]
     hi = [max(max(e["from"][k], e["to"][k]) for e in elements) for k in range(3)]
@@ -297,21 +329,33 @@ def generate_all(out_json):
             print("  (noch nicht vorhanden:", name + ")")
     themes_by_id = {theme["id"]: theme for theme in T.THEMES}
     entries = []
+    shrunk = []
     for module in modules:
         for item in module.ITEMS:
             theme = themes_by_id[item["theme"]]
             spec = item["build"]()
             kind = spec["kind"]
+            scale = item.get("scale", 1.0)
             if kind == "cape":
                 write_cape(item["id"], theme, spec.get("top", ()), spec.get("bottom", ()), spec.get("robe", False))
             else:
                 frames = frames_for(theme, item.get("extras", ()))
+                groups = (list(spec["parts"].values()) + [spec["icon"]]) if "parts" in spec else [spec["elements"]]
+                factor = fit_factor(groups)
+                if factor < 1.0:
+                    # zu groß für Minecraft: Geometrie schrumpfen und über die Cosmetic-Größe ausgleichen
+                    for group in groups:
+                        scale_about(group, factor)
+                    scale = round(scale / factor, 3)
+                    shrunk.append((item["id"], factor))
                 if "parts" in spec:
                     write_parts(item["id"], spec["parts"], spec["icon"], frames, kind)
                 else:
                     write_single(item["id"], spec["elements"], frames, kind)
             entries.append(dict(id=item["id"], slot=item["slot"], type=item["type"], glowing=item.get("glowing", True),
-                                rarity=item["rarity"], de=item["de"], en=item["en"], scale=item.get("scale", 1.0),
+                                rarity=item["rarity"], de=item["de"], en=item["en"], scale=scale,
                                 particle=item.get("particle", theme["particle"])))
     Path(out_json).write_text(json.dumps(entries, indent=1, ensure_ascii=False), encoding="utf-8")
+    for cid, factor in shrunk:
+        print(f"  passend geschrumpft: {cid} (x{factor})")
     return entries

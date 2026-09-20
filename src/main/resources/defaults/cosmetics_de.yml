@@ -474,7 +474,7 @@ cosmetics:
     glowing: true
     unlocked-by-default: false
     rarity: EPIC
-    scale: 1.1
+    scale: 1.123
     particle: LAVA
   magma_lava_orbit:
     enabled: true
@@ -944,7 +944,7 @@ cosmetics:
     glowing: true
     unlocked-by-default: false
     rarity: ULTRA
-    scale: 1.35
+    scale: 1.7
     particle: END_ROD
   cosmos_orbit_pack:
     enabled: true
@@ -1044,7 +1044,7 @@ cosmetics:
     glowing: true
     unlocked-by-default: false
     rarity: LEGENDARY
-    scale: 1.2
+    scale: 1.32
     particle: NOXIOUS_GAS
   toxic_barrels:
     enabled: true
@@ -1064,7 +1064,7 @@ cosmetics:
     glowing: true
     unlocked-by-default: false
     rarity: ULTRA
-    scale: 1.35
+    scale: 1.494
     particle: END_ROD
   rainbow_cape:
     enabled: true
@@ -1084,7 +1084,7 @@ cosmetics:
     glowing: true
     unlocked-by-default: false
     rarity: ULTRA
-    scale: 1.3
+    scale: 1.36
     particle: REVERSE_PORTAL
   void_portal:
     enabled: true
@@ -1124,7 +1124,7 @@ cosmetics:
     glowing: true
     unlocked-by-default: false
     rarity: LEGENDARY
-    scale: 1.2
+    scale: 1.378
     particle: SCULK_SOUL
   spooky_scythe:
     enabled: true
