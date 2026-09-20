@@ -105,6 +105,8 @@ public final class MySqlCosmeticStorage implements CosmeticStorage {
                   `equipped`     TEXT         NULL,
                   `owned`        MEDIUMTEXT   NULL,
                   `crate_keys`   TEXT         NULL,
+                  `favorites`    TEXT         NULL,
+                  `outfits`      TEXT         NULL,
                   `online_on`    VARCHAR(64)  NULL,
                   `needs_reload` TINYINT(1)   NOT NULL DEFAULT 0,
                   `updated_at`   BIGINT       NOT NULL DEFAULT 0,
@@ -115,6 +117,37 @@ public final class MySqlCosmeticStorage implements CosmeticStorage {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.execute();
+        }
+        // Tabellen aus einer aelteren Version nachruesten
+        addColumnIfMissing("favorites", "TEXT NULL");
+        addColumnIfMissing("outfits", "TEXT NULL");
+    }
+
+    /**
+     * Haengt eine Spalte an, falls sie noch fehlt.
+     *
+     * MySQL kennt kein "ADD COLUMN IF NOT EXISTS", deshalb fragen wir vorher den Katalog.
+     */
+    private void addColumnIfMissing(String column, String definition) {
+        try (Connection connection = dataSource.getConnection()) {
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "SELECT COUNT(*) FROM information_schema.COLUMNS "
+                            + "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?")) {
+                statement.setString(1, table);
+                statement.setString(2, column);
+                try (ResultSet result = statement.executeQuery()) {
+                    if (result.next() && result.getInt(1) > 0) {
+                        return;
+                    }
+                }
+            }
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "ALTER TABLE `" + table + "` ADD COLUMN `" + column + "` " + definition)) {
+                statement.execute();
+                logger.info("Spalte '" + column + "' wurde nachtraeglich angelegt.");
+            }
+        } catch (SQLException exception) {
+            logger.warning("Spalte '" + column + "' konnte nicht angelegt werden: " + exception.getMessage());
         }
     }
 
@@ -218,7 +251,7 @@ public final class MySqlCosmeticStorage implements CosmeticStorage {
     }
 
     private PlayerProfile read(Connection connection, UUID player, boolean lockRow) throws SQLException {
-        String sql = "SELECT `equipped`, `owned`, `crate_keys` FROM `" + table + "` WHERE `uuid` = ?"
+        String sql = "SELECT `equipped`, `owned`, `crate_keys`, `favorites`, `outfits` FROM `" + table + "` WHERE `uuid` = ?"
                 + (lockRow ? " FOR UPDATE" : "");
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, player.toString());
@@ -227,7 +260,7 @@ public final class MySqlCosmeticStorage implements CosmeticStorage {
                     return new PlayerProfile();
                 }
                 return ProfileCodec.fromJson(result.getString("equipped"), result.getString("owned"),
-                        result.getString("crate_keys"));
+                        result.getString("crate_keys"), result.getString("favorites"), result.getString("outfits"));
             }
         }
     }
@@ -241,24 +274,28 @@ public final class MySqlCosmeticStorage implements CosmeticStorage {
         String reload = flagReload
                 ? "CASE WHEN `online_on` IS NULL OR `online_on` = ? THEN `needs_reload` ELSE 1 END"
                 : "`needs_reload`";
-        String sql = "INSERT INTO `" + table + "` (`uuid`, `equipped`, `owned`, `crate_keys`, `updated_at`) "
-                + "VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE "
-                + "`equipped` = ?, `owned` = ?, `crate_keys` = ?, `updated_at` = ?, `needs_reload` = " + reload;
+        String sql = "INSERT INTO `" + table
+                + "` (`uuid`, `equipped`, `owned`, `crate_keys`, `favorites`, `outfits`, `updated_at`) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE "
+                + "`equipped` = ?, `owned` = ?, `crate_keys` = ?, `favorites` = ?, `outfits` = ?, "
+                + "`updated_at` = ?, `needs_reload` = " + reload;
         String equipped = ProfileCodec.equippedToJson(profile);
         String owned = ProfileCodec.ownedToJson(profile);
         String keys = ProfileCodec.keysToJson(profile);
+        String favorites = ProfileCodec.favoritesToJson(profile);
+        String outfits = ProfileCodec.outfitsToJson(profile);
         long now = System.currentTimeMillis();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             int index = 1;
             statement.setString(index++, player.toString());
-            statement.setString(index++, equipped);
-            statement.setString(index++, owned);
-            statement.setString(index++, keys);
-            statement.setLong(index++, now);
-            statement.setString(index++, equipped);
-            statement.setString(index++, owned);
-            statement.setString(index++, keys);
-            statement.setLong(index++, now);
+            for (int pass = 0; pass < 2; pass++) {
+                statement.setString(index++, equipped);
+                statement.setString(index++, owned);
+                statement.setString(index++, keys);
+                statement.setString(index++, favorites);
+                statement.setString(index++, outfits);
+                statement.setLong(index++, now);
+            }
             if (flagReload) {
                 statement.setString(index, serverName);
             }

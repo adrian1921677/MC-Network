@@ -15,6 +15,7 @@ import dev.nexus.cosmetics.crate.CrateService;
 import dev.nexus.cosmetics.emote.Emote;
 import dev.nexus.cosmetics.emote.EmoteRegistry;
 import dev.nexus.cosmetics.emote.EmoteService;
+import dev.nexus.cosmetics.menu.ChatInputService;
 import dev.nexus.cosmetics.menu.CosmeticMenuListener;
 import dev.nexus.cosmetics.menu.MenuItemService;
 import dev.nexus.cosmetics.pack.ResourcePackService;
@@ -48,6 +49,7 @@ public final class NexusCosmetics extends JavaPlugin {
     private CrateService crateService;
     private ResourcePackService resourcePackService;
     private MenuItemService menuItemService;
+    private ChatInputService chatInputService;
 
     @Override
     public void onEnable() {
@@ -61,6 +63,7 @@ public final class NexusCosmetics extends JavaPlugin {
         emoteService.start();
         crateService = new CrateService(this, crateRegistry, renderer);
         menuItemService = new MenuItemService(this);
+        chatInputService = new ChatInputService(this);
 
         resourcePackService = new ResourcePackService(this, getFile());
         resourcePackService.start();
@@ -72,6 +75,7 @@ public final class NexusCosmetics extends JavaPlugin {
         pluginManager.registerEvents(emoteService, this);
         pluginManager.registerEvents(resourcePackService, this);
         pluginManager.registerEvents(menuItemService, this);
+        pluginManager.registerEvents(chatInputService, this);
 
         registerCommand("cosmetics", "Öffnet das Cosmetics-Menü", List.of("cosmetic"), new CosmeticsCommand(this));
         registerCommand("emote", "Öffnet das Emote-Menü oder spielt ein Emote ab", List.of("emotes"),
@@ -193,6 +197,11 @@ public final class NexusCosmetics extends JavaPlugin {
 
     public MenuItemService menuItem() {
         return menuItemService;
+    }
+
+    /** Fragt Spieler über den Chat nach Text (Suchbegriff, Outfit-Name). */
+    public ChatInputService chatInput() {
+        return chatInputService;
     }
 
     @Override

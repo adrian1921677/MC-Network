@@ -18,7 +18,7 @@ public final class CosmeticMenuListener implements Listener {
         }
         event.setCancelled(true);
         if (event.getClickedInventory() == event.getView().getTopInventory()) {
-            menu.handleClick(event.getSlot());
+            menu.handleClick(event.getSlot(), event.getClick());
         }
     }
 

@@ -7,7 +7,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -74,12 +76,27 @@ public final class YamlCosmeticStorage implements CosmeticStorage {
                 profile.addKeys(crate, keys.getInt(crate));
             }
         }
+        profile.favorites().addAll(yaml.getStringList("favorites"));
+        ConfigurationSection outfits = yaml.getConfigurationSection("outfits");
+        if (outfits != null) {
+            for (String name : outfits.getKeys(false)) {
+                Map<CosmeticSlot, String> pieces = new EnumMap<>(CosmeticSlot.class);
+                for (CosmeticSlot slot : CosmeticSlot.values()) {
+                    String id = outfits.getString(name + "." + slot.name().toLowerCase(Locale.ROOT));
+                    if (id != null) {
+                        pieces.put(slot, id);
+                    }
+                }
+                profile.outfits().put(name, pieces);
+            }
+        }
         return profile;
     }
 
     private void write(UUID player, PlayerProfile profile) {
         File file = file(player);
-        if (profile.equipped().isEmpty() && profile.owned().isEmpty() && profile.allKeys().isEmpty()) {
+        if (profile.equipped().isEmpty() && profile.owned().isEmpty() && profile.allKeys().isEmpty()
+                && profile.favorites().isEmpty() && profile.outfits().isEmpty()) {
             file.delete();
             return;
         }
@@ -87,6 +104,11 @@ public final class YamlCosmeticStorage implements CosmeticStorage {
         profile.equipped().forEach((slot, id) -> yaml.set("equipped." + slot.name().toLowerCase(Locale.ROOT), id));
         yaml.set("owned", new ArrayList<>(profile.owned()));
         profile.allKeys().forEach((crate, amount) -> yaml.set("keys." + crate, amount));
+        if (!profile.favorites().isEmpty()) {
+            yaml.set("favorites", new ArrayList<>(profile.favorites()));
+        }
+        profile.outfits().forEach((name, pieces) -> pieces.forEach((slot, id) ->
+                yaml.set("outfits." + name + "." + slot.name().toLowerCase(Locale.ROOT), id)));
         try {
             folder.mkdirs();
             yaml.save(file);
