@@ -17,6 +17,8 @@ final class PetAnimators {
             case MUSHROOM -> new MushroomAnimator();
             case OWL -> new OwlAnimator();
             case ROLLER -> new RollerAnimator();
+            case SERPENT -> new SerpentAnimator();
+            case JELLY -> new JellyAnimator();
             default -> new GhostAnimator();
         };
     }

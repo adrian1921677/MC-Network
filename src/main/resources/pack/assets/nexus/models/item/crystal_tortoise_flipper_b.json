@@ -1,0 +1,77 @@
+{
+  "textures": {
+    "0": "nexus:item/crystal_tortoise",
+    "particle": "nexus:item/crystal_tortoise"
+  },
+  "elements": [
+    {
+      "name": "Vorderbein",
+      "from": [
+        6,
+        1,
+        5
+      ],
+      "to": [
+        8,
+        5,
+        7.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            4,
+            16,
+            8
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            12,
+            4,
+            16,
+            8
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            12,
+            4,
+            16,
+            8
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            12,
+            4,
+            16,
+            8
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            12,
+            4,
+            16,
+            8
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            12,
+            4,
+            16,
+            8
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}

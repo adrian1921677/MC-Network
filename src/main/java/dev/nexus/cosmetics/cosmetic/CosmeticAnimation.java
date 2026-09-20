@@ -15,6 +15,10 @@ public enum CosmeticAnimation {
     OWL,
     /** Kugel-Droide: rollender Körper, Kopf bleibt oben (Teile _body und _head) */
     ROLLER,
+    /** Schlange aus Gliedern, windet sich (Teile _head, _body, _tail) */
+    SERPENT,
+    /** Qualle: pulsiert, Tentakel wehen (Teile _body, _tentacles) */
+    JELLY,
 
     // Capes
     /** Langer Umhang bis zu den Knöcheln, schwerer Stoff */

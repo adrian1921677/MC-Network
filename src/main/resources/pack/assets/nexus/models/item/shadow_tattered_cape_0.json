@@ -1,0 +1,146 @@
+{
+  "textures": {
+    "0": "nexus:item/shadow_tattered_cape",
+    "particle": "nexus:item/shadow_tattered_cape"
+  },
+  "elements": [
+    {
+      "name": "Segment 0",
+      "from": [
+        3,
+        11,
+        7.5
+      ],
+      "to": [
+        13,
+        16,
+        8.5
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            0,
+            0.0,
+            10,
+            5.0
+          ],
+          "texture": "#0"
+        },
+        "north": {
+          "uv": [
+            10,
+            0.0,
+            15,
+            5.0
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            15,
+            0.0,
+            16,
+            5.0
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            15,
+            0.0,
+            16,
+            5.0
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            15,
+            0,
+            16,
+            1
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            15,
+            0,
+            16,
+            1
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "Hoher Kragen",
+      "from": [
+        2.4,
+        15,
+        7.6
+      ],
+      "to": [
+        13.6,
+        18.5,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            15,
+            0,
+            16,
+            16
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            15,
+            0,
+            16,
+            16
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            15,
+            0,
+            16,
+            16
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            15,
+            0,
+            16,
+            16
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            15,
+            0,
+            16,
+            16
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            15,
+            0,
+            16,
+            16
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}

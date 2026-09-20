@@ -218,8 +218,11 @@ def cape_element():
 CAPE_SEGMENTS = [5, 5, 6]
 
 
-def write_cape_segments(cape_id, segments=None, x0=3, x1=13, top_extras=()):
-    """Zerlegt eine Cape in Segmente. top_extras: zusätzliche Teile am obersten Segment (z. B. Kapuze)."""
+def write_cape_segments(cape_id, segments=None, x0=3, x1=13, top_extras=(), bottom_extras=()):
+    """
+    Zerlegt eine Cape in Segmente. top_extras: zusätzliche Teile am obersten Segment (z. B. Kapuze),
+    bottom_extras: Teile am untersten Segment (z. B. ein gezackter Saum), in dessen Modell-Koordinaten.
+    """
     segments = segments or CAPE_SEGMENTS
     total = sum(segments)
     base = ROOT / "assets" / NS
@@ -244,7 +247,7 @@ def write_cape_segments(cape_id, segments=None, x0=3, x1=13, top_extras=()):
             },
         }
         model_id = f"{cape_id}_{index}"
-        elements = [element] + (list(top_extras) if index == 0 else [])
+        elements = [element] + (list(top_extras) if index == 0 else [])             + (list(bottom_extras) if index == len(segments) - 1 else [])
         model = {"textures": {"0": tex, "particle": tex}, "elements": elements}
         (base / "models" / "item" / f"{model_id}.json").write_text(json.dumps(model, indent=2))
         (base / "items" / f"{model_id}.json").write_text(json.dumps(
@@ -2437,8 +2440,8 @@ if __name__ == "__main__":
     # 20 Element-Welten mit je 6 animierten Cosmetics (siehe tools/themes.py)
     import sys
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    import themes
-    themes.setup(globals())
-    themed = themes.generate_all(Path(__file__).resolve().parent / "themed_cosmetics.json")
+    import worldkit
+    worldkit.setup(globals())
+    themed = worldkit.generate_all(Path(__file__).resolve().parent / "themed_cosmetics.json")
     print(len(themed), "Themen-Cosmetics erzeugt")
     print("Assets erzeugt in", ROOT)

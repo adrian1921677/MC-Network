@@ -337,6 +337,12 @@ def themed_wings(cid, theme, shape):
 
 
 def themed_cape(cid, theme):
+    frames = cape_frames(theme)
+    G["write_cosmetic"](cid, G["cape_element"](), texture(frames), display_settings=G["CAPE_DISPLAY"], animation=ANIM)
+    G["write_cape_segments"](cid)
+
+
+def cape_frames(theme):
     dark, mid, light, accent = theme["colors"]
     frames = []
     for f in range(FRAMES):
@@ -354,8 +360,7 @@ def themed_cape(cid, theme):
         for x in range(20):
             img[31][x] = edge
         frames.append(img)
-    G["write_cosmetic"](cid, G["cape_element"](), texture(frames), display_settings=G["CAPE_DISPLAY"], animation=ANIM)
-    G["write_cape_segments"](cid)
+    return frames
 
 
 # ---------------------------------------------------------------- Haustier-Vorlagen

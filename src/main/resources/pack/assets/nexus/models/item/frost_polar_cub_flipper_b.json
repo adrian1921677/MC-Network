@@ -1,0 +1,77 @@
+{
+  "textures": {
+    "0": "nexus:item/frost_polar_cub",
+    "particle": "nexus:item/frost_polar_cub"
+  },
+  "elements": [
+    {
+      "name": "Tatze",
+      "from": [
+        6.2,
+        2.5,
+        6.5
+      ],
+      "to": [
+        8,
+        8,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            4,
+            12,
+            8
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            8,
+            4,
+            12,
+            8
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            8,
+            4,
+            12,
+            8
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8,
+            4,
+            12,
+            8
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            8,
+            4,
+            12,
+            8
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            8,
+            4,
+            12,
+            8
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}
