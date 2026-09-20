@@ -11,6 +11,15 @@ question-back: "<gray>Close"
 
 travel-subtitle: "<gray>Moving on …</gray>"
 
+# After the last station
+free-roam: "That's it from me. You've got <minutes> minutes to try everything in peace — flying included."
+free-roam-warning: "<gray><seconds> seconds left."
+kick:
+  - "<gold><bold>Thanks for stopping by!"
+  - ""
+  - "<gray>I'm making room for the next visitor."
+  - "<gray>Come back in any time if there's more you want to see."
+
 stations:
   - id: welcome
     title: "<gradient:#ffd54a:#ff8a3d><bold>Welcome</bold></gradient>"
@@ -111,9 +120,9 @@ stations:
         action: strip
       - text: "With 174 cosmetics, paging through would be painful. So: search, sorting, favourites and saved outfits."
         action: menu
-      - text: "Try holding shift and clicking a cosmetic. A mannequin with your own skin steps up next to the menu."
+      - text: "Try holding shift and clicking a cosmetic. The menu closes and a mannequin with your own skin steps up in front of you."
         hold: 160
-      - text: "That way you see how it looks on you before you put it on. A chest menu hides your own character otherwise."
+      - text: "That way you see how it looks on you before you put it on — a chest menu hides your own character otherwise. Sneak to go back."
       - text: "And if your network runs on several servers: the profile follows the player. Over MySQL, with a clean handover."
 
   - id: outro

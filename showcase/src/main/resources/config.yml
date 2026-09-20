@@ -16,9 +16,14 @@ tour:
   # Kurze Saetze bleiben mindestens 'min-hold-ticks' stehen.
   ticks-per-word: 9
   min-hold-ticks: 45
-  # Am Ende der Fuehrung: true = der Besucher darf sich frei bewegen,
+  # Am Ende der Fuehrung: true = der Besucher darf sich frei bewegen und alles ausprobieren,
   # false = die Fuehrung beginnt von vorne
   free-roam-at-end: true
+
+  # So viele Sekunden darf er sich danach umsehen, dann wird er hoeflich hinausgebeten -
+  # damit auf einem kleinen Server Platz fuer den naechsten Interessenten ist.
+  # 0 schaltet den Rauswurf ab.
+  free-roam-seconds: 180
 
 guide:
   # Das Minecraft-Konto, dessen Haut der Fuehrer traegt.

@@ -442,13 +442,18 @@ public final class CosmeticMenu implements ClickableMenu {
     }
 
     /**
-     * Stellt die Schaufensterpuppe neben das Menü. Das Menü bleibt offen — sonst wäre die Vorschau
-     * nutzlos, weil man nicht vergleichen könnte.
+     * Schliesst das Menü und stellt die Schaufensterpuppe davor.
+     *
+     * Danach landet der Spieler wieder auf genau dieser Seite — mit derselben Suche,
+     * Sortierung und Seitenzahl. Sonst wäre eine Vorschau beim Durchblättern lästig.
      */
     private void preview(Cosmetic cosmetic) {
-        plugin.preview().preview(player, cosmetic);
+        if (!plugin.preview().enabled()) {
+            return;
+        }
         player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.5f, 1.6f);
-        player.sendActionBar(messages.get("menu.preview-shown", Placeholder.component("name", cosmetic.displayName())));
+        plugin.preview().preview(player, cosmetic,
+                () -> new CosmeticMenu(plugin, player, category, page, view).open());
     }
 
     private void toggleFavorite(Cosmetic cosmetic) {

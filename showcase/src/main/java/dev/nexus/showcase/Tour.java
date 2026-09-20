@@ -58,6 +58,9 @@ public final class Tour {
     private int stepIndex;
     private int timer;
 
+    /** Ticks, die der Besucher nach der Führung noch bleiben darf. 0 = kein Rauswurf. */
+    private int freeRoamLeft;
+
     private ArmorStand ride;
     private Location travelFrom;
     private Location travelTo;
@@ -161,6 +164,7 @@ public final class Tour {
 
     public void tick() {
         if (phase == Phase.FINISHED) {
+            tickFreeRoam();
             return;
         }
         if (phase == Phase.TRAVELLING) {
@@ -343,6 +347,57 @@ public final class Tour {
         phase = Phase.FINISHED;
         visitor.setAllowFlight(true);
         visitor.playSound(visitor.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.3f);
+
+        int seconds = Math.max(0, plugin.getConfig().getInt("tour.free-roam-seconds", 180));
+        freeRoamLeft = seconds * 20;
+        if (seconds > 0) {
+            visitor.sendMessage(script.prefix().append(script.freeRoam(Math.max(1, seconds / 60))));
+        }
+    }
+
+    /**
+     * Zählt herunter, wie lange der Besucher noch bleiben darf.
+     *
+     * Auf einem kleinen Demo-Server sind die Plätze knapp. Wer die Runde hinter sich hat und
+     * seitdem nur noch herumfliegt, blockiert einen Platz für den nächsten Interessenten —
+     * deshalb mit Vorwarnung hinaus. Steht free-roam-seconds auf 0, bleibt jeder.
+     */
+    private void tickFreeRoam() {
+        if (freeRoamLeft <= 0) {
+            return;
+        }
+        freeRoamLeft--;
+        if (freeRoamLeft == 0) {
+            sendAway();
+            return;
+        }
+        if (freeRoamLeft % 20 != 0) {
+            return;
+        }
+        int seconds = freeRoamLeft / 20;
+        if (seconds == 60 || seconds == 30 || seconds == 10 || seconds <= 5) {
+            visitor.sendActionBar(script.freeRoamWarning(seconds));
+            visitor.playSound(visitor.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 0.5f, 1.4f);
+        }
+    }
+
+    /** Aufräumen, dann hinausbegleiten — mit dem Link auf dem Trennbildschirm. */
+    private void sendAway() {
+        Component reason = Component.empty();
+        List<Component> lines = script.kickLines();
+        for (int i = 0; i < lines.size(); i++) {
+            if (i > 0) {
+                reason = reason.append(Component.newline());
+            }
+            reason = reason.append(lines.get(i));
+        }
+        String url = plugin.getConfig().getString("buy.url", "");
+        if (!url.isBlank()) {
+            reason = reason.append(Component.newline()).append(Component.newline())
+                    .append(Component.text(url, NamedTextColor.AQUA));
+        }
+        stop(false);
+        visitor.kick(reason);
     }
 
     /** Der Führer antwortet auf eine Frage aus dem Buch. */

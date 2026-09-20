@@ -34,6 +34,29 @@ resource-pack:
   # Nachricht im Download-Dialog (MiniMessage-Format für Farben)
   prompt: "<gold>Dieses Pack wird für die 3D-Cosmetics benötigt."
 
+# Die Schaufensterpuppe, die im Menü per Shift-Klick zeigt, wie ein Cosmetic aussieht.
+#
+# Für die Vorschau schliesst sich das Menü, damit die Puppe frei im Bild steht. Danach geht
+# das Menü von selbst wieder auf — an derselben Stelle. Schleichen bringt sofort zurück.
+# Nach dem Ändern reicht /cosmetics reload, kein Neustart nötig.
+preview:
+  enabled: true
+
+  # So lange bleibt die Puppe stehen, bevor das Menü wieder aufgeht.
+  seconds: 6
+
+  # Abstand in Blöcken. Kleiner = grösser im Bild.
+  distance: 2.6
+
+  # Seitlicher Versatz in Grad. 0 = genau vor dir, positiv nach links.
+  side-angle: 0
+
+  # Höhenversatz in Blöcken. Positiv hebt die Puppe an.
+  height-offset: 0.0
+
+  # Sekunden für eine volle Drehung. 0 = die Puppe dreht sich nicht.
+  turn-seconds: 9.0
+
 storage:
   # Wo gespeichert wird, was Spieler tragen, besitzen und an Schlüsseln haben.
   #

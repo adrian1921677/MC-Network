@@ -32,22 +32,18 @@ import java.util.stream.IntStream;
 /**
  * Eine Schaufensterpuppe, die nur ein einziger Spieler sieht.
  *
- * Sie steht schräg links vor ihm, damit sie neben dem geöffneten Menü im Bild bleibt, trägt
- * seine eigene Haut und dreht sich langsam wie ein Podest im Schaufenster. Weil sie ein
- * CosmeticCarrier ist, laufen an ihr exakt dieselben Animationen wie am Spieler selbst:
- * dieselbe Cape-Physik, derselbe Flügelschlag, dasselbe Haustier.
+ * Für die Vorschau schliesst sich das Menü, dann steht sie frei vor ihm, trägt seine eigene
+ * Haut und dreht sich langsam wie ein Podest im Schaufenster. Weil sie ein CosmeticCarrier ist,
+ * laufen an ihr exakt dieselben Animationen wie am Spieler selbst: dieselbe Cape-Physik,
+ * derselbe Flügelschlag, dasselbe Haustier.
  *
  * Die Puppe existiert nur als Netzwerk-Paket. Der Server kennt sie nicht, andere Spieler
  * sehen sie nicht, und sie steht niemandem im Weg.
  */
 public final class PreviewStand implements CosmeticCarrier {
 
-    /** Volle Drehung in neun Sekunden: langsam genug, um in Ruhe hinzusehen. */
-    private static final float TURN_PER_TICK = 2f;
-    /** Seitlicher Versatz in Grad. Bei 0 stünde die Puppe genau hinter dem Menü. */
-    private static final float SIDE_ANGLE = 30f;
-    private static final double MAX_DISTANCE = 3.2;
-    private static final double MIN_DISTANCE = 1.6;
+    /** Näher heran darf die Puppe nicht, wenn eine Wand im Weg steht. */
+    private static final double MIN_DISTANCE = 1.4;
     /** Ein Spieler ist 1,8 Blöcke hoch. Die Puppe ist es auch. */
     private static final double HEIGHT = 1.8;
     /** Vanilla schickt Passagier-Listen manchmal neu. Dann senden wir unsere erneut. */
@@ -55,7 +51,22 @@ public final class PreviewStand implements CosmeticCarrier {
     /** Ab dieser Entfernung passt die Puppe nicht mehr zum Spieler und wird neu gestellt. */
     private static final double TOO_FAR = 8;
 
+    /**
+     * Wo die Puppe steht und wie schnell sie sich dreht.
+     *
+     * Das hängt vom Bildschirm des Spielers ab — Sichtfeld, Fenstergrösse, GUI-Grösse —,
+     * deshalb steht es in der config.yml und nicht als feste Zahl im Code.
+     *
+     * @param sideAngle    Grad seitlich, 0 = genau vor dem Spieler, positiv nach links
+     * @param distance     Abstand in Blöcken
+     * @param heightOffset Höhenversatz in Blöcken
+     * @param turnPerTick  Grad pro Tick, 0 = keine Drehung
+     */
+    public record Placement(float sideAngle, double distance, double heightOffset, float turnPerTick) {
+    }
+
     private final Player viewer;
+    private final Placement placement;
     private final Mannequin entity;
     /** Fester Standplatz. Der Yaw darin ist die Blickrichtung zum Spieler. */
     private final Location stand;
@@ -66,9 +77,10 @@ public final class PreviewStand implements CosmeticCarrier {
     /** Worauf es bei dieser Vorschau ankommt. Bestimmt, welche Seite der Puppe zuerst zu sehen ist. */
     private CosmeticSlot focus;
 
-    public PreviewStand(Player viewer) {
+    public PreviewStand(Player viewer, Placement placement) {
         this.viewer = viewer;
-        this.stand = findSpot(viewer);
+        this.placement = placement;
+        this.stand = findSpot(viewer, placement);
         this.yaw = stand.getYaw();
         this.entity = Packets.createMannequin(stand.getWorld(), viewer.getPlayerProfile());
         spawn();
@@ -77,18 +89,19 @@ public final class PreviewStand implements CosmeticCarrier {
     // ------------------------------------------------------------------ Standplatz
 
     /**
-     * Sucht einen freien Platz schräg vor dem Spieler. Steht dort eine Wand, rückt die Puppe
-     * näher heran, statt in den Blöcken zu verschwinden.
+     * Sucht einen freien Platz vor dem Spieler. Steht dort eine Wand, rückt die Puppe näher
+     * heran, statt in den Blöcken zu verschwinden.
      */
-    private static Location findSpot(Player viewer) {
+    private static Location findSpot(Player viewer, Placement placement) {
         World world = viewer.getWorld();
         Location eye = viewer.getLocation();
-        float direction = eye.getYaw() - SIDE_ANGLE;
+        float direction = eye.getYaw() - placement.sideAngle();
         double dx = -Math.sin(Math.toRadians(direction));
         double dz = Math.cos(Math.toRadians(direction));
+        double y = eye.getY() + placement.heightOffset();
         Location closest = null;
-        for (double distance = MAX_DISTANCE; distance >= MIN_DISTANCE; distance -= 0.2) {
-            closest = new Location(world, eye.getX() + dx * distance, eye.getY(), eye.getZ() + dz * distance,
+        for (double distance = placement.distance(); distance >= MIN_DISTANCE; distance -= 0.2) {
+            closest = new Location(world, eye.getX() + dx * distance, y, eye.getZ() + dz * distance,
                     direction + 180f, 0f);
             if (free(closest)) {
                 return closest;
@@ -176,7 +189,9 @@ public final class PreviewStand implements CosmeticCarrier {
 
     public void tick(int serverTick) {
         age++;
-        turnTo(yaw + TURN_PER_TICK);
+        if (placement.turnPerTick() != 0f) {
+            turnTo(yaw + placement.turnPerTick());
+        }
         for (FakeCosmetic cosmetic : List.copyOf(attached)) {
             cosmetic.tick(serverTick);
         }

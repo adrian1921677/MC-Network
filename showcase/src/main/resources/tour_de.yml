@@ -27,6 +27,15 @@ question-back: "<gray>Schliessen"
 # Wird beim Start und beim Wechsel der Haltestelle eingeblendet
 travel-subtitle: "<gray>Wir fahren weiter …"
 
+# Nach der letzten Haltestelle
+free-roam: "Das war's von mir. Du hast jetzt <minutes> Minuten, um alles in Ruhe auszuprobieren — fliegen darfst du auch."
+free-roam-warning: "<gray>Noch <seconds> Sekunden."
+kick:
+  - "<gold><bold>Danke fürs Vorbeischauen!"
+  - ""
+  - "<gray>Ich mache Platz für den Nächsten."
+  - "<gray>Komm gerne wieder rein, wenn du noch etwas sehen willst."
+
 stations:
   - id: welcome
     title: "<gradient:#ffd54a:#ff8a3d><bold>Willkommen</bold></gradient>"
@@ -127,9 +136,9 @@ stations:
         action: strip
       - text: "Bei 174 Cosmetics wäre blättern eine Qual. Deshalb: Suche, Sortierung, Favoriten und gespeicherte Outfits."
         action: menu
-      - text: "Drück im Menü mal Shift auf ein Cosmetic. Dann stellt sich eine Puppe mit deiner Haut daneben."
+      - text: "Drück im Menü mal Shift auf ein Cosmetic. Das Menü geht zu und eine Puppe mit deiner Haut stellt sich vor dich."
         hold: 160
-      - text: "So siehst du, wie es an dir aussieht, bevor du es anziehst. Im Menü siehst du dich ja sonst selbst nicht."
+      - text: "So siehst du, wie es an dir aussieht, bevor du es anziehst — im Menü siehst du dich ja sonst selbst nicht. Schleichen bringt dich zurück."
       - text: "Und wenn dein Netzwerk aus mehreren Servern besteht: Das Profil folgt dem Spieler. Über MySQL, mit sauberer Übergabe."
 
   - id: outro

@@ -2,6 +2,7 @@ package dev.nexus.showcase;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -50,6 +51,10 @@ public final class Script {
     private final Component questionTitle;
     private final Component questionBack;
     private final Component travelSubtitle;
+    /** Roh, weil hier noch Platzhalter eingesetzt werden. */
+    private final String freeRoamRaw;
+    private final String freeRoamWarningRaw;
+    private final List<Component> kickLines;
     private final List<Station> stations;
     private final List<Question> questions;
 
@@ -61,6 +66,9 @@ public final class Script {
         this.questionTitle = text(file, "question-title");
         this.questionBack = text(file, "question-back");
         this.travelSubtitle = text(file, "travel-subtitle");
+        this.freeRoamRaw = file.getString("free-roam", "");
+        this.freeRoamWarningRaw = file.getString("free-roam-warning", "");
+        this.kickLines = file.getStringList("kick").stream().map(MINI::deserialize).toList();
         this.stations = readStations(file, ticksPerWord, minHold);
         this.questions = readQuestions(file);
     }
@@ -189,6 +197,21 @@ public final class Script {
 
     public Component travelSubtitle() {
         return travelSubtitle;
+    }
+
+    /** "Du hast jetzt <minutes> Minuten ..." */
+    public Component freeRoam(int minutes) {
+        return MINI.deserialize(freeRoamRaw, Placeholder.unparsed("minutes", String.valueOf(minutes)));
+    }
+
+    /** Countdown in der Aktionsleiste. */
+    public Component freeRoamWarning(int seconds) {
+        return MINI.deserialize(freeRoamWarningRaw, Placeholder.unparsed("seconds", String.valueOf(seconds)));
+    }
+
+    /** Text auf dem Trennbildschirm, wenn Platz für den Nächsten gemacht wird. */
+    public List<Component> kickLines() {
+        return kickLines;
     }
 
     public List<Station> stations() {

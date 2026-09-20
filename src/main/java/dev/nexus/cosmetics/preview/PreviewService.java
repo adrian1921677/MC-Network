@@ -4,15 +4,16 @@ import dev.nexus.cosmetics.NexusCosmetics;
 import dev.nexus.cosmetics.cosmetic.Cosmetic;
 import dev.nexus.cosmetics.cosmetic.CosmeticManager;
 import dev.nexus.cosmetics.cosmetic.CosmeticSlot;
-import dev.nexus.cosmetics.menu.ClickableMenu;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.EnumMap;
@@ -25,15 +26,33 @@ import java.util.UUID;
  * Die Vorschau im Menü.
  *
  * Ein Chest-Menü blendet die eigene Spielfigur aus — man kann sich beim Aussuchen also nicht
- * selbst ansehen. Deshalb stellt dieser Dienst eine Schaufensterpuppe mit der Haut des Spielers
- * neben das Menü und zieht ihr an, was er gerade anschaut.
+ * selbst ansehen. Für die Vorschau schliesst sich deshalb das Menü, und eine Schaufensterpuppe
+ * mit der Haut des Spielers stellt sich frei vor ihn. Danach geht das Menü von selbst wieder
+ * auf, an genau derselben Stelle; Schleichen bringt sofort zurück.
  *
- * Pro Spieler gibt es höchstens eine Puppe, und sie verschwindet, sobald das Menü zu ist.
+ * Der erste Versuch stellte die Puppe neben das geöffnete Menü. Wie viel Platz daneben bleibt,
+ * hängt aber von Fenstergrösse, GUI-Grösse und Sichtfeld ab — bei zu wenig Platz verschwand
+ * sie hinter dem Menü. Menü zu ist der verlässlichere Weg.
  */
 public final class PreviewService implements Listener {
 
+    /** Eine laufende Vorschau: die Puppe und der Weg zurück ins Menü. */
+    private static final class Showing {
+        private final PreviewStand stand;
+        private final Runnable reopenMenu;
+        private final Component label;
+        private int remaining;
+
+        private Showing(PreviewStand stand, Runnable reopenMenu, Component label, int remaining) {
+            this.stand = stand;
+            this.reopenMenu = reopenMenu;
+            this.label = label;
+            this.remaining = remaining;
+        }
+    }
+
     private final NexusCosmetics plugin;
-    private final Map<UUID, PreviewStand> stands = new HashMap<>();
+    private final Map<UUID, Showing> showing = new HashMap<>();
     private BukkitTask task;
     private int tickCounter;
 
@@ -54,58 +73,86 @@ public final class PreviewService implements Listener {
 
     /** Räumt alle Puppen ab, z. B. weil die Cosmetics gerade neu eingelesen werden. */
     public void clearAll() {
-        stands.values().forEach(PreviewStand::destroy);
-        stands.clear();
+        showing.values().forEach(entry -> entry.stand.destroy());
+        showing.clear();
     }
 
+    public boolean enabled() {
+        return plugin.getConfig().getBoolean("preview.enabled", true);
+    }
+
+    // ------------------------------------------------------------------ Zeigen
+
     /**
-     * Zeigt dem Spieler, wie das Cosmetic an ihm aussehen würde.
+     * Schliesst das Menü und stellt die Puppe vor den Spieler.
      *
-     * Die Puppe wird aus Netzwerk-Paketen zusammengesetzt. Geht dabei etwas schief, verschwindet
-     * sie wieder — das Menü selbst darf daran nie zerbrechen, es ist nur eine Vorschau.
+     * @param reopenMenu wird aufgerufen, wenn die Vorschau vorbei ist — damit der Spieler
+     *                   wieder genau auf der Seite landet, von der er gekommen ist
      */
-    public void preview(Player viewer, Cosmetic cosmetic) {
+    public void preview(Player viewer, Cosmetic cosmetic, Runnable reopenMenu) {
+        if (!enabled()) {
+            return;
+        }
         try {
-            PreviewStand stand = stands.get(viewer.getUniqueId());
-            if (stand != null && !stand.stillFits(viewer)) {
-                stand.destroy();
-                stand = null;
-            }
-            if (stand == null) {
-                stand = new PreviewStand(viewer);
-                stands.put(viewer.getUniqueId(), stand);
-            }
+            clear(viewer);
+            PreviewStand stand = new PreviewStand(viewer, placement());
             stand.wear(plugin.cosmetics(), outfitWith(viewer, cosmetic), cosmetic.slot());
+            showing.put(viewer.getUniqueId(), new Showing(stand, reopenMenu, cosmetic.displayName(), seconds()));
+            // Erst jetzt schliessen: Das Schliessen selbst raeumt keine Vorschau ab
+            viewer.closeInventory();
         } catch (RuntimeException | LinkageError failure) {
             clear(viewer);
             plugin.getLogger().warning("Vorschau konnte nicht aufgebaut werden: " + failure);
         }
     }
 
+    private PreviewStand.Placement placement() {
+        double turnSeconds = plugin.getConfig().getDouble("preview.turn-seconds", 9.0);
+        return new PreviewStand.Placement(
+                (float) plugin.getConfig().getDouble("preview.side-angle", 0),
+                Math.max(1.4, plugin.getConfig().getDouble("preview.distance", 2.6)),
+                plugin.getConfig().getDouble("preview.height-offset", 0),
+                turnSeconds <= 0 ? 0f : (float) (360.0 / (turnSeconds * 20.0)));
+    }
+
+    private int seconds() {
+        return Math.max(20, (int) (plugin.getConfig().getDouble("preview.seconds", 6) * 20));
+    }
+
     /**
-     * Zieht einer offenen Puppe an, was der Spieler jetzt wirklich trägt.
-     *
-     * Wird nach jedem An- und Ablegen aufgerufen: Ohne das würde die Puppe weiter ein Stück
-     * zeigen, das der Spieler gerade durch ein anderes ersetzt hat. Steht keine Puppe da,
-     * passiert nichts.
+     * Zieht einer laufenden Vorschau an, was der Spieler jetzt wirklich trägt. Steht keine
+     * Puppe da, passiert nichts.
      */
     public void refresh(Player viewer) {
-        PreviewStand stand = stands.get(viewer.getUniqueId());
-        if (stand == null) {
+        Showing entry = showing.get(viewer.getUniqueId());
+        if (entry == null) {
             return;
         }
         try {
-            stand.wear(plugin.cosmetics(), wornOutfit(viewer), stand.focus());
+            entry.stand.wear(plugin.cosmetics(), wornOutfit(viewer), entry.stand.focus());
         } catch (RuntimeException | LinkageError failure) {
             clear(viewer);
             plugin.getLogger().warning("Vorschau konnte nicht aktualisiert werden: " + failure);
         }
     }
 
+    /** Puppe weg, ohne das Menü wieder zu öffnen. */
     public void clear(Player viewer) {
-        PreviewStand stand = stands.remove(viewer.getUniqueId());
-        if (stand != null) {
-            stand.destroy();
+        Showing entry = showing.remove(viewer.getUniqueId());
+        if (entry != null) {
+            entry.stand.destroy();
+        }
+    }
+
+    /** Vorschau vorbei: Puppe weg und zurück ins Menü. */
+    private void finish(Player viewer) {
+        Showing entry = showing.remove(viewer.getUniqueId());
+        if (entry == null) {
+            return;
+        }
+        entry.stand.destroy();
+        if (viewer.isOnline() && entry.reopenMenu != null) {
+            entry.reopenMenu.run();
         }
     }
 
@@ -133,19 +180,34 @@ public final class PreviewService implements Listener {
 
     private void tick() {
         tickCounter++;
-        for (Map.Entry<UUID, PreviewStand> entry : List.copyOf(stands.entrySet())) {
+        for (Map.Entry<UUID, Showing> entry : List.copyOf(showing.entrySet())) {
             Player viewer = Bukkit.getPlayer(entry.getKey());
-            if (viewer == null || !viewer.isOnline() || !entry.getValue().stillFits(viewer)) {
-                entry.getValue().destroy();
-                stands.remove(entry.getKey());
+            Showing shown = entry.getValue();
+            if (viewer == null || !viewer.isOnline()) {
+                showing.remove(entry.getKey());
+                shown.stand.destroy();
                 continue;
             }
+            // Weggelaufen: Puppe abraeumen, aber nicht ungefragt das Menue aufreissen
+            if (!shown.stand.stillFits(viewer)) {
+                clear(viewer);
+                continue;
+            }
+            if (--shown.remaining <= 0) {
+                finish(viewer);
+                continue;
+            }
+            // Der Hinweis in der Aktionsleiste verblasst nach drei Sekunden, die Vorschau
+            // dauert laenger. Also immer wieder auffrischen.
+            if (shown.remaining % 20 == 0) {
+                viewer.sendActionBar(plugin.messages().get("menu.preview-shown",
+                        Placeholder.component("name", shown.label)));
+            }
             try {
-                entry.getValue().tick(tickCounter);
+                shown.stand.tick(tickCounter);
             } catch (RuntimeException | LinkageError failure) {
                 // Eine kaputte Puppe wird abgeräumt, statt zwanzigmal pro Sekunde zu klagen
-                stands.remove(entry.getKey());
-                entry.getValue().destroy();
+                clear(viewer);
                 plugin.getLogger().warning("Vorschau wurde wegen eines Fehlers entfernt: " + failure);
             }
         }
@@ -153,29 +215,17 @@ public final class PreviewService implements Listener {
 
     // ------------------------------------------------------------------ Events
 
-    /**
-     * Menü zu, Puppe weg.
-     *
-     * Beim Blättern und bei jedem Klick baut sich das Menü neu auf: das alte schließt sich und
-     * das neue öffnet sich im selben Tick. Deshalb wird erst einen Tick später geprüft, ob
-     * wirklich kein Menü mehr offen ist — sonst würde die Puppe bei jedem Klick kurz flackern.
-     */
+    /** Schleichen bringt sofort zurück ins Menü, statt die Sekunden abzuwarten. */
     @EventHandler
-    public void onClose(InventoryCloseEvent event) {
-        if (!(event.getPlayer() instanceof Player player) || !stands.containsKey(player.getUniqueId())) {
-            return;
+    public void onSneak(PlayerToggleSneakEvent event) {
+        if (event.isSneaking() && showing.containsKey(event.getPlayer().getUniqueId())) {
+            finish(event.getPlayer());
         }
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
-            if (player.isOnline()
-                    && !(player.getOpenInventory().getTopInventory().getHolder(false) instanceof ClickableMenu)) {
-                clear(player);
-            }
-        });
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        stands.remove(event.getPlayer().getUniqueId());
+        showing.remove(event.getPlayer().getUniqueId());
     }
 
     @EventHandler
