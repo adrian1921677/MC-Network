@@ -113,12 +113,23 @@ public final class Tour {
         return book;
     }
 
-    /** Beendet die Führung und gibt dem Besucher alles zurück, was ihm gehört. */
+    /**
+     * Beendet die Führung und gibt dem Besucher alles zurück, was ihm gehört.
+     *
+     * Darf mehrfach aufgerufen werden und tut dann nichts mehr. Das ist kein theoretischer
+     * Fall: Beim Rauswurf am Ende räumt die Führung erst auf und wirft dann hinaus — und der
+     * Rauswurf löst sofort das Quit-Ereignis aus, das ein zweites Mal aufräumen würde.
+     */
     public void stop(boolean teleportBack) {
+        if (stopped) {
+            return;
+        }
+        stopped = true;
+        phase = Phase.FINISHED;
         dropRide();
         guide.remove();
         plugin.nexus().cosmetics().unequipAll(visitor);
-        visitor.removeAttachment(permissions);
+        removeAttachment();
         if (visitor.isOnline()) {
             visitor.getInventory().setContents(savedInventory);
             visitor.setGameMode(savedGameMode);
@@ -128,8 +139,20 @@ public final class Tour {
                 visitor.teleport(savedLocation);
             }
         }
-        phase = Phase.FINISHED;
-        stopped = true;
+    }
+
+    /**
+     * Nimmt die Rechte zurück, die die Führung vergeben hat.
+     *
+     * Beim Verlassen des Servers räumt Bukkit die Rechte teilweise schon selbst ab. Dann
+     * beschwert sich removeAttachment, obwohl nichts kaputt ist — deshalb abgefangen.
+     */
+    private void removeAttachment() {
+        try {
+            visitor.removeAttachment(permissions);
+        } catch (IllegalArgumentException alreadyGone) {
+            // Bukkit war schneller. Nichts zu tun.
+        }
     }
 
     /** Die Führung ist durchgelaufen. Der Besucher darf sich ab jetzt frei bewegen. */
